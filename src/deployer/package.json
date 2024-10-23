@@ -1,10 +1,9 @@
 {
-    "name": "deployer",
-    "version": "1.0.0",
-    "main": "index.js",
-    "license": "MIT",
-    "dependencies": {
-      "web3": "^4.7.0"
-    }
+  "name": "deployer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.13.4"
   }
-  
+}
