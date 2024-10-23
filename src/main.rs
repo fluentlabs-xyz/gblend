@@ -7,11 +7,17 @@ use std::str::ParseBoolError;
 use dialoguer::Select;
 use anyhow::Result;
 use anyhow::anyhow;
+use ethers::types::Res;
 
 use std::process::Command;
 
+mod deployrs;
+
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
+
+    //Deploy command 
+    
 
     // Compile command 
     if args.len() == 4 && args[2] == "compile" {
@@ -64,7 +70,7 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-fn spin_js(use_erc20: bool) -> io::Result<()>{
+fn spin_js(use_erc20: bool) -> Result<()>{
     if use_erc20{
         //Contracts
         const ERC20: &str = include_str!("contract-templates/erc20per.vy");
@@ -94,7 +100,7 @@ fn spin_js(use_erc20: bool) -> io::Result<()>{
 
     Ok(())
 }
-fn copy_file(source_path: &str, target_path: &str) -> io::Result<()> {
+fn copy_file(source_path: &str, target_path: &str) -> Result<()> {
     // Read the source file
     let mut original_file = File::open(source_path)?;
     let mut contents = String::new();
@@ -113,7 +119,7 @@ fn copy_file(source_path: &str, target_path: &str) -> io::Result<()> {
 
     Ok(())
 }
-fn create_file_with_content(output_path: &str, content: &str) -> io::Result<()> {
+fn create_file_with_content(output_path: &str, content: &str) -> Result<()> {
     // Check if the output path has a parent directory and create it if necessary
     if let Some(parent_dir) = Path::new(output_path).parent() {
         if !parent_dir.exists() {
@@ -129,7 +135,7 @@ fn create_file_with_content(output_path: &str, content: &str) -> io::Result<()> 
 }
 
 //Create dir 
-fn create_directories(output_path: &str) -> io::Result<()> {
+fn create_directories(output_path: &str) -> Result<()> {
     // Check if the output path has a parent directory and create it if necessary
     if let Some(parent_dir) = Path::new(output_path).parent() {
         if !parent_dir.exists() {
@@ -143,7 +149,7 @@ fn create_directories(output_path: &str) -> io::Result<()> {
     Ok(())
 }
 
-fn spin_rust() -> io::Result<()>{
+fn spin_rust() -> Result<()>{
 
     println!("Creating Rust Project ..");
     const LIB: &str = include_str!("rust-template/lib.rs");
@@ -166,7 +172,7 @@ fn spin_rust() -> io::Result<()>{
     Ok(())
 }
 
-fn spin_ts(use_erc20: bool) -> io::Result<()>{
+fn spin_ts(use_erc20: bool) -> Result<()>{
     println!("Creating Typescript Project ..");
     if use_erc20{
         const ERC20: &str = include_str!("contract-templates/erc20per.vy");
@@ -199,7 +205,7 @@ fn spin_ts(use_erc20: bool) -> io::Result<()>{
     Ok(())
 }
 
-fn spin_blended_app() -> io::Result<()> {
+fn spin_blended_app() -> Result<()> {
     println!("Creating blended app ...");
 
     // Embed the files in the binary using `include_str!`
@@ -341,12 +347,13 @@ fn compile_rust_file(file_or_dir: &str) -> Result<()> {
 #[cfg(test)]
 pub mod test {
     use std::{fs::{self, File}, io::{self, Read, Write}};
+    use anyhow::Result;
 
     use crate::spin_js;
 
 
     #[test]
-    fn read_and_write()-> io::Result<()>{
+    fn read_and_write()-> Result<()>{
     let mut original_file = File::open("src/contract-templates/hello.sol")?;
 
     // Read the contents of the file
@@ -360,7 +367,7 @@ pub mod test {
     Ok(())
     }
     #[test]
-    fn test_spin_js()-> io::Result<()>{
+    fn test_spin_js()-> Result<()>{
         Ok(spin_js(true)?)
     }
 }
