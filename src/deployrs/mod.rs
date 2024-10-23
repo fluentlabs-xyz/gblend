@@ -33,9 +33,8 @@ fn wasm_to_string(path: &str) -> Result<String> {
     let file = fs::read(path)
         .with_context(|| format!("Failed to read file at path: {}", path))?;
 
-    // Convert bytes to a UTF-8 string
-    let data = String::from_utf8(file)
-        .with_context(|| "Failed to convert file to UTF-8 string")?;
+    // Encode bytes to hex 
+    let data = hex::encode(file);
     
     Ok(data)
 }
