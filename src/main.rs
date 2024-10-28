@@ -4,6 +4,7 @@ use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::ParseBoolError;
+use deployrs::deploy_wasm_contract;
 use dialoguer::Select;
 use anyhow::Result;
 use anyhow::anyhow;
@@ -13,18 +14,44 @@ use std::process::Command;
 
 mod deployrs;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
     //Deploy command 
     
 
-    // Compile command 
+    // Compile command for a project
     if args.len() == 4 && args[2] == "compile" {
-        let file = args[3].trim_end_matches(".rs");
-        compile_rust_file(file)?; // Ensure this returns Result
+        let file = args[3].trim_end_matches(".rs"); // For handling files 
+        compile_rust_project(file)?; // Ensure this returns Result
         return Ok(());
     }
+    //Compile command for a single wasm file 
+    if args.len()== 4 && args[1] == "rust"{
+        let file = args[3].trim_end_matches(".rs");
+        return Ok(());
+
+    }
+
+    // Deployment command 
+
+    if args.len() == 4 && args[1] == "deploy" {
+        let file = args[2].trim_end_matches(".wasm");
+        let private_key = &args[3];
+
+        if private_key.is_empty() {
+            // Print an error if private key is not provided
+            return Err(anyhow!("Error: Private key is required for deployment."));
+        }
+
+        // Call the deployment function
+        deploy_wasm_contract(private_key, file).await?;
+        return Ok(());
+    } else if args.len() == 3 && args[1] == "deploy" {
+        return Err(anyhow!("Error: Missing private key. Usage: gblend deploy <file.wasm> <private_key>"));
+    }
+
 
     let use_erc20 = args.len() > 1 && args[1] == "--erc20";
     //let blended_app = args.len() > 1  && args[1] == "--blendedapp";
@@ -259,7 +286,7 @@ fn find_wasm_output(release_dir: &Path) -> Result<PathBuf> {
     Err(anyhow!("No .wasm file found in the release directory"))
 }
 
-fn compile_rust_file(file_or_dir: &str) -> Result<()> {
+fn compile_rust_project(file_or_dir: &str) -> Result<()> {
     let path = Path::new(file_or_dir);
 
     // Debug: Print the provided path
@@ -342,6 +369,35 @@ fn compile_rust_file(file_or_dir: &str) -> Result<()> {
     Ok(())
 }
 
+// Compile a rust file into wasm
+
+// Next feature : What if this need to populate a current directory?
+fn compile_rust_file(rust_file: &str) -> Result<()>{
+    //Check if the ../ directory is src if not run the make but pointing the target to that file 
+    //Maybe check in the directoy 
+    
+    let path = Path::new(rust_file);
+    let rs_file: PathBuf;
+
+    println!("Checking file: {}", path.display());
+    
+    if path.is_dir(){
+        let main_file = path.join("main.rs");
+        let lib_file =  path.join("lib.rs");
+
+        if main_file.exists(){
+            rs_file= main_file;
+        } else if lib_file .exists(){
+            rs_file = lib_file;
+        }
+        else{
+            //Add support to {}.rs files
+            return Err(anyhow!("Theres no .rs file in the dir"));
+        }
+    }
+
+    Ok(())
+}
 
 
 #[cfg(test)]

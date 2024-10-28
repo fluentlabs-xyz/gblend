@@ -8,13 +8,13 @@ use anyhow::{Context, Ok, Result};
 
 
 
-async fn deploy_wasm_contract(binary_path:&str) -> Result<()>{
+pub async fn deploy_wasm_contract(private_key:&str,binary_path:&str) -> Result<()>{
 
     let provider = Provider::<Http>::try_from(
         "https://rpc.dev.thefluent.xyz/"
     ).expect("could not instantiate HTTP Provider");
 
-    let wallet: LocalWallet = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".parse()?;
+    let wallet: LocalWallet =private_key.parse()?;
 
     let mut client = SignerMiddleware::new(provider, wallet);
 
@@ -38,6 +38,8 @@ fn wasm_to_string(path: &str) -> Result<String> {
     
     Ok(data)
 }
+
+
 
 #[cfg(test)]
 
