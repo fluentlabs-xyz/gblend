@@ -1428,10 +1428,13 @@ dependencies = [
  "dialoguer",
  "ethers",
  "predicates",
+ "serde",
+ "serde_json",
  "tempfile",
  "test-case",
  "tokio",
  "toml",
+ "toml_edit",
 ]
 
 [[package]]

@@ -1,28 +1,74 @@
-use crate::{
-    commands::common::types::{BuildMetadata, BuildResult},
-    error::Error,
-};
+use super::utils::Tool;
+use crate::error::Error;
 use clap::Args;
-use std::{path::PathBuf, process::Command, time::Instant};
+use std::{
+    fs,
+    io::{self, BufRead},
+    path::PathBuf,
+    process::{Command, Stdio},
+    time::Instant,
+};
 
 #[derive(Args)]
 pub struct BuildArgs {
     /// Use release mode
-    #[arg(long, help = "Build with optimizations in release mode")]
+    #[arg(
+        short,
+        long,
+        help = "Build with optimizations in release mode",
+        default_value = "true"
+    )]
     release: bool,
 
     /// Path to project
     #[arg(short, long, help = "Path to project directory", default_value = ".")]
     path: PathBuf,
+
+    /// Create WAT file
+    #[arg(long, help = "Create .wat file from .wasm", default_value = "false")]
+    wat: bool,
+
+    /// Show build logs
+    #[arg(short, long, help = "Show build logs", default_value = "true")]
+    verbose: bool,
+}
+
+/// Result of the build process
+#[derive(Debug)]
+pub struct BuildResult {
+    /// Path to the generated WASM file
+    pub wasm_path: PathBuf,
+    /// Size of the generated WASM file in bytes
+    pub size: u64,
+    /// Optional warnings from the build process
+    pub warnings: Option<Vec<String>>,
+    /// Optional metadata about the build
+    pub metadata: Option<BuildMetadata>,
+}
+
+/// Additional metadata about the build
+#[derive(Debug)]
+pub struct BuildMetadata {
+    /// Time taken to build
+    pub build_time: std::time::Duration,
+    /// Compiler version used
+    pub compiler_version: String,
+    /// Target architecture
+    pub target: String,
+    /// Optimization level
+    pub optimization_level: String,
 }
 
 pub(super) fn execute(args: &BuildArgs) -> Result<(), Error> {
-    let build_result = build_project(&args.path, args.release)?;
-    print_build_result(&build_result);
+    for t in Tool::all(args.wat) {
+        t.ensure()?;
+    }
+    let result = build_project(&args.path, args.release, args.verbose)?;
+    print_build_result(&result);
     Ok(())
 }
 
-fn build_project(path: &PathBuf, release: bool) -> Result<BuildResult, Error> {
+fn build_project(path: &PathBuf, release: bool, verbose: bool) -> Result<BuildResult, Error> {
     println!("🔨 Building Rust project...");
 
     // Validate project structure
@@ -32,32 +78,108 @@ fn build_project(path: &PathBuf, release: bool) -> Result<BuildResult, Error> {
     ensure_wasm_target()?;
 
     println!("📦 Running cargo build...");
-    let output = run_cargo_build(path, release)?;
-    let compiler_version = get_compiler_version()?;
-    let warnings = collect_warnings(&output);
+    run_cargo_build(path, release, verbose)?;
 
+    // Define the expected output location
     let build_mode = if release { "release" } else { "debug" };
-    let wasm_path = path.join(format!(
-        "target/wasm32-unknown-unknown/{}/contract.wasm",
-        build_mode
-    ));
-    let size = std::fs::metadata(&wasm_path)?.len();
+    let target_dir = path.join("target/wasm32-unknown-unknown").join(build_mode);
 
+    // Locate the generated .wasm file
+    let wasm_file = target_dir
+        .read_dir()?
+        .filter_map(|entry| entry.ok())
+        .find(|entry| entry.path().extension() == Some("wasm".as_ref()))
+        .ok_or_else(|| Error::BuildError("No .wasm file found in target directory".to_string()))?;
+
+    // Copy the .wasm file to `lib.wasm`
+    let final_wasm_path = path.join("lib.wasm");
+    fs::copy(wasm_file.path(), &final_wasm_path)?;
+
+    // Optionally convert to .wat format using wasm2wat
+    if Command::new("wasm2wat")
+        .arg(&final_wasm_path)
+        .output()
+        .is_ok()
+        && verbose
+    {
+        println!(
+            "💡 Generated .wat file from .wasm at {:?}/lib.wat",
+            path.to_str()
+        );
+    }
+
+    // Gather metadata
+    let size = std::fs::metadata(&final_wasm_path)?.len();
     Ok(BuildResult {
-        wasm_path,
+        wasm_path: final_wasm_path,
         size,
-        warnings: if warnings.is_empty() {
-            None
-        } else {
-            Some(warnings)
-        },
+        warnings: None,
         metadata: Some(BuildMetadata {
             build_time: start_time.elapsed(),
-            compiler_version,
+            compiler_version: get_compiler_version()?,
             target: "wasm32-unknown-unknown".to_string(),
             optimization_level: build_mode.to_string(),
         }),
     })
+}
+
+fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool) -> Result<(), Error> {
+    let mut build_args = vec![
+        "build",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--no-default-features",
+        "--target-dir",
+        "./target",
+    ];
+    if release {
+        build_args.push("--release");
+    }
+
+    let mut cmd = Command::new("cargo")
+        .args(&build_args)
+        .env(
+            "RUSTFLAGS",
+            "-C link-arg=-zstack-size=262144 -C target-feature=+bulk-memory",
+        )
+        .current_dir(path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| Error::BuildError(format!("Failed to start build process: {}", e)))?;
+
+    // Stream output line by line in verbose mode
+    if verbose {
+        if let Some(stdout) = cmd.stdout.take() {
+            let stdout_reader = io::BufReader::new(stdout);
+            for line in stdout_reader.lines() {
+                if let Ok(line) = line {
+                    println!("{}", line);
+                }
+            }
+        }
+
+        if let Some(stderr) = cmd.stderr.take() {
+            let stderr_reader = io::BufReader::new(stderr);
+            for line in stderr_reader.lines() {
+                if let Ok(line) = line {
+                    eprintln!("{}", line);
+                }
+            }
+        }
+    }
+
+    // Wait for the command to finish and check if it was successful
+    let output = cmd
+        .wait_with_output()
+        .map_err(|e| Error::BuildError(format!("Build process failed: {}", e)))?;
+
+    if !output.status.success() {
+        let error_msg = String::from_utf8_lossy(&output.stderr);
+        return Err(Error::BuildError(error_msg.to_string()));
+    }
+
+    Ok(())
 }
 
 fn validate_project_structure(path: &PathBuf) -> Result<(), Error> {
@@ -107,26 +229,6 @@ fn ensure_wasm_target() -> Result<(), Error> {
     Ok(())
 }
 
-fn run_cargo_build(path: &PathBuf, release: bool) -> Result<std::process::Output, Error> {
-    let mut build_args = vec!["build", "--target", "wasm32-unknown-unknown"];
-    if release {
-        build_args.push("--release");
-    }
-
-    let output = Command::new("cargo")
-        .args(&build_args)
-        .current_dir(path)
-        .output()
-        .map_err(|e| Error::BuildError(format!("Build failed: {}", e)))?;
-
-    if !output.status.success() {
-        let error_msg = String::from_utf8_lossy(&output.stderr);
-        return Err(Error::BuildError(error_msg.to_string()));
-    }
-
-    Ok(output)
-}
-
 fn get_compiler_version() -> Result<String, Error> {
     let rustc_version = Command::new("rustc")
         .arg("--version")
@@ -164,4 +266,29 @@ fn print_build_result(result: &BuildResult) {
             println!("  {}", warning);
         }
     }
+}
+
+fn check_required_tools(wat: bool) -> Result<(), Error> {
+    // Check for cargo
+    if Command::new("cargo").arg("--version").output().is_err() {
+        return Err(Error::BuildError(
+            "Cargo is not installed. Please install Rust and Cargo.".to_string(),
+        ));
+    }
+
+    // Check for rustup for adding targets if needed
+    if Command::new("rustup").arg("--version").output().is_err() {
+        return Err(Error::BuildError(
+            "Rustup is not installed. Please install Rustup.".to_string(),
+        ));
+    }
+
+    // Optionally check for wasm2wat if `wat` flag is enabled
+    if wat && Command::new("wasm2wat").arg("--version").output().is_err() {
+        return Err(Error::BuildError(
+            "wasm2wat is not installed. Install it to create .wat files.".to_string(),
+        ));
+    }
+
+    Ok(())
 }

@@ -1,6 +1,9 @@
-use super::constants::{BASIC_TEMPLATE_CARGO_TOML, BASIC_TEMPLATE_LIB_RS};
+use super::{
+    constants::{BASIC_TEMPLATE_CARGO_TOML, BASIC_TEMPLATE_LIB_RS},
+    template_manager::TemplateManager,
+    utils::Tool,
+};
 use crate::{
-    commands::common::templates::TemplateManager,
     error::Error,
     utils::fs::{self, create_dir_if_not_exists},
 };
@@ -38,9 +41,11 @@ pub struct InitArgs {
 }
 
 pub(super) fn execute(args: &InitArgs) -> Result<(), Error> {
+    for t in Tool::all(false) {
+        t.ensure()?;
+    }
     let template_manager = TemplateManager::new()?;
 
-    // If --list flag is provided, show templates and exit
     if args.list {
         template_manager.list();
         return Ok(());
@@ -54,29 +59,29 @@ pub(super) fn execute(args: &InitArgs) -> Result<(), Error> {
         std::env::current_dir()?
     };
 
-    init_project(&project_path, &args.template, &template_manager)
+    init_project(&project_path, args, &template_manager)
 }
 
 fn init_project(
     project_path: &PathBuf,
-    template_name: &str,
+    args: &InitArgs,
     template_manager: &TemplateManager,
 ) -> Result<(), Error> {
     println!(
         "🦀 Initializing new Rust smart contract project with {} template...",
-        template_name
+        args.template
     );
 
     fs::create_dir_if_not_exists(project_path, true)?;
 
-    if template_name == DEFAULT_TEMPLATE {
+    if args.template == DEFAULT_TEMPLATE {
         create_default_template(project_path)?;
     } else {
-        create_from_template(project_path, template_name, template_manager)?;
+        create_from_template(project_path, args, template_manager)?;
     }
 
     init_git_repository(project_path);
-    print_next_steps(template_name, project_path);
+    print_next_steps(&args.template, project_path);
 
     Ok(())
 }
@@ -93,18 +98,18 @@ fn create_default_template(project_path: &PathBuf) -> Result<(), Error> {
 
 fn create_from_template(
     project_path: &PathBuf,
-    template_name: &str,
+    args: &InitArgs,
     template_manager: &TemplateManager,
 ) -> Result<(), Error> {
-    let template = template_manager.get(template_name).ok_or_else(|| {
+    let template = template_manager.get(&args.template).ok_or_else(|| {
         Error::InitializationError(format!(
             "Template '{}' not found. Use --list to see available templates",
-            template_name
+            args.template
         ))
     })?;
 
-    fs::copy_dir_all(&template.path, project_path)
-        .map_err(|e| Error::InitializationError(format!("Failed to copy template: {}", e)))?;
+    // Initialize project using template manager
+    template_manager.init_project(project_path, template)?;
 
     Ok(())
 }
@@ -130,4 +135,21 @@ fn print_next_steps(template_name: &str, project_path: &PathBuf) {
     }
     println!("  2. Run 'cargo build' to test the setup");
     println!("  3. Try running the tests with 'cargo test'");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_fs::prelude::*;
+
+    #[test]
+    fn test_create_default_template() -> Result<(), Box<dyn std::error::Error>> {
+        let temp = assert_fs::TempDir::new()?;
+        create_default_template(&temp.path().to_path_buf())?;
+
+        temp.child("Cargo.toml").assert(BASIC_TEMPLATE_CARGO_TOML);
+        temp.child("lib.rs").assert(BASIC_TEMPLATE_LIB_RS);
+
+        Ok(())
+    }
 }

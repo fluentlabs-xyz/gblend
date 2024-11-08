@@ -19,7 +19,7 @@ pub enum Commands {
     Init(InitCommand),
     /// Build the project
     Build(BuildCommand),
-    /// Deploy the compiled WASM file to specified network
+    /// Deploy the compiled WASM file to a specified network
     Deploy(DeployCommand),
 }
 
@@ -49,16 +49,9 @@ pub enum BuildMode {
 
 #[derive(Args)]
 pub struct DeployCommand {
-    #[command(subcommand)]
-    pub network: NetworkType,
-}
-
-#[derive(Subcommand)]
-pub enum NetworkType {
-    /// Deploy to local development network
-    Local(rust::DeployArgs),
-    /// Deploy to development testnet
-    Dev(rust::DeployArgs),
+    /// Arguments for deploying the project
+    #[command(flatten)]
+    pub args: rust::DeployArgs,
 }
 
 impl Cli {
@@ -74,10 +67,7 @@ impl Cli {
             Commands::Build(cmd) => match &cmd.mode {
                 BuildMode::Rust(args) => RustCommand::build(args),
             },
-            Commands::Deploy(cmd) => match &cmd.network {
-                NetworkType::Local(args) => RustCommand::deploy(args, "local").await,
-                NetworkType::Dev(args) => RustCommand::deploy(args, "dev").await,
-            },
+            Commands::Deploy(cmd) => RustCommand::deploy(&cmd.args).await,
         }
     }
 }

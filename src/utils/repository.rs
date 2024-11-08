@@ -52,7 +52,7 @@ impl Repository {
         self.repo_path.join("examples")
     }
 
-    pub fn get_example_path(&self, example_name: &str) -> PathBuf {
-        self.get_examples_path().join(example_name)
+    pub fn get_root_cargo_path(&self) -> PathBuf {
+        self.repo_path.join("Cargo.toml")
     }
 }

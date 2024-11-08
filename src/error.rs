@@ -20,6 +20,8 @@ pub enum Error {
     InvalidPath(PathBuf),
     /// Invalid private key
     InvalidPrivateKey(String),
+    /// Argument validation error
+    ArgumentError(String),
     /// WASM validation error
     WasmValidationError(String),
 }
@@ -38,6 +40,7 @@ impl fmt::Display for Error {
             Error::InvalidProject(msg) => write!(f, "Invalid project: {}", msg),
             Error::InvalidPath(path) => write!(f, "Invalid path: {}", path.display()),
             Error::InvalidPrivateKey(msg) => write!(f, "Invalid private key: {}", msg),
+            Error::ArgumentError(msg) => write!(f, "Argument error: {}", msg),
             Error::WasmValidationError(msg) => write!(f, "WASM validation error: {}", msg),
         }
     }
