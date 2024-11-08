@@ -6,8 +6,8 @@ version = "0.1.0"
 [dependencies]
 alloy-sol-types = {version = "0.7.4", default-features = false}
 
-fluentbase-sdk = {git = "https://github.com/fluentlabs-xyz/fluentbase", default-features = false , branch = "dev2"}
-rand = { version = "0.8.3", features = ["small_rng"], default-features = false }
+fluentbase-sdk = {git = "https://github.com/fluentlabs-xyz/fluentbase", default-features = false}
+
 [lib]
 crate-type = ["cdylib", "staticlib"]
 path = "src/lib.rs"
