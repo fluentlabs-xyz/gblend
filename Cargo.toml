@@ -2,18 +2,21 @@
 name = "gblend"
 version = "0.0.11"
 edition = "2021"
-description = "CLI tool for bootstrapping Fluent projects"
-license = "MIT"
-authors = ["protocolwhisper <protocol.eth@gmail.com>"]
-repository = "https://github.com/fluentlabs-xyz/gblend"
-# Consider whether you really need the include field or what should be specified
-# include = ["src/rust-template/**/*", "src/contract-templates/**/*", "src/js-template/**/*", "src/ts-template/**/*"]
 
 [dependencies]
 anyhow = "1.0.86"
+clap = { version = "4.5.20", features = ["derive"] }
 dialoguer = "0.11.0"
 ethers = "2.0.14"
+tempfile = "3.14.0"
 tokio = {version = "1.41.0" ,  features = ["full"]}
+toml = "0.8.19"
+
+[dev-dependencies]
+assert_fs = "1.0"
+assert_cmd = "2.0"
+predicates = "3.0"
+test-case = "3.1"
 
 [[bin]]
 name = "gblend"
