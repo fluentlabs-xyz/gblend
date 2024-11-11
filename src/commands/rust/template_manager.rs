@@ -8,7 +8,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use toml_edit::{DocumentMut, Item, Table, Value};
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Template {
     name: String,
@@ -16,45 +15,25 @@ pub struct Template {
     path: PathBuf,
 }
 
-impl Template {
-    /// Create a Template from directory path
-    pub(super) fn from_path(path: &Path) -> Result<Option<Self>, Error> {
-        let name = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .ok_or_else(|| Error::InitializationError("Invalid template name".to_string()))?
-            .to_string();
+const README_VARIANTS: [&str; 2] = ["README.md", "readme.md"];
+const DEFAULT_DESCRIPTION: &str = "No description available";
 
-        if name.starts_with('.') || name.starts_with('_') {
+impl Template {
+    pub(super) fn from_path(path: &Path) -> Result<Option<Self>, Error> {
+        let name = extract_valid_name(path)?;
+
+        if is_hidden(&name) {
             return Ok(None);
         }
 
-        let description = Self::read_description(path)?;
         Ok(Some(Self {
-            name,
-            description,
+            description: read_description(path),
             path: path.to_path_buf(),
+            name,
         }))
     }
 
-    /// Read template description from README.md
-    fn read_description(template_path: &Path) -> Result<String, Error> {
-        let readme_path = template_path.join("README.md");
-        if !readme_path.exists() {
-            return Ok("No description available".to_string());
-        }
-
-        let content = std::fs::read_to_string(&readme_path)
-            .map_err(|e| Error::InitializationError(format!("Failed to read README: {}", e)))?;
-
-        Ok(content
-            .lines()
-            .find(|line| !line.trim().is_empty())
-            .unwrap_or("No description available")
-            .to_string())
-    }
-
-    // Getters
+    // Getters using deref coercion
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -63,9 +42,47 @@ impl Template {
         &self.description
     }
 
-    pub fn path(&self) -> &PathBuf {
+    pub fn path(&self) -> &Path {
         &self.path
     }
+}
+
+fn is_hidden(name: &str) -> bool {
+    name.starts_with('.') || name.starts_with('_')
+}
+
+fn extract_valid_name(path: &Path) -> Result<String, Error> {
+    path.file_name()
+        .and_then(|n| n.to_str())
+        .map(String::from)
+        .ok_or_else(|| Error::InitializationError("Invalid template name".into()))
+}
+
+fn find_readme(template_path: &Path) -> Option<String> {
+    README_VARIANTS
+        .iter()
+        .map(|variant| template_path.join(variant))
+        .find(|path| path.exists())
+        .and_then(|path| std::fs::read_to_string(path).ok())
+}
+
+fn extract_first_paragraph(content: &str) -> Option<String> {
+    let paragraph = content
+        .lines()
+        .skip_while(|line| line.trim().is_empty() || line.trim().starts_with('#'))
+        .take_while(|line| !line.trim().is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+        .trim()
+        .to_string();
+
+    (!paragraph.is_empty()).then_some(paragraph)
+}
+
+fn read_description(template_path: &Path) -> String {
+    find_readme(template_path)
+        .and_then(|content| extract_first_paragraph(&content))
+        .unwrap_or_else(|| DEFAULT_DESCRIPTION.to_string())
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -262,5 +279,71 @@ impl TemplateManager {
             Error::InitializationError(format!("Failed to write Cargo.toml: {}", e))
         })?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_extract_first_paragraph() {
+        // Empty content
+        assert_eq!(extract_first_paragraph(""), None);
+
+        // Only headings
+        assert_eq!(extract_first_paragraph("# Title\n## Subtitle"), None);
+
+        // Only empty lines
+        assert_eq!(extract_first_paragraph("\n\n\n"), None);
+
+        // Heading with empty lines before paragraph
+        let content = "# Title\n\n\nFirst paragraph.";
+        assert_eq!(
+            extract_first_paragraph(content),
+            Some("First paragraph.".to_string())
+        );
+
+        // Multiple headings before paragraph
+        let content = "# Title\n## Subtitle\n### Section\nFirst paragraph.";
+        assert_eq!(
+            extract_first_paragraph(content),
+            Some("First paragraph.".to_string())
+        );
+
+        // No heading, just paragraph
+        assert_eq!(
+            extract_first_paragraph("First paragraph."),
+            Some("First paragraph.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_template_creation() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // Hidden directory
+        let hidden_path = temp_dir.path().join(".hidden");
+        fs::create_dir(&hidden_path).unwrap();
+        assert_eq!(Template::from_path(&hidden_path).unwrap(), None);
+
+        // Underscore directory
+        let underscore_path = temp_dir.path().join("_template");
+        fs::create_dir(&underscore_path).unwrap();
+        assert_eq!(Template::from_path(&underscore_path).unwrap(), None);
+
+        // Non-UTF8 path test only for Unix systems
+        #[cfg(unix)]
+        {
+            use std::{ffi::OsStr, os::unix::ffi::OsStrExt};
+
+            let invalid_utf8 = OsStr::from_bytes(&[0xFF, 0xFF]);
+            let invalid_path = temp_dir.path().join(invalid_utf8);
+
+            // Don't create directory, just test the path
+            assert!(Template::from_path(&invalid_path).is_err());
+        }
     }
 }
