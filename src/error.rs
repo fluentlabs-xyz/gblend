@@ -1,4 +1,4 @@
-use std::{fmt, io, path::PathBuf};
+use std::{fmt, io};
 
 #[derive(Debug)]
 pub enum Error {
@@ -12,18 +12,8 @@ pub enum Error {
     DeploymentError(String),
     /// Network error
     NetworkError(String),
-    /// Network not specified
-    NetworkNotSpecified,
     /// Invalid project structure
     InvalidProject(String),
-    /// Invalid path
-    InvalidPath(PathBuf),
-    /// Invalid private key
-    InvalidPrivateKey(String),
-    /// Argument validation error
-    ArgumentError(String),
-    /// WASM validation error
-    WasmValidationError(String),
 }
 
 impl std::error::Error for Error {}
@@ -36,12 +26,7 @@ impl fmt::Display for Error {
             Error::BuildError(msg) => write!(f, "Build error: {}", msg),
             Error::DeploymentError(msg) => write!(f, "Deployment error: {}", msg),
             Error::NetworkError(msg) => write!(f, "Network error: {}", msg),
-            Error::NetworkNotSpecified => write!(f, "Network not specified. Use --local or --dev"),
             Error::InvalidProject(msg) => write!(f, "Invalid project: {}", msg),
-            Error::InvalidPath(path) => write!(f, "Invalid path: {}", path.display()),
-            Error::InvalidPrivateKey(msg) => write!(f, "Invalid private key: {}", msg),
-            Error::ArgumentError(msg) => write!(f, "Argument error: {}", msg),
-            Error::WasmValidationError(msg) => write!(f, "WASM validation error: {}", msg),
         }
     }
 }

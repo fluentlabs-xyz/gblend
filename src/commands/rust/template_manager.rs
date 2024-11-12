@@ -7,7 +7,7 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-use toml_edit::{DocumentMut, Item, Table, Value};
+use toml_edit::{DocumentMut, Item, Value};
 #[derive(Debug, Clone, PartialEq)]
 pub struct Template {
     name: String,
@@ -100,7 +100,7 @@ pub(super) struct CargoPackage {
 
 /// Manages project templates and handles workspace dependency resolution
 pub struct TemplateManager {
-    repository: Repository,
+    _repository: Repository,
     templates: HashMap<String, Template>,
     root_dependencies: DocumentMut,
 }
@@ -129,7 +129,7 @@ impl TemplateManager {
         let templates = Self::scan_templates(&examples_path)?;
 
         Ok(Self {
-            repository,
+            _repository: repository,
             templates,
             root_dependencies: root_doc,
         })
@@ -242,12 +242,12 @@ impl TemplateManager {
             if dep_item.get("workspace").is_some() {
                 let dep_key = dep_name.get();
                 let root_dep = root_deps.get(dep_key).unwrap_or_else(|| {
-                panic!(
-                    "The dependency '{dep_key}', used in the example '{template_name}', is marked with `workspace = true`, \
+                    panic!(
+                        "The dependency '{dep_key}', used in the example '{template_name}', is marked with `workspace = true`, \
                     but it is missing from the workspace's Cargo.toml file. Please add '{dep_key}' to the `[dependencies]` \
                     section in the root Cargo.toml to resolve this issue.",
-                );
-            });
+                    );
+                });
 
                 // Update fluentbase dependencies with specific Git settings, if needed
                 if dep_key.starts_with("fluentbase-") {

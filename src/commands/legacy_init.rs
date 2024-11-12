@@ -1,11 +1,10 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use dialoguer::Select;
 use std::{
     env,
     fs::{self, File},
-    io::{self, Read, Write},
-    path::{Path, PathBuf},
-    process::Command,
+    io::{self, Write},
+    path::Path,
 };
 
 const ASCII_ART: &str = r#"
@@ -82,25 +81,7 @@ fn spin_js(use_erc20: bool) -> Result<()> {
 
     Ok(())
 }
-fn copy_file(source_path: &str, target_path: &str) -> Result<()> {
-    // Read the source file
-    let mut original_file = File::open(source_path)?;
-    let mut contents = String::new();
-    original_file.read_to_string(&mut contents)?;
 
-    // Check if target_path has a parent directory and if it needs to be created
-    if let Some(target_dir) = Path::new(target_path).parent() {
-        if !target_dir.exists() {
-            fs::create_dir_all(target_dir)?;
-        }
-    }
-
-    // Create and write to the new file at target_path
-    let mut new_file = File::create(target_path)?;
-    new_file.write_all(contents.as_bytes())?;
-
-    Ok(())
-}
 fn create_file_with_content(output_path: &str, content: &str) -> Result<()> {
     // Check if the output path has a parent directory and create it if necessary
     if let Some(parent_dir) = Path::new(output_path).parent() {

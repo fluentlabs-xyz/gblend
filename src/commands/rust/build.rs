@@ -240,14 +240,6 @@ fn get_compiler_version() -> Result<String, Error> {
         .to_string())
 }
 
-fn collect_warnings(output: &std::process::Output) -> Vec<String> {
-    String::from_utf8_lossy(&output.stderr)
-        .lines()
-        .filter(|line| line.contains("warning:"))
-        .map(String::from)
-        .collect()
-}
-
 fn print_build_result(result: &BuildResult) {
     println!("\n✅ Build completed successfully!");
     println!("📦 Output: {}", result.wasm_path.display());
@@ -266,29 +258,4 @@ fn print_build_result(result: &BuildResult) {
             println!("  {}", warning);
         }
     }
-}
-
-fn check_required_tools(wat: bool) -> Result<(), Error> {
-    // Check for cargo
-    if Command::new("cargo").arg("--version").output().is_err() {
-        return Err(Error::BuildError(
-            "Cargo is not installed. Please install Rust and Cargo.".to_string(),
-        ));
-    }
-
-    // Check for rustup for adding targets if needed
-    if Command::new("rustup").arg("--version").output().is_err() {
-        return Err(Error::BuildError(
-            "Rustup is not installed. Please install Rustup.".to_string(),
-        ));
-    }
-
-    // Optionally check for wasm2wat if `wat` flag is enabled
-    if wat && Command::new("wasm2wat").arg("--version").output().is_err() {
-        return Err(Error::BuildError(
-            "wasm2wat is not installed. Install it to create .wat files.".to_string(),
-        ));
-    }
-
-    Ok(())
 }

@@ -69,7 +69,7 @@ pub(super) async fn execute(args: &DeployArgs) -> Result<(), Error> {
         args.gas_limit,
         args.gas_price,
     )
-    .await?;
+        .await?;
 
     print_deployment_info(&receipt, &network_config);
     Ok(())

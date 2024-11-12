@@ -1,7 +1,10 @@
 [package]
 name = "gblend"
-version = "0.0.11"
+version = "0.1.0"
 edition = "2021"
+authors = ["protocolwhisper <protocol.eth@gmail.com>", "d1r1 <me@d1r1.me>"]
+description = "CLI tool for bootstrapping Fluent projects"
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.86"
