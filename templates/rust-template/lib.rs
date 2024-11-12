@@ -1,43 +1,38 @@
 #![cfg_attr(target_arch = "wasm32", no_std)]
-extern crate alloc;
 extern crate fluentbase_sdk;
 
-use fluentbase_sdk::{
-    basic_entrypoint,
-    derive::{router, signature, Contract},
-    AccountManager, ContextReader, SharedAPI,
-};
-use rand::rngs::SmallRng;
-use rand::SeedableRng;
-use rand::Rng;
+use fluentbase_sdk::{basic_entrypoint, derive::Contract, SharedAPI};
 
 #[derive(Contract)]
-struct ROUTER<'a, CR: ContextReader, AM: AccountManager> {
-    cr: &'a CR,
-    am: &'a AM,
+struct GREETING<SDK> {
+    sdk: SDK,
 }
 
-pub trait RouterAPI {
-    fn random<SDK: SharedAPI>(&self) -> u64;
-}
-
-#[router(mode = "solidity")]
-impl<'a, CR: ContextReader, AM: AccountManager> RouterAPI for ROUTER<'a, CR, AM> {
-    #[signature("function random() external view returns (uint256)")]
-    fn random<SDK: SharedAPI>(&self) -> u64 {
-        // Modify state of a variable & getting state from the VM block_timestamp
-        let seed = self.cr.block_timestamp();
-        let mut small_rng = SmallRng::seed_from_u64(seed);
-        let random_number = small_rng.gen_range(1..15);
-        random_number
-    }
-}
-
-impl<'a, CR: ContextReader, AM: AccountManager> ROUTER<'a, CR, AM> {
-    fn deploy<SDK: SharedAPI>(&self) {
+impl<SDK: SharedAPI> GREETING<SDK> {
+    fn deploy(&mut self) {
         // any custom deployment logic here
     }
+    fn main(&mut self) {
+        // write "Hello, World" message into output
+        self.sdk.write("Hello, World".as_bytes());
+    }
 }
 
-basic_entrypoint!(ROUTER<'static, fluentbase_sdk::GuestContextReader, fluentbase_sdk::GuestAccountManager>);
+basic_entrypoint!(GREETING);
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fluentbase_sdk::{journal::JournalState, runtime::TestingContext};
+
+    #[test]
+    fn test_contract_works() {
+        let native_sdk = TestingContext::empty().with_input("Hello, World");
+        let sdk = JournalState::empty(native_sdk.clone());
+        let mut greeting = GREETING::new(sdk);
+        greeting.deploy();
+        greeting.main();
+        let output = native_sdk.take_output();
+        assert_eq!(&output, "Hello, World".as_bytes());
+    }
+}

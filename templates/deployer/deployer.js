@@ -24,7 +24,7 @@ const main = async () => {
     let isDev = checkFlag('--dev');
 
     // Set the provider URL based on the flag
-    let providerUrl = isLocal ? 'http://127.0.0.1:8545' : isDev ? 'https://rpc.dev.thefluent.xyz/' : '';
+    let providerUrl = isLocal ? 'http://127.0.0.1:8545' : isDev ? 'https://rpc.dev.gblend.xyz/' : '';
     if (!providerUrl) {
         console.log(`You must specify --dev or --local flag!`);
         console.log(`Example: node deployer.js --dev ./bin/{yourfile}.wasm`);
