@@ -1,0 +1,35 @@
+{
+  "name": "chess-puzzle",
+  "version": "1.0.0",
+  "description": "A chess puzzle smart contract project",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat deploy"
+  },
+  "keywords": [
+    "chess",
+    "puzzle",
+    "smart contract"
+  ],
+  "author": "d1r1",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "@types/node": "^20.12.12",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.4",
+    "hardhat-deploy": "^0.12.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ethers": "^6.12.2",
+    "fs": "^0.0.1-security"
+  }
+}

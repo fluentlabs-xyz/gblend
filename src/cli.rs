@@ -1,5 +1,8 @@
 use crate::{
-    commands::rust::{self, RustCommand},
+    commands::{
+        legacy_init::legacy_init,
+        rust::{self, RustCommand},
+    },
     error::Error,
 };
 use clap::{Args, Parser, Subcommand};
@@ -26,7 +29,7 @@ pub enum Commands {
 #[derive(Args)]
 pub struct InitCommand {
     #[command(subcommand)]
-    pub mode: InitMode,
+    pub mode: Option<InitMode>,
 }
 
 #[derive(Subcommand)]
@@ -62,7 +65,10 @@ impl Cli {
     pub async fn execute(&self) -> Result<(), Error> {
         match &self.command {
             Commands::Init(cmd) => match &cmd.mode {
-                InitMode::Rust(args) => RustCommand::init(args),
+                Some(InitMode::Rust(args)) => RustCommand::init(args),
+                None => legacy_init()
+                    .await
+                    .map_err(|e| Error::InitializationError(e.to_string())),
             },
             Commands::Build(cmd) => match &cmd.mode {
                 BuildMode::Rust(args) => RustCommand::build(args),
