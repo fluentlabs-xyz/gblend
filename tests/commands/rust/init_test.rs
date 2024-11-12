@@ -83,8 +83,11 @@ fn test_init_fails_with_invalid_template() -> Result<(), Box<dyn std::error::Err
         .current_dir(&project.path())
         .assert()
         .failure()
+        .stdout(predicate::str::contains(
+            "Initializing new Rust smart contract project with non-existent-template template"
+        ))
         .stderr(predicate::str::contains(
-            "Template non-existent-template not found",
+            "Error: Initialization error: Template 'non-existent-template' not found. Use --list to see available templates"
         ));
 
     Ok(())

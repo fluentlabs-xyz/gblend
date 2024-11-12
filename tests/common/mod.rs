@@ -16,11 +16,6 @@ impl TestProject {
         self.temp_dir.path().to_path_buf()
     }
 
-    pub fn create_file(&self, path: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
-        self.temp_dir.child(path).write_str(content)?;
-        Ok(())
-    }
-
     pub fn assert_file_exists(&self, path: &str) {
         self.temp_dir.child(path).assert(predicate::path::exists());
     }
