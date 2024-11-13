@@ -16,21 +16,25 @@ const DEFAULT_GAS_PRICE: u64 = 0;
 pub struct DeployArgs {
     #[arg(
         long,
-        help = "Private key for transaction signing in hex format (0x prefix)"
+        help = "Private key for transaction signing in hex format (0x prefix)",
+        env = "DEPLOY_PRIVATE_KEY"
     )]
     private_key: String,
 
     #[arg(
         long,
         help = "Maximum gas limit for deployment",
-        default_value_t = DEFAULT_GAS_LIMIT
+        default_value_t = DEFAULT_GAS_LIMIT,
+        env = "DEPLOY_GAS_LIMIT"
     )]
     gas_limit: u64,
 
     #[arg(
         long,
         help = "Optional gas price in network's native units. Fetched from network if zero.",
-        default_value_t = DEFAULT_GAS_PRICE
+        default_value_t = DEFAULT_GAS_PRICE,
+        env = "DEPLOY_GAS_PRICE"
+
     )]
     gas_price: u64,
 

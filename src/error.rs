@@ -6,6 +6,7 @@ pub enum Error {
     Io(io::Error),
     /// Project initialization error
     InitializationError(String),
+    ConfigError(String),
     /// Build process error
     BuildError(String),
     /// Deployment error
@@ -23,6 +24,7 @@ impl fmt::Display for Error {
         match self {
             Error::Io(err) => write!(f, "IO error: {}", err),
             Error::InitializationError(msg) => write!(f, "Initialization error: {}", msg),
+            Error::ConfigError(msg) => write!(f, "Config error: {}", msg),
             Error::BuildError(msg) => write!(f, "Build error: {}", msg),
             Error::DeploymentError(msg) => write!(f, "Deployment error: {}", msg),
             Error::NetworkError(msg) => write!(f, "Network error: {}", msg),

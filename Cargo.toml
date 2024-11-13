@@ -8,7 +8,7 @@ license = "MIT"
 
 [dependencies]
 anyhow = "1.0.86"
-clap = { version = "4.5.20", features = ["derive"] }
+clap = { version = "4.5.20", features = ["derive", "env", "wrap_help"] }
 dialoguer = "0.11.0"
 ethers = "2.0.14"
 serde = { version = "1.0.214", features = ["derive"] }
@@ -17,6 +17,7 @@ tempfile = "3.14.0"
 tokio = {version = "1.41.0" ,  features = ["full"]}
 toml = "0.8.19"
 toml_edit = "0.22.22"
+dotenvy = "0.15"
 
 [dev-dependencies]
 assert_fs = "1.0"
