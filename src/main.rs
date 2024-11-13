@@ -8,7 +8,7 @@ use cli::Cli;
 
 #[tokio::main]
 async fn main() {
-    if let Err(e) = Cli::new().execute().await {
+    if let Err(e) = Cli::new().unwrap().execute().await {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     }

@@ -3,22 +3,18 @@ use crate::{
         legacy_init::legacy_init,
         rust::{self, RustCommand},
     },
-    config::Config,
+    config::EnvConfig,
     error::Error,
 };
 use clap::{Args, Parser, Subcommand};
-use std::path::PathBuf;
 
 /// CLI tool to scaffold, build, and deploy contracts on Fluent
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about)]
 #[command(propagate_version = true)]
 pub struct Cli {
-    #[arg(long, global = true, help = "Path to .env file")]
-    env_file: Option<PathBuf>,
-
-    #[arg(long, global = true, help = "Environment name to load .env.<env>")]
-    env: Option<String>,
+    #[command(flatten)]
+    env_config: EnvConfig,
 
     #[command(subcommand)]
     command: Commands,
@@ -66,13 +62,14 @@ pub struct DeployCommand {
 }
 
 impl Cli {
-    pub fn new() -> Self {
-        Self::parse()
+    pub fn new() -> Result<Self, Error> {
+        EnvConfig::load().map_err(|e| Error::ConfigError(e.to_string()))?;
+
+        let cli = Self::parse();
+        Ok(cli)
     }
 
     pub async fn execute(&self) -> Result<(), Error> {
-        Config::new(self.env_file.clone(), self.env.clone()).load()?;
-
         match &self.command {
             Commands::Init(cmd) => match &cmd.mode {
                 Some(InitMode::Rust(args)) => RustCommand::init(args),
