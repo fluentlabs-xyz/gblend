@@ -3,15 +3,19 @@ use crate::{
         legacy_init::legacy_init,
         rust::{self, RustCommand},
     },
+    config::EnvConfig,
     error::Error,
 };
 use clap::{Args, Parser, Subcommand};
 
 /// CLI tool to scaffold, build, and deploy contracts on Fluent
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about)]
 #[command(propagate_version = true)]
 pub struct Cli {
+    #[command(flatten)]
+    env_config: EnvConfig,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -58,8 +62,11 @@ pub struct DeployCommand {
 }
 
 impl Cli {
-    pub fn new() -> Self {
-        Self::parse()
+    pub fn new() -> Result<Self, Error> {
+        EnvConfig::load().map_err(|e| Error::ConfigError(e.to_string()))?;
+
+        let cli = Self::parse();
+        Ok(cli)
     }
 
     pub async fn execute(&self) -> Result<(), Error> {
