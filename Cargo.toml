@@ -1,27 +1,28 @@
 [package]
-name = "gblend"
-version = "0.1.0"
-edition = "2021"
 authors = ["protocolwhisper <protocol.eth@gmail.com>", "d1r1 <me@d1r1.me>"]
 description = "CLI tool for bootstrapping Fluent projects"
+edition = "2021"
 license = "MIT"
+name = "gblend"
+repository = "https://github.com/fluentlabs-xyz/gblend"
+version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.86"
-clap = { version = "4.5.20", features = ["derive", "env", "wrap_help"] }
+clap = {version = "4.5.20", features = ["derive", "env", "wrap_help"]}
 dialoguer = "0.11.0"
+dotenvy = "0.15"
 ethers = "2.0.14"
-serde = { version = "1.0.214", features = ["derive"] }
+serde = {version = "1.0.214", features = ["derive"]}
 serde_json = "1.0.132"
 tempfile = "3.14.0"
-tokio = {version = "1.41.0" ,  features = ["full"]}
+tokio = {version = "1.41.0", features = ["full"]}
 toml = "0.8.19"
 toml_edit = "0.22.22"
-dotenvy = "0.15"
 
 [dev-dependencies]
-assert_fs = "1.0"
 assert_cmd = "2.0"
+assert_fs = "1.0"
 predicates = "3.0"
 test-case = "3.1"
 
