@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2024-11-19
+
+### ⚙️ Miscellaneous Tasks
+
+- Rm clippy from publish action
+
 ## [0.2.1] - 2024-11-19
 
 ### 🐛 Bug Fixes
 
 - *(legacy-init)* Rm Cargo.lock
+
+### ⚙️ Miscellaneous Tasks
+
+- Release version v0.2.1
 
 ## [0.2.0] - 2024-11-19
 
