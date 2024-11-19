@@ -2,10 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2024-11-19
+
+### 🐛 Bug Fixes
+
+- *(legacy-init)* Change Cargo.toml -> Cargo.toml.txt to avoid publishing problems
+- *(legacy-init)* Fix template pathes
+
+### ⚙️ Miscellaneous Tasks
+
+- Add wasm32-unknown-unknown target
+
 ## [0.2.4] - 2024-11-19
 
 ### ⚙️ Miscellaneous Tasks
 
+- Release version v0.2.4
 - Include templates to build
 
 ## [0.2.3] - 2024-11-19
