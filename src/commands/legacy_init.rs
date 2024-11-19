@@ -115,13 +115,12 @@ fn create_directories(output_path: &str) -> Result<()> {
 fn spin_rust() -> Result<()> {
     println!("Creating Rust Project ..");
     const LIB: &str = include_str!("../../templates/rust-template/lib.rs");
-    const CARGO: &str = include_str!("../../templates/rust-template/Cargo.txt");
-    const MAKE_FILE: &str = include_str!("../../templates/rust-template/Makefile");
+    const CARGO: &str = include_str!("../../templates/rust-template/Cargo.toml");
+
     const GIT_IG: &str = include_str!("../../templates/rust-template/gitignore.txt");
 
-    create_file_with_content("src/lib.rs", LIB)?;
+    create_file_with_content("lib.rs", LIB)?;
     create_file_with_content("Cargo.toml", CARGO)?;
-    create_file_with_content("Makefile", MAKE_FILE)?;
     create_file_with_content(".gitignore", GIT_IG)?;
 
     println!("Rust template created sucessfully");
