@@ -21,7 +21,7 @@ pub trait RouterAPI {
 impl<SDK: SharedAPI> RouterAPI for ROUTER<SDK> {
     #[function_id("greeting()")]
     fn greeting(&self) -> String {
-        "Hello,".to_string()
+        "Hello".to_string()
     }
 }
 

@@ -5,10 +5,11 @@ import "./IFluentGreeting.sol";
 
 contract GreetingWithWorld {
     IFluentGreeting public fluentGreetingContract;
-    uint256 public counter;
 
     constructor(address _fluentGreetingContractAddress) {
-        fluentGreetingContract = IFluentGreeting(_fluentGreetingContractAddress);
+        fluentGreetingContract = IFluentGreeting(
+            _fluentGreetingContractAddress
+        );
     }
 
     function getGreeting() external view returns (string memory) {

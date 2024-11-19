@@ -66,10 +66,10 @@ fn spin_js(use_erc20: bool) -> Result<()> {
     } else {
         const VYPER_SC: &str = include_str!("../../templates/contract-templates/hello-v.vy");
         const SOL_SC: &str = include_str!("../../templates/contract-templates/hello.sol");
-        const SOL_SCRIPT: &str = include_str!("../../templates/js-template/deploy.js");
-        const VYPER_SCRIPT: &str = include_str!("../../templates/js-template/deployvyper.js");
-        create_file_with_content("scripts/deploy.js", SOL_SCRIPT)?;
-        create_file_with_content("scripts/deployvyper.js", VYPER_SCRIPT)?;
+        const SOL_SCRIPT: &str = include_str!("../../templates/js-template/deploy-solidity.js");
+        const VYPER_SCRIPT: &str = include_str!("../../templates/js-template/deploy-vyper.js");
+        create_file_with_content("scripts/deploy-solidity.js", SOL_SCRIPT)?;
+        create_file_with_content("scripts/deploy-vyper.js", VYPER_SCRIPT)?;
         create_file_with_content("contracts/hello-v.vy", VYPER_SC)?;
         create_file_with_content("contracts/hello.sol", SOL_SC)?;
     }
@@ -115,20 +115,14 @@ fn create_directories(output_path: &str) -> Result<()> {
 fn spin_rust() -> Result<()> {
     println!("Creating Rust Project ..");
     const LIB: &str = include_str!("../../templates/rust-template/lib.rs");
-    const CARGO: &str = include_str!("../../templates/rust-template/Cargo.txt");
-    const MAKE_FILE: &str = include_str!("../../templates/rust-template/Makefile");
-    const GIT_IG: &str = include_str!("../../templates/rust-template/gitignore.txt");
-    const DEPLOYOR: &str = include_str!("../../templates/deployer/deployer.js");
-    const PACKAGE_J: &str = include_str!("../../templates/deployer/package.json");
-    //const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/hellorust/Cargo.lock");
+    const CARGO: &str = include_str!("../../templates/rust-template/Cargo.toml");
 
-    create_file_with_content("src/lib.rs", LIB)?;
+    const GIT_IG: &str = include_str!("../../templates/rust-template/gitignore.txt");
+
+    create_file_with_content("lib.rs", LIB)?;
     create_file_with_content("Cargo.toml", CARGO)?;
-    create_file_with_content("Makefile", MAKE_FILE)?;
     create_file_with_content(".gitignore", GIT_IG)?;
-    create_file_with_content("deployer/deployer.js", DEPLOYOR)?;
-    create_file_with_content("deployer/package.json", PACKAGE_J)?;
-    //create_file_with_content("Cargo.lock", CARGO_LOCK)?;
+
     println!("Rust template created sucessfully");
 
     Ok(())
@@ -177,21 +171,21 @@ fn spin_blended_app() -> Result<()> {
     const DEPLOYMENT_SCRIPT: &str =
         include_str!("../../templates/blendedapp/deploy/00_deploy_contracts.ts");
     const GREETING_TASK: &str = include_str!("../../templates/blendedapp/tasks/greeting.ts");
-    const MAKE_FILE: &str = include_str!("../../templates/blendedapp/hellorust/Makefile.txt");
-    const LIB: &str = include_str!("../../templates/blendedapp/hellorust/lib.rs");
-    const CARGO_TOML: &str = include_str!("../../templates/blendedapp/hellorust/cargo.txt");
+    const LIB: &str = include_str!("../../templates/blendedapp/greeting/src/lib.rs");
+    const CARGO_TOML: &str = include_str!("../../templates/blendedapp/greeting/Cargo.toml");
     const GREETING_SC: &str =
         include_str!("../../templates/blendedapp/contracts/GreetingWithWorld.sol");
     const INTERFACE_SC: &str =
         include_str!("../../templates/blendedapp/contracts/IFluentGreeting.sol");
     const README: &str = include_str!("../../templates/blendedapp/README.md");
     const GIT_IGNORE: &str = include_str!("../../templates/blendedapp/.gitignore");
-    const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/hellorust/Cargo.lock");
+    const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/greeting/Cargo.lock");
+    const ENV: &str = include_str!("../../templates/blendedapp/.env");
     // Create necessary directories and write files
     create_directories("contracts")?;
     create_directories("tasks")?;
     create_directories("deploy")?;
-    create_directories("hellorust")?;
+    create_directories("greeting")?;
 
     create_file_with_content("hardhat.config.ts", HARDHAT_CONFIG)?;
     create_file_with_content("contracts/GreetingWithWorld.sol", GREETING_SC)?;
@@ -200,12 +194,13 @@ fn spin_blended_app() -> Result<()> {
     create_file_with_content("tsconfig.json", TS_CONFIG)?;
     create_file_with_content("tasks/greeting.ts", GREETING_TASK)?;
     create_file_with_content("deploy/00_deploy_contracts.ts", DEPLOYMENT_SCRIPT)?;
-    create_file_with_content("hellorust/Makefile", MAKE_FILE)?;
-    create_file_with_content("hellorust/Cargo.toml", CARGO_TOML)?;
-    create_file_with_content("hellorust/lib.rs", LIB)?;
+
+    create_file_with_content("greeting/Cargo.toml", CARGO_TOML)?;
+    create_file_with_content("greeting/src/lib.rs", LIB)?;
     create_file_with_content("README.md", README)?;
+    create_file_with_content(".env", ENV)?;
     create_file_with_content(".gitignore", GIT_IGNORE)?;
-    create_file_with_content("hellorust/Cargo.lock", CARGO_LOCK)?;
+    create_file_with_content("greeting/Cargo.lock", CARGO_LOCK)?;
     println!("Blended app created successfully!");
 
     Ok(())

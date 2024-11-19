@@ -82,34 +82,4 @@ You can start your project with any of the following setups:
 
 ## Contributing
 
-**GBLEND** is an open-source project, and community contributions are vital to its growth and improvement. Whether it's fixing bugs, adding features, or improving documentation, all contributions are welcome. If you're interested in helping out, please take a look at our issues tracker and read our contribution guidelines before submitting a pull request.
-
-Feel free to fork the repository, make your changes, and submit a pull request for review. Let's build something great together!
-
-We use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages:
-
-```bash
-# Format
-<type>[optional scope]: <description>
-
-# Types
-feat:     New features
-fix:      Bug fixes
-docs:     Documentation only changes
-style:    Code style changes (formatting, etc)
-refactor: Code changes that neither fix bugs nor add features
-test:     Adding or modifying tests
-chore:    Changes to build process or auxiliary tools
-```
-
-### Workflow
-
-1. Fork and clone the repository
-2. Create a new branch: `git checkout -b feat/your-feature`
-3. Make changes following conventional commits
-4. Push changes: `git push origin feat/your-feature`
-5. Open a Pull Request
-
-## License
-
-MIT License - see the [LICENSE](LICENSE) file for details.
+**GBLEND** is an open-source project, and community contributions are vital to its growth and improvement. Whether it's fixing bugs, adding features, or improving documentation, all contributions are welcome. If you're interested in helping out, please take a look at our issues tracker and read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.

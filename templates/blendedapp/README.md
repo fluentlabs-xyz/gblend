@@ -1,26 +1,5 @@
-# Sample Hardhat Project
+# Blended APP
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+This is a demo app that shows how we can interact from solidity with rust contracts using Fluent.
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
-```
-# ComposableHelloWorld
-
-In order to use this, create a .env DEPLOYER_PRIVATE_KEY = "Your private key here"
-
-```shell
-pnpm install
-cd hellorust
-make
-cd ..
-pnpm compile 
-pnpm deploy (npx hardhat compile)
-```
-
+For more details you can check the [Building a Blended App](https://docs.fluentlabs.xyz/learn/developer-guides/building-a-blended-app) tutorial.

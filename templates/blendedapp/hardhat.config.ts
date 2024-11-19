@@ -1,24 +1,19 @@
 import { HardhatUserConfig } from "hardhat/types";
 import "hardhat-deploy";
 import "@nomicfoundation/hardhat-toolbox";
-import "./tasks/greeting"
+import "./tasks/greeting";
 
 require("dotenv").config();
 
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "";
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "localhost",
+  defaultNetwork: "dev",
   networks: {
-    localhost: {
-      url: "https://rpc.dev.thefluent.xyz/",
-      accounts: [DEPLOYER_PRIVATE_KEY],
-    },
     dev: {
-      url: "https://rpc.dev.thefluent.xyz/",
-    },
-    hardhat: {
-      chainId: 1337,
+      url: "https://rpc.dev.gblend.xyz/",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      chainId: 20993,
     },
   },
   solidity: {
