@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 name = "gblend"
 repository = "https://github.com/fluentlabs-xyz/gblend"
-version = "0.2.2"
+version = "0.2.3"
 
 [dependencies]
 anyhow = "1.0.86"
