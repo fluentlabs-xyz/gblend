@@ -150,7 +150,7 @@ fn spin_rust() -> Result<()> {
     ));
     const CARGO: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/templates/rust-template/Cargo.toml"
+        "/templates/rust-template/Cargo.toml.txt"
     ));
 
     const GIT_IG: &str = include_str!(concat!(
@@ -263,7 +263,7 @@ fn spin_blended_app() -> Result<()> {
     ));
     const CARGO_TOML: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/templates/blendedapp/greeting/Cargo.toml"
+        "/templates/blendedapp/greeting/Cargo.toml.txt"
     ));
 
     const GREETING_SC: &str = include_str!(concat!(
