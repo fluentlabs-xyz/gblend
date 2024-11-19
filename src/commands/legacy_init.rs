@@ -54,28 +54,58 @@ pub async fn legacy_init() -> Result<()> {
 fn spin_js(use_erc20: bool) -> Result<()> {
     if use_erc20 {
         //Contracts
-        const ERC20: &str = include_str!("../../templates/contract-templates/erc20per.vy");
-        const ERC20SOL: &str = include_str!("../../templates/contract-templates/erc20.sol");
+        const ERC20: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/erc20per.vy"
+        ));
+        const ERC20SOL: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/erc20.sol"
+        ));
         //Deploy files
-        const DEPLOY_ERC20: &str = include_str!("../../templates/js-template/deployerc20.js");
-        const DEPLOY_VYPER: &str = include_str!("../../templates/js-template/deployvy20.js");
+        const DEPLOY_ERC20: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/js-template/deployerc20.js"
+        ));
+        const DEPLOY_VYPER: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/js-template/deployvy20.js"
+        ));
         create_file_with_content("contracts/erc20.sol", ERC20SOL)?;
         create_file_with_content("contracts/erc20per.vy", ERC20)?;
         create_file_with_content("scripts/deployerc20.js", DEPLOY_ERC20)?;
         create_file_with_content("scripts/deployvy20.js", DEPLOY_VYPER)?;
     } else {
-        const VYPER_SC: &str = include_str!("../../templates/contract-templates/hello-v.vy");
-        const SOL_SC: &str = include_str!("../../templates/contract-templates/hello.sol");
-        const SOL_SCRIPT: &str = include_str!("../../templates/js-template/deploy-solidity.js");
-        const VYPER_SCRIPT: &str = include_str!("../../templates/js-template/deploy-vyper.js");
+        const VYPER_SC: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/hello-v.vy"
+        ));
+        const SOL_SC: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/hello.sol"
+        ));
+        const SOL_SCRIPT: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/js-template/deploy-solidity.js"
+        ));
+        const VYPER_SCRIPT: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/js-template/deploy-vyper.js"
+        ));
         create_file_with_content("scripts/deploy-solidity.js", SOL_SCRIPT)?;
         create_file_with_content("scripts/deploy-vyper.js", VYPER_SCRIPT)?;
         create_file_with_content("contracts/hello-v.vy", VYPER_SC)?;
         create_file_with_content("contracts/hello.sol", SOL_SC)?;
     }
 
-    const HARDHAT_CONFIG: &str = include_str!("../../templates/js-template/hardhat.config.js");
-    const PACKAGE_JSON: &str = include_str!("../../templates/js-template/package.json");
+    const HARDHAT_CONFIG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/js-template/hardhat.config.js"
+    ));
+    const PACKAGE_JSON: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/js-template/package.json"
+    ));
     create_file_with_content("hardhat.config.js", HARDHAT_CONFIG)?;
     create_file_with_content("package.json", PACKAGE_JSON)?;
 
@@ -114,10 +144,19 @@ fn create_directories(output_path: &str) -> Result<()> {
 
 fn spin_rust() -> Result<()> {
     println!("Creating Rust Project ..");
-    const LIB: &str = include_str!("../../templates/rust-template/lib.rs");
-    const CARGO: &str = include_str!("../../templates/rust-template/Cargo.toml");
+    const LIB: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/rust-template/lib.rs"
+    ));
+    const CARGO: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/rust-template/Cargo.toml"
+    ));
 
-    const GIT_IG: &str = include_str!("../../templates/rust-template/gitignore.txt");
+    const GIT_IG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/rust-template/gitignore.txt"
+    ));
 
     create_file_with_content("lib.rs", LIB)?;
     create_file_with_content("Cargo.toml", CARGO)?;
@@ -131,20 +170,44 @@ fn spin_rust() -> Result<()> {
 fn spin_ts(use_erc20: bool) -> Result<()> {
     println!("Creating Typescript Project ..");
     if use_erc20 {
-        const ERC20: &str = include_str!("../../templates/contract-templates/erc20per.vy");
-        const ERC20SOL: &str = include_str!("../../templates/contract-templates/erc20.sol");
+        const ERC20: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/erc20per.vy"
+        ));
+        const ERC20SOL: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/erc20.sol"
+        ));
         //Deploy files
-        const DEPLOY_ERC20: &str = include_str!("../../templates/ts-template/deployerc20.ts");
-        const DEPLOY_VYPER: &str = include_str!("../../templates/ts-template/deploy20vyper.ts");
+        const DEPLOY_ERC20: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/ts-template/deployerc20.ts"
+        ));
+        const DEPLOY_VYPER: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/ts-template/deploy20vyper.ts"
+        ));
         create_file_with_content("contracts/erc20.sol", ERC20SOL)?;
         create_file_with_content("contracts/erc20per.vy", ERC20)?;
         create_file_with_content("scripts/deployerc20.ts", DEPLOY_ERC20)?;
         create_file_with_content("scripts/deployvy20.ts", DEPLOY_VYPER)?;
     } else {
-        const VYPER_SC: &str = include_str!("../../templates/contract-templates/hello-v.vy");
-        const SOL_SC: &str = include_str!("../../templates/contract-templates/hello.sol");
-        const SOL_SCRIPT: &str = include_str!("../../templates/ts-template/deploy.ts");
-        const VYPER_SCRIPT: &str = include_str!("../../templates/ts-template/deployvyper.ts");
+        const VYPER_SC: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/hello-v.vy"
+        ));
+        const SOL_SC: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/contract-templates/hello.sol"
+        ));
+        const SOL_SCRIPT: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/ts-template/deploy.ts"
+        ));
+        const VYPER_SCRIPT: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/templates/ts-template/deployvyper.ts"
+        ));
         create_file_with_content("contracts/hello.sol", SOL_SC)?;
         create_file_with_content("contracts/hello-v.vy", VYPER_SC)?;
         create_file_with_content("scripts/deploy.ts", SOL_SCRIPT)?;
@@ -152,9 +215,18 @@ fn spin_ts(use_erc20: bool) -> Result<()> {
     }
     // Base file for typescript project
 
-    const HARDHAT_CONFIG: &str = include_str!("../../templates/ts-template/hardhat.config.ts");
-    const PACKAGE_JSON: &str = include_str!("../../templates/ts-template/package.json");
-    const TS_CONFIG: &str = include_str!("../../templates/ts-template/tsconfig.json");
+    const HARDHAT_CONFIG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/ts-template/hardhat.config.ts"
+    ));
+    const PACKAGE_JSON: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/ts-template/package.json"
+    ));
+    const TS_CONFIG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/ts-template/tsconfig.json"
+    ));
     create_file_with_content("hardhat.config.ts", HARDHAT_CONFIG)?;
     create_file_with_content("package.json", PACKAGE_JSON)?;
     create_file_with_content("tsconfig.json", TS_CONFIG)?;
@@ -165,22 +237,56 @@ fn spin_blended_app() -> Result<()> {
     println!("Creating blended app ...");
 
     // Embed the files in the binary using `include_str!`
-    const HARDHAT_CONFIG: &str = include_str!("../../templates/blendedapp/hardhat.config.ts");
-    const PACKAGE_JSON: &str = include_str!("../../templates/blendedapp/package.json");
-    const TS_CONFIG: &str = include_str!("../../templates/blendedapp/tsconfig.json");
-    const DEPLOYMENT_SCRIPT: &str =
-        include_str!("../../templates/blendedapp/deploy/00_deploy_contracts.ts");
-    const GREETING_TASK: &str = include_str!("../../templates/blendedapp/tasks/greeting.ts");
-    const LIB: &str = include_str!("../../templates/blendedapp/greeting/src/lib.rs");
-    const CARGO_TOML: &str = include_str!("../../templates/blendedapp/greeting/Cargo.toml");
-    const GREETING_SC: &str =
-        include_str!("../../templates/blendedapp/contracts/GreetingWithWorld.sol");
-    const INTERFACE_SC: &str =
-        include_str!("../../templates/blendedapp/contracts/IFluentGreeting.sol");
-    const README: &str = include_str!("../../templates/blendedapp/README.md");
-    const GIT_IGNORE: &str = include_str!("../../templates/blendedapp/.gitignore");
+    const HARDHAT_CONFIG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/hardhat.config.ts"
+    ));
+    const PACKAGE_JSON: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/package.json"
+    ));
+    const TS_CONFIG: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/tsconfig.json"
+    ));
+    const DEPLOYMENT_SCRIPT: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/deploy/00_deploy_contracts.ts"
+    ));
+    const GREETING_TASK: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/tasks/greeting.ts"
+    ));
+    const LIB: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/greeting/src/lib.rs"
+    ));
+    const CARGO_TOML: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/greeting/Cargo.toml"
+    ));
 
-    const ENV: &str = include_str!("../../templates/blendedapp/.env");
+    const GREETING_SC: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/contracts/GreetingWithWorld.sol"
+    ));
+    const INTERFACE_SC: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/contracts/IFluentGreeting.sol"
+    ));
+    const README: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/README.md"
+    ));
+    const GIT_IGNORE: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/.gitignore"
+    ));
+
+    const ENV: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/.env"
+    ));
     // Create necessary directories and write files
     create_directories("contracts")?;
     create_directories("tasks")?;
