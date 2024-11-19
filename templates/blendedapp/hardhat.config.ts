@@ -1,7 +1,7 @@
 import { HardhatUserConfig } from "hardhat/types";
 import "hardhat-deploy";
 import "@nomicfoundation/hardhat-toolbox";
-import "./tasks/greeting"
+import "./tasks/greeting";
 
 require("dotenv").config();
 
@@ -11,11 +11,11 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     localhost: {
-      url: "https://rpc.dev.thefluent.xyz/",
+      url: "https://rpc.dev.gblend.xyz/",
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
     dev: {
-      url: "https://rpc.dev.thefluent.xyz/",
+      url: "https://rpc.dev.gblend.xyz/",
     },
     hardhat: {
       chainId: 1337,

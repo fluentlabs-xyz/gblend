@@ -66,10 +66,10 @@ fn spin_js(use_erc20: bool) -> Result<()> {
     } else {
         const VYPER_SC: &str = include_str!("../../templates/contract-templates/hello-v.vy");
         const SOL_SC: &str = include_str!("../../templates/contract-templates/hello.sol");
-        const SOL_SCRIPT: &str = include_str!("../../templates/js-template/deploy.js");
-        const VYPER_SCRIPT: &str = include_str!("../../templates/js-template/deployvyper.js");
-        create_file_with_content("scripts/deploy.js", SOL_SCRIPT)?;
-        create_file_with_content("scripts/deployvyper.js", VYPER_SCRIPT)?;
+        const SOL_SCRIPT: &str = include_str!("../../templates/js-template/deploy-solidity.js");
+        const VYPER_SCRIPT: &str = include_str!("../../templates/js-template/deploy-vyper.js");
+        create_file_with_content("scripts/deploy-solidity.js", SOL_SCRIPT)?;
+        create_file_with_content("scripts/deploy-vyper.js", VYPER_SCRIPT)?;
         create_file_with_content("contracts/hello-v.vy", VYPER_SC)?;
         create_file_with_content("contracts/hello.sol", SOL_SC)?;
     }
@@ -118,17 +118,12 @@ fn spin_rust() -> Result<()> {
     const CARGO: &str = include_str!("../../templates/rust-template/Cargo.txt");
     const MAKE_FILE: &str = include_str!("../../templates/rust-template/Makefile");
     const GIT_IG: &str = include_str!("../../templates/rust-template/gitignore.txt");
-    const DEPLOYOR: &str = include_str!("../../templates/deployer/deployer.js");
-    const PACKAGE_J: &str = include_str!("../../templates/deployer/package.json");
-    //const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/hellorust/Cargo.lock");
 
     create_file_with_content("src/lib.rs", LIB)?;
     create_file_with_content("Cargo.toml", CARGO)?;
     create_file_with_content("Makefile", MAKE_FILE)?;
     create_file_with_content(".gitignore", GIT_IG)?;
-    create_file_with_content("deployer/deployer.js", DEPLOYOR)?;
-    create_file_with_content("deployer/package.json", PACKAGE_J)?;
-    //create_file_with_content("Cargo.lock", CARGO_LOCK)?;
+
     println!("Rust template created sucessfully");
 
     Ok(())
