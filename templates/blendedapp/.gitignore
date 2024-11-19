@@ -20,5 +20,4 @@ ignition/deployments/chain-31337
 package-lock.json
 pnpm-lock.yaml
 
-/hello_rust/Cargo.lock
-/hello_rust/target
+greeting/target

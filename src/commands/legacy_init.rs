@@ -171,21 +171,21 @@ fn spin_blended_app() -> Result<()> {
     const DEPLOYMENT_SCRIPT: &str =
         include_str!("../../templates/blendedapp/deploy/00_deploy_contracts.ts");
     const GREETING_TASK: &str = include_str!("../../templates/blendedapp/tasks/greeting.ts");
-    const MAKE_FILE: &str = include_str!("../../templates/blendedapp/hellorust/Makefile.txt");
-    const LIB: &str = include_str!("../../templates/blendedapp/hellorust/lib.rs");
-    const CARGO_TOML: &str = include_str!("../../templates/blendedapp/hellorust/cargo.txt");
+    const LIB: &str = include_str!("../../templates/blendedapp/greeting/src/lib.rs");
+    const CARGO_TOML: &str = include_str!("../../templates/blendedapp/greeting/Cargo.toml");
     const GREETING_SC: &str =
         include_str!("../../templates/blendedapp/contracts/GreetingWithWorld.sol");
     const INTERFACE_SC: &str =
         include_str!("../../templates/blendedapp/contracts/IFluentGreeting.sol");
     const README: &str = include_str!("../../templates/blendedapp/README.md");
     const GIT_IGNORE: &str = include_str!("../../templates/blendedapp/.gitignore");
-    const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/hellorust/Cargo.lock");
+    const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/greeting/Cargo.lock");
+    const ENV: &str = include_str!("../../templates/blendedapp/.env");
     // Create necessary directories and write files
     create_directories("contracts")?;
     create_directories("tasks")?;
     create_directories("deploy")?;
-    create_directories("hellorust")?;
+    create_directories("greeting")?;
 
     create_file_with_content("hardhat.config.ts", HARDHAT_CONFIG)?;
     create_file_with_content("contracts/GreetingWithWorld.sol", GREETING_SC)?;
@@ -194,12 +194,13 @@ fn spin_blended_app() -> Result<()> {
     create_file_with_content("tsconfig.json", TS_CONFIG)?;
     create_file_with_content("tasks/greeting.ts", GREETING_TASK)?;
     create_file_with_content("deploy/00_deploy_contracts.ts", DEPLOYMENT_SCRIPT)?;
-    create_file_with_content("hellorust/Makefile", MAKE_FILE)?;
-    create_file_with_content("hellorust/Cargo.toml", CARGO_TOML)?;
-    create_file_with_content("hellorust/lib.rs", LIB)?;
+
+    create_file_with_content("greeting/Cargo.toml", CARGO_TOML)?;
+    create_file_with_content("greeting/src/lib.rs", LIB)?;
     create_file_with_content("README.md", README)?;
+    create_file_with_content(".env", ENV)?;
     create_file_with_content(".gitignore", GIT_IGNORE)?;
-    create_file_with_content("hellorust/Cargo.lock", CARGO_LOCK)?;
+    create_file_with_content("greeting/Cargo.lock", CARGO_LOCK)?;
     println!("Blended app created successfully!");
 
     Ok(())

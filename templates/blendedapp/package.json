@@ -1,19 +1,13 @@
 {
-  "name": "chess-puzzle",
+  "name": "blendedapp",
   "version": "1.0.0",
-  "description": "A chess puzzle smart contract project",
+  "description": "Blended Hello, World",
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat deploy"
-  },
-  "keywords": [
-    "chess",
-    "puzzle",
-    "smart contract"
-  ],
-  "author": "d1r1",
-  "license": "ISC",
+  }
+  ,
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
