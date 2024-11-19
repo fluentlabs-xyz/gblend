@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2024-11-19
+
+### 🐛 Bug Fixes
+
+- *(legacy-init)* Fix greeting task template
+
 ## [0.2.5] - 2024-11-19
 
 ### 🐛 Bug Fixes
@@ -11,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
+- Release version v0.2.5
 - Add wasm32-unknown-unknown target
 
 ## [0.2.4] - 2024-11-19
