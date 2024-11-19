@@ -202,11 +202,11 @@ fn spin_ts(use_erc20: bool) -> Result<()> {
         ));
         const SOL_SCRIPT: &str = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/templates/ts-template/deploy.ts"
+            "/templates/ts-template/deploy-solidity.ts"
         ));
         const VYPER_SCRIPT: &str = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/templates/ts-template/deployvyper.ts"
+            "/templates/ts-template/deploy-vyper.ts"
         ));
         create_file_with_content("contracts/hello.sol", SOL_SC)?;
         create_file_with_content("contracts/hello-v.vy", VYPER_SC)?;

@@ -2,18 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7] - 2024-11-19
+
+### 🐛 Bug Fixes
+
+- *(ts-template)* Small fixes to deploy scripts
+
 ## [0.2.6] - 2024-11-19
 
 ### 🐛 Bug Fixes
 
-- *(legacy-init)* Fix greeting task template
+- *(legacy-init)* Fix greeting task in template
+
+### ⚙️ Miscellaneous Tasks
+
+- Release version v0.2.6
 
 ## [0.2.5] - 2024-11-19
 
 ### 🐛 Bug Fixes
 
 - *(legacy-init)* Change Cargo.toml -> Cargo.toml.txt to avoid publishing problems
-- *(legacy-init)* Fix template pathes
+- *(legacy-init)* Fix template paths
 
 ### ⚙️ Miscellaneous Tasks
 

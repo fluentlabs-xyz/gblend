@@ -75,7 +75,6 @@ fn test_init_with_template() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-#[ignore]
 fn test_init_fails_with_invalid_template() -> Result<(), Box<dyn std::error::Error>> {
     let project = TestProject::new()?;
 
