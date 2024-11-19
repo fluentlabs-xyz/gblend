@@ -15,5 +15,8 @@ task(
       contract
     );
     const greeting = await GreetingWithWorld.getGreeting();
-    console.log("Greeting:", greeting);
+    // Convert the BigInt to a string for display
+    console.log("Blended greeting :) :", greeting.toString());
+
+    await GreetingWithWorld.updateCounter();
   });
