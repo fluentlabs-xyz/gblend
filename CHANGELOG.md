@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2024-11-19
+
+### 🐛 Bug Fixes
+
+- *(legacy-init)* Rm Cargo.lock
+
 ## [0.2.0] - 2024-11-19
 
 ### 🚀 Features
@@ -26,6 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
+- Release version v0.2.0
 - Merge main to keep branch up-to-date
 - Add cliff.toml for changelog generation
 - Add publish action
