@@ -179,7 +179,7 @@ fn spin_blended_app() -> Result<()> {
         include_str!("../../templates/blendedapp/contracts/IFluentGreeting.sol");
     const README: &str = include_str!("../../templates/blendedapp/README.md");
     const GIT_IGNORE: &str = include_str!("../../templates/blendedapp/.gitignore");
-    const CARGO_LOCK: &str = include_str!("../../templates/blendedapp/greeting/Cargo.lock");
+
     const ENV: &str = include_str!("../../templates/blendedapp/.env");
     // Create necessary directories and write files
     create_directories("contracts")?;
@@ -200,7 +200,7 @@ fn spin_blended_app() -> Result<()> {
     create_file_with_content("README.md", README)?;
     create_file_with_content(".env", ENV)?;
     create_file_with_content(".gitignore", GIT_IGNORE)?;
-    create_file_with_content("greeting/Cargo.lock", CARGO_LOCK)?;
+
     println!("Blended app created successfully!");
 
     Ok(())
