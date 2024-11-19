@@ -2,26 +2,32 @@ name: Publish Crate
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
       
-      - uses: dtolnay/rust-toolchain@stable 
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
       
-      - uses: Swatinem/rust-cache@v2        
+      - uses: Swatinem/rust-cache@v2
+      
       - name: Lint
         run: |
           cargo fmt -- --check
-          
+      
       - name: Test
-        run: cargo test
-        
+        run: cargo test --all-features
+      
+      - name: Build
+        run: cargo build --release --all-features
+      
       - name: Publish
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish
+        run: cargo publish --allow-dirty
