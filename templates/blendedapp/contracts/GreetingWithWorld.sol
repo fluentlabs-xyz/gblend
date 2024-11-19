@@ -10,15 +10,11 @@ contract GreetingWithWorld {
     constructor(address _fluentGreetingContractAddress) {
         fluentGreetingContract = IFluentGreeting(_fluentGreetingContractAddress);
     }
-    function updateCounter() external {
-        counter++;
-    }
 
-    function getGreeting() external view returns (uint256) {
-        // Call the random function from the fluentGreetingContract
-        uint256 randi = fluentGreetingContract.random();
-        
-        // Return the greeting value
-        return randi;
+    function getGreeting() external view returns (string memory) {
+        string memory greeting = fluentGreetingContract.greeting();
+
+        // Concatenate the returned greeting with " World"
+        return string(abi.encodePacked(greeting, " World"));
     }
 }

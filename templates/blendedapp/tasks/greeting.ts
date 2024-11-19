@@ -15,7 +15,7 @@ task("get-greeting", "Fetches the greeting from the deployed GreetingWithWorld c
 
     const greeting = await GreetingWithWorld.getGreeting();
     // Convert the BigInt to a string for display
-    console.log("Random Number:", greeting.toString());
+    console.log("Blended greeting :) :", greeting.toString());
 
     await GreetingWithWorld.updateCounter();
   });
