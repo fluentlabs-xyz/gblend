@@ -2,10 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2024-11-19
+
+### ⚙️ Miscellaneous Tasks
+
+- Include templates to build
+
+## [0.2.3] - 2024-11-19
+
+### ⚙️ Miscellaneous Tasks
+
+- Release version v0.2.3
+- Rm local tests from publish workflow
+
 ## [0.2.2] - 2024-11-19
 
 ### ⚙️ Miscellaneous Tasks
 
+- Release version v0.2.2
 - Rm clippy from publish action
 
 ## [0.2.1] - 2024-11-19
