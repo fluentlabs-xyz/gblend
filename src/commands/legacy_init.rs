@@ -157,10 +157,20 @@ fn spin_rust() -> Result<()> {
         env!("CARGO_MANIFEST_DIR"),
         "/templates/rust-template/gitignore.txt"
     ));
+    const MAKE: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/rust-template/Makefile"
+    ));
+    const RUST_TOOLCHAIN: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/rust-template/rust-toolchain"
+    ));
 
     create_file_with_content("lib.rs", LIB)?;
     create_file_with_content("Cargo.toml", CARGO)?;
     create_file_with_content(".gitignore", GIT_IG)?;
+    create_file_with_content("Makefile", MAKE)?;
+    create_file_with_content("rust-toolchain", RUST_TOOLCHAIN)?;
 
     println!("Rust template created sucessfully");
 
@@ -265,6 +275,14 @@ fn spin_blended_app() -> Result<()> {
         env!("CARGO_MANIFEST_DIR"),
         "/templates/blendedapp/greeting/Cargo.toml.txt"
     ));
+    const MAKEFILE: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/greeting/Makefile"
+    ));
+    const RUST_TOOLCHAIN: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/templates/blendedapp/greeting/rust-toolchain"
+    ));
 
     const GREETING_SC: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -287,6 +305,7 @@ fn spin_blended_app() -> Result<()> {
         env!("CARGO_MANIFEST_DIR"),
         "/templates/blendedapp/.env"
     ));
+
     // Create necessary directories and write files
     create_directories("contracts")?;
     create_directories("tasks")?;
@@ -302,6 +321,8 @@ fn spin_blended_app() -> Result<()> {
     create_file_with_content("deploy/00_deploy_contracts.ts", DEPLOYMENT_SCRIPT)?;
 
     create_file_with_content("greeting/Cargo.toml", CARGO_TOML)?;
+    create_file_with_content("greeting/Makefile", MAKEFILE)?;
+    create_file_with_content("greeting/rust-toolchain", RUST_TOOLCHAIN)?;
     create_file_with_content("greeting/src/lib.rs", LIB)?;
     create_file_with_content("README.md", README)?;
     create_file_with_content(".env", ENV)?;

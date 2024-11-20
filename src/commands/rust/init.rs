@@ -91,8 +91,15 @@ fn create_default_template(project_path: &PathBuf) -> Result<(), Error> {
         .map_err(|e| Error::InitializationError(format!("Failed to create Cargo.toml: {}", e)))?;
 
     std::fs::write(project_path.join("lib.rs"), BASIC_TEMPLATE_LIB_RS)
-        .map_err(|e| Error::InitializationError(format!("Failed to create lib.rs: {}", e)))?;
 
+    std::fs::write(project_path.join("Makefile"), BASIC_TEMPLATE_MAKEFILE)
+        .map_err(|e| Error::Initialization(format!("Failed to create Makefile: {}", e)))?;
+
+    std::fs::write(
+        project_path.join("rust-toolchain"),
+        BASIC_TEMPLATE_RUST_TOOLCHAIN,
+    )
+    .map_err(|e| Error::Initialization(format!("Failed to create rust-toolchain: {}", e)))?;
     Ok(())
 }
 
