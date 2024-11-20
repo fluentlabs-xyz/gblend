@@ -31,15 +31,21 @@ all: check ## Run all development checks (default)
 
 # Development setup
 .PHONY: setup
-setup: install-tools ## Set up development environment
+setup: install-tools install-wasm-target ## Set up development environment
 	@echo "$(GREEN)Development environment setup complete!$(NC)"
 
-.PHONY: install-tools
+.PHONY: install-tools 
 install-tools: ## Install required development tools
 	@echo "$(YELLOW)Installing required tools...$(NC)"
 	@cargo install cargo-audit || (echo "$(RED)Failed to install cargo-audit$(NC)" && exit 1)
 	@cargo install cargo-edit || (echo "$(RED)Failed to install cargo-edit$(NC)" && exit 1)
 	@cargo install git-cliff || (echo "$(RED)Failed to install git-cliff$(NC)" && exit 1)
+
+.PHONY: install-wasm-target
+install-wasm-target: ## Install wasm32-unknown-unknown target
+	@echo "$(YELLOW)Installing wasm32-unknown-unknown target...$(NC)"
+	@rustup target add wasm32-unknown-unknown || (echo "$(RED)Failed to install wasm32-unknown-unknown target$(NC)" && exit 1)
+
 
 # Development checks
 .PHONY: fmt
