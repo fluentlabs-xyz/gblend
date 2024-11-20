@@ -1,55 +1,47 @@
 # Contributing Guide
 
-Thank you for considering contributing to this project! This guide will help you understand our workflow, coding standards, and release process.
+Thank you for considering contributing to this project! This guide will help you understand our development workflow and standards.
 
-## Ways to Contribute
+## Table of Contents
 
-1. **Opening Issues**
-   - Report bugs with detailed descriptions
-   - Suggest enhancements
-   - Request features
-   - Create detailed issue descriptions using templates
-   - Use issue templates for bugs and features
+- [Contributing Guide](#contributing-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Development Setup](#development-setup)
+    - [Development Commands](#development-commands)
+  - [Development Workflow](#development-workflow)
+    - [1. Creating Issues](#1-creating-issues)
+    - [2. Branch Creation](#2-branch-creation)
+    - [3. Development Process](#3-development-process)
+    - [4. Pull Request Process](#4-pull-request-process)
+  - [Commit Guidelines](#commit-guidelines)
+  - [Release Process](#release-process)
+    - [Version Numbering](#version-numbering)
+    - [Creating a Release](#creating-a-release)
+    - [Managing Published Versions](#managing-published-versions)
+      - [Yanking a Release](#yanking-a-release)
+  - [Getting Help](#getting-help)
 
-2. **Adding Context**
-   - Provide reproduction steps
-   - Share code snippets
-   - Add screenshots
-   - Write use cases
-   - Add examples and scenarios
-   - Link to related issues or PRs
+## Code of Conduct
 
-3. **Resolving Issues**
-   - Fix bugs
-   - Implement features
-   - Improve documentation
-   - Enhance performance
-   - Demonstrate that an issue is not a problem
-   - Open pull requests with fixes
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/). We expect all contributors to be respectful and inclusive in all interactions. Key points:
 
-4. **Reviewing Pull Requests**
-   - Review code changes
-   - Test proposed features
-   - Suggest improvements
-   - Share domain expertise
-   - Help maintain code quality
-   - Participate in technical discussions
+- Use welcoming and inclusive language
+- Respect different viewpoints and experiences
+- Accept constructive criticism gracefully
+- Focus on what's best for the community
 
-## Development Setup
+## Getting Started
 
-We use Make to automate development tasks. Start by setting up your environment:
+### Prerequisites
 
-```bash
-make setup
-```
+- Rust toolchain
+- Git
+- Make
 
-This installs required tools:
-
-- `cargo-audit`: Security vulnerability scanning
-- `cargo-edit`: Dependency management
-- `git-cliff`: Changelog generation
-
-## Development Workflow
+### Development Setup
 
 1. **Fork and Clone**
 
@@ -58,92 +50,145 @@ This installs required tools:
    cd gblend
    ```
 
-2. **Setup Environment**
+2. **Install Tools**
 
    ```bash
    make setup
    ```
 
-3. **Create Feature Branch**
+   This installs:
+   - `cargo-audit`: Security vulnerability scanning
+   - `cargo-edit`: Dependency management
+   - `git-cliff`: Changelog generation
+
+### Development Commands
+
+```bash
+# Essential commands
+make setup          # Install required tools and targets
+make check          # Run all checks (format, lint, test, audit, build)
+make clean          # Clean build artifacts
+
+# Release management
+make release        # Create new release
+make release-undo   # Undo last release preparation
+```
+
+## Development Workflow
+
+### 1. Creating Issues
+
+Before starting work, ensure there's an issue that describes the change you want to make:
+
+- For bugs: Describe the problem and include reproduction steps
+- For features: Explain the proposed functionality and its value
+- For improvements: Outline what you want to improve and why
+
+### 2. Branch Creation
+
+Create a feature branch from `main`:
+
+```bash
+git checkout -b <type>/<description>
+
+# Examples
+git checkout -b feat/user-auth
+git checkout -b fix/memory-leak
+git checkout -b docs/setup-guide
+```
+
+### 3. Development Process
+
+1. **Make Changes**
+   - Write code
+   - Add tests
+   - Update documentation
+
+2. **Local Verification**
 
    ```bash
-   git checkout -b feat/your-feature
-   # or
-   git checkout -b fix/your-bugfix
+   make check    # Run all checks
    ```
 
-4. **Sync with upstream** (if necessary)
+3. **Staying Updated**
 
    ```bash
    git remote add upstream https://github.com/fluentlabs-xyz/gblend.git
    git pull upstream main
    ```
 
-5. **Make Changes**
-   - Write code
-   - Add tests
-   - Update documentation
+### 4. Pull Request Process
 
-6. **Verify Changes**
+1. **Prepare Changes**
+   - Ensure all checks pass
+   - Update documentation if needed
+   - Add tests for new functionality
 
-   ```bash
-   # During development - run individual checks
-   make fmt           # Check formatting
-   make clippy        # Check lints
-   make test          # Run tests
-   make audit         # Check dependencies
-
-   # Before creating PR - run all checks
-   make check         # Full verification
-   ```
-
-7. **Create Pull Request**
-   - Use conventional commits
+2. **Create Pull Request**
+   - Use a clear title following commit conventions
+   - Fill out the PR template
    - Link related issues
-   - Fill PR template
    - Request reviews
 
-## Commit Convention
+3. **Review Process**
+   - Address review feedback
+   - Keep changes focused
+   - Maintain a respectful dialogue
+
+## Commit Guidelines
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>[optional scope]: <description>
 
-Types:
+# Types
 feat:     New features
 fix:      Bug fixes
-docs:     Documentation only
-style:    Style/formatting changes
+docs:     Documentation changes
+style:    Code style/formatting
 refactor: Code refactoring
-test:     Testing changes
+test:     Test updates
 chore:    Maintenance tasks
 
-Examples:
-feat(api): add user authentication
-fix(ui): correct button alignment
-docs: update installation guide
+# Examples
+feat(auth): add user authentication
+fix(mem): correct memory leak
+docs: update setup instructions
 ```
 
 ## Release Process
 
 ### Version Numbering
 
-We follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
+We follow [Semantic Versioning](https://semver.org/):
 
-- MAJOR: Breaking changes
-- MINOR: New features (backwards compatible)
-- PATCH: Bug fixes (backwards compatible)
+- MAJOR (x.0.0): Breaking changes
+- MINOR (0.x.0): New features (backwards compatible)
+- PATCH (0.0.x): Bug fixes (backwards compatible)
 
 ### Creating a Release
 
-1. **Verify Release Readiness**
+Important notes:
+
+- Releases should only be created from the `main` branch
+- Pushing a version tag (e.g., `v1.2.3`) to the `main` branch will automatically trigger the publish workflow
+- Ensure all changes are merged to `main` before creating a release
+
+1. **Switch to main and update**
 
    ```bash
-   make check-release
+   git checkout main
+   git pull origin main
    ```
 
-2. **Prepare Release**
+2. **Verify Changes**
+
+   ```bash
+   make check
+   ```
+
+3. **Create Release**
 
    ```bash
    # Using semantic versioning
@@ -153,128 +198,103 @@ We follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
 
    # Or specific version
    make release VERSION=1.2.3
+   ```
+
+4. **Review and Push**
+
+   ```bash
+   # Review release commit and changelog
+   git show                  # Review version bump and commit message
+   git diff CHANGELOG.md     # Review changelog updates
    
-   # Pre-release versions
-   make release VERSION=1.2.3-alpha.1  # Alpha releases
-   make release VERSION=1.2.3-beta.1   # Beta releases
-   make release VERSION=1.2.3-rc.1     # Release candidates
+   # Make sure changelog entries are:
+   # - Properly categorized (breaking changes, features, fixes)
+   # - Have clear and descriptive messages
+   # - Include relevant issue/PR references
+   
+   # Push commits first
+   git push origin main
+
+   # After CI verification passes, push tag to trigger publication
+   git push origin v1.2.3
    ```
 
-3. **Review Changes**
-   - Check generated changelog
-   - Review version updates
-   - Verify all changes are included
+   > **Important**: Pushing the version tag to `main` will automatically trigger
+   > the publish workflow in GitHub Actions. Make sure all tests pass before
+   > pushing the tag.
 
-4. **Commit Release**
+5. **Verify Publication**
+   - Check GitHub Actions for successful workflow completion
+   - Verify the new version appears on crates.io
+
+6. **Reverting Release Preparation** (if needed before publishing)
 
    ```bash
-   make commit-version
+   make release-undo
    ```
 
-5. **Push Release**
-
-   ```bash
-   git push origin main v1.2.3
-   ```
-
-### Managing the Changelog
-
-```bash
-# Preview upcoming changes
-make changelog-preview
-
-# Update changelog
-make changelog
-```
+   > **Note**: `release-undo` only reverts local release preparation (commit and tag)
+   > and should be used BEFORE pushing changes. It cannot and will not:
+   > - Remove a published version from crates.io
+   > - Delete remote tags
+   > - Revert pushed commits
+   >
+   > For managing already published versions, see the "Managing Published Versions"
+   > section below.
 
 ### Managing Published Versions
 
 #### Yanking a Release
 
+If you need to mark a published version as unsuitable for new users (e.g., due to critical bugs):
+
 ```bash
-# Yank a specific version
+# Yank version
 cargo yank --version 1.2.3
 
-# Undo a yank if needed
+# Undo yank if needed
 cargo yank --version 1.2.3 --undo
 ```
 
 Important notes about yanking:
 
-- Yanking does **not** delete the version
+- Yanking does NOT delete the version from crates.io
 - Existing projects can still use yanked versions
 - New projects cannot add yanked versions as dependencies
-- Use yanking when a version:
-  - Has critical bugs
-  - Contains security vulnerabilities
-  - Has backwards compatibility issues
-  - Was accidentally published
+- Use yanking for versions with:
+  - Critical bugs
+  - Security vulnerabilities
+  - Compatibility issues
+  - Accidental publications
 
-### Troubleshooting Releases
+When yanking a version:
 
-If the automated publishing fails:
-
-1. Check the GitHub Actions logs for errors
-2. Verify the `CARGO_REGISTRY_TOKEN` is properly set
-3. Ensure version hasn't been published before
-4. Fix any issues and delete the tag if needed:
-
-   ```bash
-   git tag -d v1.2.3
-   git push --delete origin v1.2.3
-   ```
-
-After yanking a version:
-
-1. Create a new patch version with fixes
-2. Update security advisory if needed
-3. Notify users through GitHub Issues
-4. Update release notes to indicate the version is yanked
-
-## Development Commands
-
-Run `make help` to see all available commands. Common tasks:
-
-```bash
-# Main commands
-make check           # Run all development checks
-make check-release   # Full release verification
-make clean           # Clean build artifacts
-
-# Individual checks
-make fmt            # Check formatting
-make clippy         # Run linter
-make test          # Run tests
-make audit         # Security audit
-```
-
-## Best Practices
-
-1. **Code Quality**
-   - Write tests for new features
-   - Maintain code coverage
-   - Follow project style guide
-   - Add documentation
-
-2. **Pull Requests**
-   - Keep changes focused
-   - Update tests
-   - Add documentation
-   - Respond to reviews
-
-3. **Communication**
-   - Be respectful
-   - Provide context
-   - Ask questions
-   - Stay engaged
+1. First yank the problematic version
+2. Create a new patch release with fixes
+3. Update security advisory if needed
+4. Notify users through GitHub Issues
+5. Update release notes to indicate the version is yanked and explain why
 
 ## Getting Help
 
-- Issues: Report bugs and request features
-- Pull Requests: Get feedback on changes
+- **Issues**: Best for bug reports and feature requests
+- **Pull Requests**: For code review and feedback
+
+Remember:
+
+- Be clear and specific in questions
+- Provide context and examples
+- Be patient with responses
+- Help others when you can
+
+---
+
+We value all contributions, whether they're:
+
+- Bug reports
+- Feature requests
+- Code contributions
+- Documentation improvements
+- Review comments
 
 Every contributor was once a beginner - don't hesitate to ask for help!
-
-## Code of Conduct
-
-We follow the [Contributor Covenant](https://www.contributor-covenant.org/). Be respectful and inclusive in all interactions.
