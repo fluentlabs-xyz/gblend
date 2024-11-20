@@ -30,7 +30,7 @@ jobs:
       
       - name: Lint
         run: |
-          cargo fmt --locked --check
+          cargo fmt --check
           cargo clippy --all-features --locked -- -D warnings
 
   test:
@@ -45,8 +45,6 @@ jobs:
             ${{ runner.os }}-cargo-
       
       - uses: dtolnay/rust-toolchain@stable
-        with:  
-          targets: wasm32-unknown-unknown
 
       - name: Install wasm32 target
         run: rustup target add wasm32-unknown-unknown
@@ -67,8 +65,6 @@ jobs:
             ${{ runner.os }}-cargo-
       
       - uses: dtolnay/rust-toolchain@stable
-        with:  
-          targets: wasm32-unknown-unknown
       
       - name: Install wasm32 target
         run: rustup target add wasm32-unknown-unknown
