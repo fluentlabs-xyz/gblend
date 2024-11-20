@@ -1,0 +1,8 @@
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+
+  - name: enhancement
+    color: a2eeef
+    description: New feature or improvement
