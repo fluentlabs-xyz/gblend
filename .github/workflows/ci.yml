@@ -14,8 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: dtolnay/rust-toolchain@nightly-2024-07-01
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2024-07-01
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
       
