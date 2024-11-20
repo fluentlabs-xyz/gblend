@@ -37,7 +37,7 @@ Thank you for considering contributing to this project! This guide will help you
 
 ## Development Setup
 
-We use Make to automate development tasks. Start by setting up your environment:
+We use Make to automate development tasks. Start by setting up your dev environment:
 
 ```bash
 make setup
