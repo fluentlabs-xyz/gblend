@@ -55,7 +55,7 @@ fn extract_valid_name(path: &Path) -> Result<String, Error> {
     path.file_name()
         .and_then(|n| n.to_str())
         .map(String::from)
-        .ok_or_else(|| Error::InitializationError("Invalid template name".into()))
+        .ok_or_else(|| Error::Initialization("Invalid template name".into()))
 }
 
 fn find_readme(template_path: &Path) -> Option<String> {
@@ -112,18 +112,17 @@ impl TemplateManager {
         let root_cargo_path = repository.get_root_cargo_path();
 
         if !examples_path.exists() {
-            return Err(Error::InitializationError(format!(
+            return Err(Error::Initialization(format!(
                 "Examples directory not found in repository: {}",
                 examples_path.display()
             )));
         }
 
-        let root_dependencies = std::fs::read_to_string(&root_cargo_path).map_err(|e| {
-            Error::InitializationError(format!("Failed to read root Cargo.toml: {}", e))
-        })?;
+        let root_dependencies = std::fs::read_to_string(&root_cargo_path)
+            .map_err(|e| Error::Initialization(format!("Failed to read root Cargo.toml: {}", e)))?;
 
         let root_doc = root_dependencies.parse::<DocumentMut>().map_err(|e| {
-            Error::InitializationError(format!("Failed to parse root Cargo.toml: {}", e))
+            Error::Initialization(format!("Failed to parse root Cargo.toml: {}", e))
         })?;
 
         let templates = Self::scan_templates(&examples_path)?;
@@ -170,7 +169,7 @@ impl TemplateManager {
 
         // Copy template files
         fs::copy_dir_all(&src, &dst)
-            .map_err(|e| Error::InitializationError(format!("Failed to copy template: {}", e)))?;
+            .map_err(|e| Error::Initialization(format!("Failed to copy template: {}", e)))?;
 
         // Resolve workspace dependencies if they exist
         self.resolve_dependencies(project_path, template.name())?;
@@ -183,9 +182,9 @@ impl TemplateManager {
         let mut templates = HashMap::new();
 
         for entry in std::fs::read_dir(examples_path).map_err(|e| {
-            Error::InitializationError(format!("Failed to read examples directory: {}", e))
+            Error::Initialization(format!("Failed to read examples directory: {}", e))
         })? {
-            let entry = entry.map_err(|e| Error::InitializationError(e.to_string()))?;
+            let entry = entry.map_err(|e| Error::Initialization(e.to_string()))?;
             let path = entry.path();
 
             if path.is_dir() {
@@ -223,10 +222,10 @@ impl TemplateManager {
 
         // Parse the project's Cargo.toml file
         let content = std::fs::read_to_string(&cargo_toml_path)
-            .map_err(|e| Error::InitializationError(format!("Failed to read Cargo.toml: {}", e)))?;
+            .map_err(|e| Error::Initialization(format!("Failed to read Cargo.toml: {}", e)))?;
         let mut doc = content
             .parse::<DocumentMut>()
-            .map_err(|e| Error::InitializationError(format!("Failed to parse TOML: {}", e)))?;
+            .map_err(|e| Error::Initialization(format!("Failed to parse TOML: {}", e)))?;
 
         // Locate dependencies section in the template's Cargo.toml
         let template_deps = match doc.get_mut("dependencies") {
@@ -275,9 +274,8 @@ impl TemplateManager {
         }
 
         // Write updated dependencies back to the template's Cargo.toml
-        std::fs::write(&cargo_toml_path, doc.to_string()).map_err(|e| {
-            Error::InitializationError(format!("Failed to write Cargo.toml: {}", e))
-        })?;
+        std::fs::write(&cargo_toml_path, doc.to_string())
+            .map_err(|e| Error::Initialization(format!("Failed to write Cargo.toml: {}", e)))?;
         Ok(())
     }
 }

@@ -63,7 +63,7 @@ pub struct DeployCommand {
 
 impl Cli {
     pub fn new() -> Result<Self, Error> {
-        EnvConfig::load().map_err(|e| Error::ConfigError(e.to_string()))?;
+        EnvConfig::load().map_err(|e| Error::Config(e.to_string()))?;
 
         let cli = Self::parse();
         Ok(cli)
@@ -75,7 +75,7 @@ impl Cli {
                 Some(InitMode::Rust(args)) => RustCommand::init(args),
                 None => legacy_init()
                     .await
-                    .map_err(|e| Error::InitializationError(e.to_string())),
+                    .map_err(|e| Error::Initialization(e.to_string())),
             },
             Commands::Build(cmd) => match &cmd.mode {
                 BuildMode::Rust(args) => RustCommand::build(args),

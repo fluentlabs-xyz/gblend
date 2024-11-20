@@ -10,7 +10,7 @@ fn test_init_default_template() -> Result<(), Box<dyn std::error::Error>> {
 
     Command::cargo_bin("gblend")?
         .args(["init", "rust"])
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .success();
 
@@ -62,7 +62,7 @@ fn test_init_with_template() -> Result<(), Box<dyn std::error::Error>> {
     // Test with greeting template (default)
     Command::cargo_bin("gblend")?
         .args(["init", "rust", "--template", "greeting"])
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .success();
 
@@ -80,7 +80,7 @@ fn test_init_fails_with_invalid_template() -> Result<(), Box<dyn std::error::Err
 
     Command::cargo_bin("gblend")?
         .args(["init", "rust", "--template", "non-existent-template"])
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .failure()
         .stdout(predicate::str::contains(
@@ -100,14 +100,14 @@ fn test_init_creates_valid_project() -> Result<(), Box<dyn std::error::Error>> {
 
     Command::cargo_bin("gblend")?
         .args(["init", "rust"])
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .success();
 
     // Try to build the project
     Command::new("cargo")
         .arg("build")
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .success();
 
@@ -121,7 +121,7 @@ fn test_project_structure_variants() -> Result<(), Box<dyn std::error::Error>> {
     // init with default template
     Command::cargo_bin("gblend")?
         .args(["init", "rust"])
-        .current_dir(&project.path())
+        .current_dir(project.path())
         .assert()
         .success();
 

@@ -13,7 +13,7 @@ impl Repository {
 
         // Create temporary directory
         let temp_dir = TempDir::new().map_err(|e| {
-            Error::InitializationError(format!("Failed to create temporary directory: {}", e))
+            Error::Initialization(format!("Failed to create temporary directory: {}", e))
         })?;
 
         let repo_path = temp_dir.path().to_path_buf();
@@ -30,13 +30,11 @@ impl Repository {
                 repo_path.to_str().unwrap(),
             ])
             .output()
-            .map_err(|e| {
-                Error::InitializationError(format!("Failed to clone repository: {}", e))
-            })?;
+            .map_err(|e| Error::Initialization(format!("Failed to clone repository: {}", e)))?;
 
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(Error::InitializationError(format!(
+            return Err(Error::Initialization(format!(
                 "Failed to clone repository: {}",
                 error
             )));

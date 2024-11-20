@@ -1,6 +1,8 @@
 name: Publish Crate
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
@@ -20,6 +22,7 @@ jobs:
       - name: Lint
         run: |
           cargo fmt -- --check
+          cargo clippy --all-features -- -D warnings
       
       - name: Test
         run: cargo test --all-features

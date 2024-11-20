@@ -5,14 +5,14 @@ pub enum Error {
     /// IO operation error
     Io(io::Error),
     /// Project initialization error
-    InitializationError(String),
-    ConfigError(String),
+    Initialization(String),
+    Config(String),
     /// Build process error
-    BuildError(String),
+    Build(String),
     /// Deployment error
-    DeploymentError(String),
+    Deployment(String),
     /// Network error
-    NetworkError(String),
+    Network(String),
     /// Invalid project structure
     InvalidProject(String),
 }
@@ -23,11 +23,11 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Io(err) => write!(f, "IO error: {}", err),
-            Error::InitializationError(msg) => write!(f, "Initialization error: {}", msg),
-            Error::ConfigError(msg) => write!(f, "Config error: {}", msg),
-            Error::BuildError(msg) => write!(f, "Build error: {}", msg),
-            Error::DeploymentError(msg) => write!(f, "Deployment error: {}", msg),
-            Error::NetworkError(msg) => write!(f, "Network error: {}", msg),
+            Error::Initialization(msg) => write!(f, "Initialization error: {}", msg),
+            Error::Config(msg) => write!(f, "Config error: {}", msg),
+            Error::Build(msg) => write!(f, "Build error: {}", msg),
+            Error::Deployment(msg) => write!(f, "Deployment error: {}", msg),
+            Error::Network(msg) => write!(f, "Network error: {}", msg),
             Error::InvalidProject(msg) => write!(f, "Invalid project: {}", msg),
         }
     }
