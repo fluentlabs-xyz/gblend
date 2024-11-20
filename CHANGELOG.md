@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.8] - 2024-11-20
+
+### 🚀 Features
+
+- *(ci)* Add clippy check to publish workflow and fix lint warnings
+- *(templates)* Add Makefile and rust-toolchain to rust templates
+
+### 📚 Documentation
+
+- Improve contributing guide and makefile documentation
+
+### ⚙️ Miscellaneous Tasks
+
+- *(ci)* Simplify publish workflow
+- *(ci)* Switch to nightly toolchain for advanced formatting
+- *(github)* Streamline repository configuration and ci
+- *(dev)* Implement development automation and update docs
+
 ## [0.2.7] - 2024-11-19
 
 ### 🐛 Bug Fixes
