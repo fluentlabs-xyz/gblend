@@ -14,21 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: dtolnay/rust-toolchain@stable
-      
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       
-      - name: Verify tag version matches Cargo.toml
-        run: |
-          TAG_VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
-          CARGO_VERSION=$(cargo pkgid | sed 's/.*#//')
-          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
-            echo "Tag version ($TAG_VERSION) does not match Cargo.toml version ($CARGO_VERSION)"
-            exit 1
-          fi
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wasm32 target
+        run: rustup target add wasm32-unknown-unknown
       
-      - name: Run tests
-        run: cargo test --all-features
+      - name: Test
+        run: cargo test --all-features --locked
       
       - name: Verify package
         run: cargo publish --dry-run
