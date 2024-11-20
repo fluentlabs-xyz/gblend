@@ -236,7 +236,7 @@ After yanking a version:
 Run `make help` to see all available commands. Common tasks:
 
 ```bash
-# Main commands
+# Main commands list
 make check           # Run all development checks
 make check-release   # Full release verification
 make clean           # Clean build artifacts
