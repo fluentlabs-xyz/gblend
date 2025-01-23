@@ -1,17 +1,20 @@
 use crate::error::Error;
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 pub fn create_dir_if_not_exists(path: &PathBuf, force: bool) -> Result<(), Error> {
     if path.exists() {
         if !force {
-            return Err(Error::InitializationError(format!(
+            return Err(Error::Initialization(format!(
                 "Directory {} already exists. Use --force to overwrite.",
                 path.display()
             )));
         }
     } else {
         fs::create_dir_all(path).map_err(|e| {
-            Error::InitializationError(format!(
+            Error::Initialization(format!(
                 "Failed to create directory {}: {}",
                 path.display(),
                 e
@@ -21,8 +24,8 @@ pub fn create_dir_if_not_exists(path: &PathBuf, force: bool) -> Result<(), Error
     Ok(())
 }
 
-pub fn copy_dir_all(src: &PathBuf, dst: &PathBuf) -> Result<(), std::io::Error> {
-    fs::create_dir_all(&dst)?;
+pub fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), std::io::Error> {
+    fs::create_dir_all(dst)?;
     for entry in fs::read_dir(src)? {
         let entry = entry?;
         let ty = entry.file_type()?;

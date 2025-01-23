@@ -1,257 +1,300 @@
 # Contributing Guide
 
-Thank you for considering contributing to this project! This guide will help you understand our workflow, coding standards, and release process. Whether you're fixing a bug, adding a feature, or improving documentation, your contribution is highly appreciated!
+Thank you for considering contributing to this project! This guide will help you understand our development workflow and standards.
 
-## Ways to contribute
+## Table of Contents
 
-There are fundamentally four ways an individual can contribute:
+- [Contributing Guide](#contributing-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Development Setup](#development-setup)
+    - [Development Commands](#development-commands)
+  - [Development Workflow](#development-workflow)
+    - [1. Creating Issues](#1-creating-issues)
+    - [2. Branch Creation](#2-branch-creation)
+    - [3. Development Process](#3-development-process)
+    - [4. Pull Request Process](#4-pull-request-process)
+  - [Commit Guidelines](#commit-guidelines)
+  - [Release Process](#release-process)
+    - [Version Numbering](#version-numbering)
+    - [Creating a Release](#creating-a-release)
+    - [Managing Published Versions](#managing-published-versions)
+      - [Yanking a Release](#yanking-a-release)
+  - [Getting Help](#getting-help)
 
-1. **By opening an issue:** For example, if you believe that you have uncovered a bug,
-   creating a new issue in the issue tracker is the way to report it.
-2. **By adding context:** Providing additional context to existing issues,
-   such as screenshots and code snippets.
-3. **By resolving issues:** Either demonstrating that the issue is not a problem,
-   or opening a pull request with a fix.
-4. **By reviewing pull requests:** Help review and discuss proposed changes.
+## Code of Conduct
 
-**Anybody can participate in any stage of contribution**. We urge you to participate in the discussion around bugs and participate in reviewing PRs.
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/). We expect all contributors to be respectful and inclusive in all interactions. Key points:
 
-## Development Workflow
+- Use welcoming and inclusive language
+- Respect different viewpoints and experiences
+- Accept constructive criticism gracefully
+- Focus on what's best for the community
 
-1. **Fork and clone the repository**
+## Getting Started
+
+### Prerequisites
+
+- Rust toolchain
+- Git
+- Make
+
+### Development Setup
+
+1. **Fork and Clone**
 
    ```bash
    git clone https://github.com/fluentlabs-xyz/gblend.git
    cd gblend
    ```
 
-2. **Create a new branch**
+2. **Install Tools**
 
    ```bash
-   git checkout -b feat/your-feature
+   make setup
    ```
 
-3. **Sync with the main repository** (if necessary):
+   This installs:
+   - `cargo-audit`: Security vulnerability scanning
+   - `cargo-edit`: Dependency management
+   - `git-cliff`: Changelog generation
+
+### Development Commands
+
+```bash
+# Essential commands
+make setup          # Install required tools and targets
+make check          # Run all checks (format, lint, test, audit, build)
+make clean          # Clean build artifacts
+
+# Release management
+make release        # Create new release
+make release-undo   # Undo last release preparation
+```
+
+## Development Workflow
+
+### 1. Creating Issues
+
+Before starting work, ensure there's an issue that describes the change you want to make:
+
+- For bugs: Describe the problem and include reproduction steps
+- For features: Explain the proposed functionality and its value
+- For improvements: Outline what you want to improve and why
+
+### 2. Branch Creation
+
+Create a feature branch from `main`:
+
+```bash
+git checkout -b <type>/<description>
+
+# Examples
+git checkout -b feat/user-auth
+git checkout -b fix/memory-leak
+git checkout -b docs/setup-guide
+```
+
+### 3. Development Process
+
+1. **Make Changes**
+   - Write code
+   - Add tests
+   - Update documentation
+
+2. **Local Verification**
+
+   ```bash
+   make check    # Run all checks
+   ```
+
+3. **Staying Updated**
 
    ```bash
    git remote add upstream https://github.com/fluentlabs-xyz/gblend.git
    git pull upstream main
    ```
 
-4. **Make changes following the commit convention**
+### 4. Pull Request Process
 
-5. **Test your changes**
+1. **Prepare Changes**
+   - Ensure all checks pass
+   - Update documentation if needed
+   - Add tests for new functionality
 
-   ```bash
-   cargo test
-   cargo fmt -- --check
-   cargo clippy -- -D warnings
-   ```
+2. **Create Pull Request**
+   - Use a clear title following commit conventions
+   - Fill out the PR template
+   - Link related issues
+   - Request reviews
 
-6. **Push changes**
+3. **Review Process**
+   - Address review feedback
+   - Keep changes focused
+   - Maintain a respectful dialogue
 
-   ```bash
-   git push origin feat/your-feature
-   ```
+## Commit Guidelines
 
-7. **Open a Pull Request**
-   - Go to your fork on GitHub
-   - Click "New Pull Request"
-   - Choose the appropriate template:
-     - Use the default template for general changes
-     - Use the feature template for new features
-     - Use the bugfix template for bug fixes
-   - Fill in all required sections of the template
-   - Link any related issues using the `Closes #issue-number` syntax
-   - Request reviews from maintainers
-   - Ensure all checks are passing
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-## Commit Convention
-
-We use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```bash
-# Format
+```
 <type>[optional scope]: <description>
 
 # Types
 feat:     New features
 fix:      Bug fixes
 docs:     Documentation changes
-style:    Code style changes
-refactor: Code changes without features/fixes
-test:     Tests changes
-chore:    Build process changes
+style:    Code style/formatting
+refactor: Code refactoring
+test:     Test updates
+chore:    Maintenance tasks
 
 # Examples
-feat(auth): add OAuth support
-fix(ui): resolve button alignment issue
-docs: update installation guide
-test: add unit tests for auth module
+feat(auth): add user authentication
+fix(mem): correct memory leak
+docs: update setup instructions
 ```
 
 ## Release Process
 
 ### Version Numbering
 
-We follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
+We follow [Semantic Versioning](https://semver.org/):
 
-- MAJOR: Breaking changes
-- MINOR: New features (backwards compatible)
-- PATCH: Bug fixes (backwards compatible)
+- MAJOR (x.0.0): Breaking changes
+- MINOR (0.x.0): New features (backwards compatible)
+- PATCH (0.0.x): Bug fixes (backwards compatible)
 
 ### Creating a Release
 
-1. **Install cargo-edit**
+Important notes:
+
+- Releases should only be created from the `main` branch
+- Pushing a version tag (e.g., `v1.2.3`) to the `main` branch will automatically trigger the publish workflow
+- Ensure all changes are merged to `main` before creating a release
+
+1. **Switch to main and update**
 
    ```bash
-   cargo install cargo-edit
+   git checkout main
+   git pull origin main
    ```
 
-2. **Update version**
-
-   For incremental version updates:
+2. **Verify Changes**
 
    ```bash
-   # For MAJOR version bump (breaking changes)
-   cargo set-version --bump major
-
-   # For MINOR version bump (new features)
-   cargo set-version --bump minor
-
-   # For PATCH version bump (bug fixes, small changes)
-   cargo set-version --bump patch
+   make check
    ```
 
-   For setting a specific version:
+3. **Create Release**
 
    ```bash
-   cargo set-version 1.2.3
+   # Using semantic versioning
+   make release VERSION=major  # Breaking changes
+   make release VERSION=minor  # New features
+   make release VERSION=patch  # Bug fixes
+
+   # Or specific version
+   make release VERSION=1.2.3
    ```
 
-   For pre-release versions:
+4. **Review and Push**
 
    ```bash
-   # For alpha releases
-   cargo set-version 1.2.3-alpha.1
-
-   # For beta releases
-   cargo set-version 1.2.3-beta.1
-
-   # For release candidate versions
-   cargo set-version 1.2.3-rc.1
-   ```
-
-3. **Generate changelog using git-cliff**
-
-   ```bash
-   # Update changelog
-   git cliff --tag v1.2.3 -o CHANGELOG.md
+   # Review release commit and changelog
+   git show                  # Review version bump and commit message
+   git diff CHANGELOG.md     # Review changelog updates
    
-   # Or append unreleased changes
-   git cliff --unreleased --tag v1.2.3 --prepend CHANGELOG.md
-   ```
+   # Make sure changelog entries are:
+   # - Properly categorized (breaking changes, features, fixes)
+   # - Have clear and descriptive messages
+   # - Include relevant issue/PR references
+   
+   # Push commits first
+   git push origin main
 
-4. **Commit version and changelog**
-
-   ```bash
-   git add Cargo.toml CHANGELOG.md
-   git commit -m "chore: release version 1.2.3"
-   ```
-
-5. **Create and push a release tag**
-
-   ```bash
-   git tag -a v1.2.3 -m "Release v1.2.3"
+   # After CI verification passes, push tag to trigger publication
    git push origin v1.2.3
    ```
 
-6. **Automated Publishing**
-   - Pushing the tag `v*.*.*` will automatically trigger the GitHub Action workflow
-   - The workflow will:
-     1. Check code formatting
-     2. Run clippy lints
-     3. Run tests
-     4. Publish to crates.io using the `CARGO_REGISTRY_TOKEN`
+   > **Important**: Pushing the version tag to `main` will automatically trigger
+   > the publish workflow in GitHub Actions. Make sure all tests pass before
+   > pushing the tag.
 
-7. **Create GitHub Release**
-   - Go to Releases page
-   - Click "Draft a new release"
-   - Select the tag
-   - Use git-cliff to generate release notes:
+5. **Verify Publication**
+   - Check GitHub Actions for successful workflow completion
+   - Verify the new version appears on crates.io
 
-     ```bash
-     git cliff --current --strip header
-     ```
+6. **Reverting Release Preparation** (if needed before publishing)
+
+   ```bash
+   make release-undo
+   ```
+
+   > **Note**: `release-undo` only reverts local release preparation (commit and tag)
+   > and should be used BEFORE pushing changes. It cannot and will not:
+   > - Remove a published version from crates.io
+   > - Delete remote tags
+   > - Revert pushed commits
+   >
+   > For managing already published versions, see the "Managing Published Versions"
+   > section below.
 
 ### Managing Published Versions
 
 #### Yanking a Release
 
+If you need to mark a published version as unsuitable for new users (e.g., due to critical bugs):
+
 ```bash
-# Yank a specific version
+# Yank version
 cargo yank --version 1.2.3
 
-# Undo a yank if needed
+# Undo yank if needed
 cargo yank --version 1.2.3 --undo
 ```
 
 Important notes about yanking:
 
-- Yanking does **not** delete the version
+- Yanking does NOT delete the version from crates.io
 - Existing projects can still use yanked versions
 - New projects cannot add yanked versions as dependencies
-- Use yanking when a version:
-  - Has critical bugs
-  - Contains security vulnerabilities
-  - Has backwards compatibility issues
-  - Was accidentally published
+- Use yanking for versions with:
+  - Critical bugs
+  - Security vulnerabilities
+  - Compatibility issues
+  - Accidental publications
 
-### Release Checklist
+When yanking a version:
 
-| Checkpoint                       | Command/Action                        | Status |
-|---------------------------------|--------------------------------------|--------|
-| Install cargo-edit             | `cargo install cargo-edit`           | [ ]    |
-| Version bump                   | `cargo set-version 1.2.3`            | [ ]    |
-| Changelog generated           | `git cliff`                          | [ ]    |
-| Tests passing                   | `cargo test`                         | [ ]    |
-| Formatting checked              | `cargo fmt -- --check`               | [ ]    |
-| Linting checked                 | `cargo clippy -- -D warnings`        | [ ]    |
-| Dependencies reviewed           | Check `Cargo.toml`                   | [ ]    |
-| Breaking changes documented     | Update CHANGELOG.md                  | [ ]    |
-| `CARGO_REGISTRY_TOKEN` present  | Check GitHub Secrets                 | [ ]    |
-
-### Troubleshooting Releases
-
-If the automated publishing fails:
-
-1. Check the GitHub Actions logs for errors
-2. Verify the `CARGO_REGISTRY_TOKEN` is properly set
-3. Ensure version hasn't been published before
-4. Fix any issues and delete the tag if needed:
-
-   ```bash
-   git tag -d v1.2.3
-   git push --delete origin v1.2.3
-   ```
-
-After yanking a version:
-
-1. Create a new patch version with fixes
-2. Update security advisory if needed
-3. Notify users through GitHub Issues
-4. Update release notes to indicate the version is yanked
-
-## Code of Conduct
-
-We follow the [Contributor Covenant](https://www.contributor-covenant.org/). Please be respectful and inclusive while contributing to the project.
+1. First yank the problematic version
+2. Create a new patch release with fixes
+3. Update security advisory if needed
+4. Notify users through GitHub Issues
+5. Update release notes to indicate the version is yanked and explain why
 
 ## Getting Help
 
-If you need help with your contribution:
+- **Issues**: Best for bug reports and feature requests
+- **Pull Requests**: For code review and feedback
 
-- Open a discussion in the GitHub Discussions tab
-- Ask in the project's communication channels
-- Check existing documentation and issues
+Remember:
 
-Remember: every contributor was once a beginner. Don't hesitate to ask for help or clarification.
+- Be clear and specific in questions
+- Provide context and examples
+- Be patient with responses
+- Help others when you can
+
+---
+
+We value all contributions, whether they're:
+
+- Bug reports
+- Feature requests
+- Code contributions
+- Documentation improvements
+- Review comments
+
+Every contributor was once a beginner - don't hesitate to ask for help!

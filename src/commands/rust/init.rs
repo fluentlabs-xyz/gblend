@@ -1,5 +1,10 @@
 use super::{
-    constants::{BASIC_TEMPLATE_CARGO_TOML, BASIC_TEMPLATE_LIB_RS},
+    constants::{
+        BASIC_TEMPLATE_CARGO_TOML,
+        BASIC_TEMPLATE_LIB_RS,
+        BASIC_TEMPLATE_MAKEFILE,
+        BASIC_TEMPLATE_RUST_TOOLCHAIN,
+    },
     template_manager::TemplateManager,
     utils::Tool,
 };
@@ -8,7 +13,10 @@ use crate::{
     utils::fs::{self, create_dir_if_not_exists},
 };
 use clap::Args;
-use std::{path::PathBuf, process::Command};
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 const DEFAULT_TEMPLATE: &str = "greeting";
 
@@ -86,23 +94,31 @@ fn init_project(
     Ok(())
 }
 
-fn create_default_template(project_path: &PathBuf) -> Result<(), Error> {
+fn create_default_template(project_path: &Path) -> Result<(), Error> {
     std::fs::write(project_path.join("Cargo.toml"), BASIC_TEMPLATE_CARGO_TOML)
-        .map_err(|e| Error::InitializationError(format!("Failed to create Cargo.toml: {}", e)))?;
+        .map_err(|e| Error::Initialization(format!("Failed to create Cargo.toml: {}", e)))?;
 
     std::fs::write(project_path.join("lib.rs"), BASIC_TEMPLATE_LIB_RS)
-        .map_err(|e| Error::InitializationError(format!("Failed to create lib.rs: {}", e)))?;
+        .map_err(|e| Error::Initialization(format!("Failed to create lib.rs: {}", e)))?;
 
+    std::fs::write(project_path.join("Makefile"), BASIC_TEMPLATE_MAKEFILE)
+        .map_err(|e| Error::Initialization(format!("Failed to create Makefile: {}", e)))?;
+
+    std::fs::write(
+        project_path.join("rust-toolchain"),
+        BASIC_TEMPLATE_RUST_TOOLCHAIN,
+    )
+    .map_err(|e| Error::Initialization(format!("Failed to create rust-toolchain: {}", e)))?;
     Ok(())
 }
 
 fn create_from_template(
-    project_path: &PathBuf,
+    project_path: &Path,
     args: &InitArgs,
     template_manager: &TemplateManager,
 ) -> Result<(), Error> {
     let template = template_manager.get(&args.template).ok_or_else(|| {
-        Error::InitializationError(format!(
+        Error::Initialization(format!(
             "Template '{}' not found. Use --list to see available templates",
             args.template
         ))
@@ -114,7 +130,7 @@ fn create_from_template(
     Ok(())
 }
 
-fn init_git_repository(project_path: &PathBuf) {
+fn init_git_repository(project_path: &Path) {
     if !project_path.join(".git").exists() {
         println!("🔧 Initializing git repository...");
         let _ = Command::new("git")
@@ -124,7 +140,7 @@ fn init_git_repository(project_path: &PathBuf) {
     }
 }
 
-fn print_next_steps(template_name: &str, project_path: &PathBuf) {
+fn print_next_steps(template_name: &str, project_path: &Path) {
     println!("✅ Project initialized successfully!");
     println!("📂 Project directory: {}", project_path.display());
     println!("📝 Next steps:");
@@ -145,7 +161,7 @@ mod tests {
     #[test]
     fn test_create_default_template() -> Result<(), Box<dyn std::error::Error>> {
         let temp = assert_fs::TempDir::new()?;
-        create_default_template(&temp.path().to_path_buf())?;
+        create_default_template(temp.path())?;
 
         temp.child("Cargo.toml").assert(BASIC_TEMPLATE_CARGO_TOML);
         temp.child("lib.rs").assert(BASIC_TEMPLATE_LIB_RS);

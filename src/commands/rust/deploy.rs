@@ -8,7 +8,12 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::{TransactionReceipt, H256, U64},
 };
-use std::{path::PathBuf, str::FromStr, sync::Arc, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 
 const DEFAULT_GAS_LIMIT: u64 = 30_000_000;
 const DEFAULT_GAS_PRICE: u64 = 0;
@@ -91,16 +96,16 @@ pub(super) async fn execute(args: &DeployArgs) -> Result<(), Error> {
 
 fn validate_wasm_file(wasm_file: &PathBuf) -> Result<(), Error> {
     if !wasm_file.exists() {
-        return Err(Error::DeploymentError(format!(
+        return Err(Error::Deployment(format!(
             "WASM file not found: {}",
             wasm_file.display()
         )));
     }
 
     let wasm_bytes = std::fs::read(wasm_file)
-        .map_err(|e| Error::DeploymentError(format!("Failed to read WASM file: {}", e)))?;
-    if wasm_bytes.len() < 4 || &wasm_bytes[0..4] != &[0x00, 0x61, 0x73, 0x6d] {
-        return Err(Error::DeploymentError(
+        .map_err(|e| Error::Deployment(format!("Failed to read WASM file: {}", e)))?;
+    if wasm_bytes.len() < 4 || wasm_bytes[0..4] != [0x00, 0x61, 0x73, 0x6d] {
+        return Err(Error::Deployment(
             "Invalid WASM file: missing magic number".to_string(),
         ));
     }
@@ -110,13 +115,13 @@ fn validate_wasm_file(wasm_file: &PathBuf) -> Result<(), Error> {
 fn create_wallet(private_key: &str, chain_id: u64) -> Result<LocalWallet, Error> {
     let clean_key = private_key.trim_start_matches("0x");
     if clean_key.len() != 64 {
-        return Err(Error::DeploymentError(
+        return Err(Error::Deployment(
             "Private key must be 64 hex characters.".to_string(),
         ));
     }
 
     LocalWallet::from_str(clean_key)
-        .map_err(|e| Error::DeploymentError(format!("Invalid private key: {}", e)))
+        .map_err(|e| Error::Deployment(format!("Invalid private key: {}", e)))
         .map(|wallet| wallet.with_chain_id(chain_id))
 }
 
@@ -127,10 +132,10 @@ async fn prepare_deploy_transaction(
     gas_price: u64,
 ) -> Result<TransactionRequest, Error> {
     let provider = Provider::<Http>::try_from(&network_config.endpoint)
-        .map_err(|e| Error::NetworkError(format!("Failed to create provider: {}", e)))?;
+        .map_err(|e| Error::Network(format!("Failed to create provider: {}", e)))?;
 
     let wasm_bytes = std::fs::read(wasm_file)
-        .map_err(|e| Error::DeploymentError(format!("Failed to read WASM file: {}", e)))?;
+        .map_err(|e| Error::Deployment(format!("Failed to read WASM file: {}", e)))?;
     println!("📦 WASM file size: {} bytes", wasm_bytes.len());
 
     let gas_price = if gas_price == 0 {
@@ -138,7 +143,7 @@ async fn prepare_deploy_transaction(
         provider
             .get_gas_price()
             .await
-            .map_err(|e| Error::NetworkError(format!("Failed to fetch gas price: {}", e)))?
+            .map_err(|e| Error::Network(format!("Failed to fetch gas price: {}", e)))?
     } else {
         U256::from(gas_price)
     };
@@ -161,23 +166,23 @@ async fn send_tx(
 ) -> Result<TransactionReceipt, Error> {
     let gas_limit = tx.gas;
     let provider = Provider::<Http>::try_from(&network_config.endpoint)
-        .map_err(|e| Error::NetworkError(format!("Failed to create provider: {}", e)))?;
+        .map_err(|e| Error::Network(format!("Failed to create provider: {}", e)))?;
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
     println!("🚀 Sending transaction...");
     let pending_tx = client
         .send_transaction(tx, None)
         .await
-        .map_err(|e| Error::DeploymentError(format!("Failed to send transaction: {}", e)))?;
+        .map_err(|e| Error::Deployment(format!("Failed to send transaction: {}", e)))?;
 
     let receipt = pending_tx
         .await
-        .map_err(|e| Error::DeploymentError(format!("Transaction failed: {}", e)))?
-        .ok_or_else(|| Error::DeploymentError("Transaction receipt not found".to_string()))?;
+        .map_err(|e| Error::Deployment(format!("Transaction failed: {}", e)))?
+        .ok_or_else(|| Error::Deployment("Transaction receipt not found".to_string()))?;
 
     if receipt.status != Some(U64::from(1)) {
         print_deployment_result(&receipt, gas_limit);
-        return Err(Error::DeploymentError("Transaction failed".to_string()));
+        return Err(Error::Deployment("Transaction failed".to_string()));
     }
 
     if confirmations > 0 {
@@ -197,12 +202,10 @@ async fn wait_for_confirmations(
         if let Some(receipt) = provider
             .get_transaction_receipt(tx_hash)
             .await
-            .map_err(|e| {
-                Error::DeploymentError(format!("Failed to get transaction receipt: {}", e))
-            })?
+            .map_err(|e| Error::Deployment(format!("Failed to get transaction receipt: {}", e)))?
         {
             let current_block = provider.get_block_number().await.map_err(|e| {
-                Error::DeploymentError(format!("Failed to get current block number: {}", e))
+                Error::Deployment(format!("Failed to get current block number: {}", e))
             })?;
 
             if let Some(block_number) = receipt.block_number {
@@ -219,7 +222,7 @@ async fn wait_for_confirmations(
 fn print_deployment_start(
     wallet: &LocalWallet,
     network: &NetworkConfig,
-    wasm_file: &PathBuf,
+    wasm_file: &Path,
 ) -> Result<(), Error> {
     println!("\n🚀 Starting Deployment");
     println!("====================");
@@ -305,7 +308,7 @@ impl NetworkConfig {
                 chain_id,
             })
         } else {
-            Err(Error::NetworkError(
+            Err(Error::Network(
                 "Please specify either --local, --dev, or both --rpc and --chain-id.".to_string(),
             ))
         }

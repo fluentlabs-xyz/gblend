@@ -50,10 +50,10 @@ impl Tool {
     // Attempt to install the dependency, if possible
     pub fn install(&self) -> Result<(), Error> {
         match self {
-            Self::Cargo => Err(Error::BuildError(
+            Self::Cargo => Err(Error::Build(
                 "Cargo is not installed. Please install Rust and Cargo from https://rustup.rs/.".to_string(),
             )),
-            Self::Rustup => Err(Error::BuildError(
+            Self::Rustup => Err(Error::Build(
                 "Rustup is not installed. Please install Rustup from https://rustup.rs/.".to_string(),
             )),
             Self::WasmTarget => {
@@ -61,19 +61,19 @@ impl Tool {
                 Command::new("rustup")
                     .args(["target", "add", "wasm32-unknown-unknown"])
                     .status()
-                    .map_err(|_| Error::BuildError("Failed to add wasm32-unknown-unknown target.".to_string()))
+                    .map_err(|_| Error::Build("Failed to add wasm32-unknown-unknown target.".to_string()))
                     .and_then(|status| {
                         if status.success() {
                             println!("✅ Successfully added wasm32-unknown-unknown target.");
                             Ok(())
                         } else {
-                            Err(Error::BuildError(
+                            Err(Error::Build(
                                 "Failed to add wasm32-unknown-unknown target.".to_string(),
                             ))
                         }
                     })
             }
-            Self::Wasm2Wat => Err(Error::BuildError(
+            Self::Wasm2Wat => Err(Error::Build(
                 "wasm2wat is not installed. Please install it:\n- For MacOS: `brew install wabt`\n- For Linux: check your package manager\n- For Windows: download from https://github.com/WebAssembly/wabt/releases".to_string(),
             )),
         }

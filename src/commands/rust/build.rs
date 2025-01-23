@@ -4,7 +4,7 @@ use clap::Args;
 use std::{
     fs,
     io::{self, BufRead},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, Stdio},
     time::Instant,
 };
@@ -93,7 +93,7 @@ fn build_project(path: &PathBuf, release: bool, verbose: bool, target_dir: Optio
         .read_dir()?
         .filter_map(|entry| entry.ok())
         .find(|entry| entry.path().extension() == Some("wasm".as_ref()))
-        .ok_or_else(|| Error::BuildError("No .wasm file found in target directory".to_string()))?;
+        .ok_or_else(|| Error::Build("No .wasm file found in target directory".to_string()))?;
 
     // Copy the .wasm file to `lib.wasm`
     let final_wasm_path = path.join("lib.wasm");
@@ -152,25 +152,21 @@ fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool, target_dir: Opt
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .map_err(|e| Error::BuildError(format!("Failed to start build process: {}", e)))?;
+        .map_err(|e| Error::Build(format!("Failed to start build process: {}", e)))?;
 
     // Stream output line by line in verbose mode
     if verbose {
         if let Some(stdout) = cmd.stdout.take() {
             let stdout_reader = io::BufReader::new(stdout);
-            for line in stdout_reader.lines() {
-                if let Ok(line) = line {
-                    println!("{}", line);
-                }
+            for line in stdout_reader.lines().map_while(Result::ok) {
+                println!("{}", line);
             }
         }
 
         if let Some(stderr) = cmd.stderr.take() {
             let stderr_reader = io::BufReader::new(stderr);
-            for line in stderr_reader.lines() {
-                if let Ok(line) = line {
-                    eprintln!("{}", line);
-                }
+            for line in stderr_reader.lines().map_while(Result::ok) {
+                eprintln!("{}", line);
             }
         }
     }
@@ -178,17 +174,17 @@ fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool, target_dir: Opt
     // Wait for the command to finish and check if it was successful
     let output = cmd
         .wait_with_output()
-        .map_err(|e| Error::BuildError(format!("Build process failed: {}", e)))?;
+        .map_err(|e| Error::Build(format!("Build process failed: {}", e)))?;
 
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
-        return Err(Error::BuildError(error_msg.to_string()));
+        return Err(Error::Build(error_msg.to_string()));
     }
 
     Ok(())
 }
 
-fn validate_project_structure(path: &PathBuf) -> Result<(), Error> {
+fn validate_project_structure(path: &Path) -> Result<(), Error> {
     // Check if Cargo.toml exists
     let cargo_toml = path.join("Cargo.toml");
     if !cargo_toml.exists() {
@@ -213,7 +209,7 @@ fn ensure_wasm_target() -> Result<(), Error> {
     let output = Command::new("rustup")
         .args(["target", "list", "--installed"])
         .output()
-        .map_err(|e| Error::BuildError(format!("Failed to check installed targets: {}", e)))?;
+        .map_err(|e| Error::Build(format!("Failed to check installed targets: {}", e)))?;
 
     let installed_targets = String::from_utf8_lossy(&output.stdout);
 
@@ -223,10 +219,10 @@ fn ensure_wasm_target() -> Result<(), Error> {
         let install_output = Command::new("rustup")
             .args(["target", "add", "wasm32-unknown-unknown"])
             .output()
-            .map_err(|e| Error::BuildError(format!("Failed to add wasm target: {}", e)))?;
+            .map_err(|e| Error::Build(format!("Failed to add wasm target: {}", e)))?;
 
         if !install_output.status.success() {
-            return Err(Error::BuildError(
+            return Err(Error::Build(
                 "Failed to install wasm32-unknown-unknown target".to_string(),
             ));
         }
@@ -239,7 +235,7 @@ fn get_compiler_version() -> Result<String, Error> {
     let rustc_version = Command::new("rustc")
         .arg("--version")
         .output()
-        .map_err(|e| Error::BuildError(e.to_string()))?;
+        .map_err(|e| Error::Build(e.to_string()))?;
 
     Ok(String::from_utf8_lossy(&rustc_version.stdout)
         .trim()
