@@ -31,6 +31,10 @@ pub struct BuildArgs {
     /// Show build logs
     #[arg(short, long, help = "Show build logs", default_value = "true")]
     verbose: bool,
+
+    /// Show build logs
+    #[arg(short, long, help = "Target dir")]
+    target_dir: Option<String>,
 }
 
 /// Result of the build process
@@ -63,12 +67,12 @@ pub(super) fn execute(args: &BuildArgs) -> Result<(), Error> {
     for t in Tool::all(args.wat) {
         t.ensure()?;
     }
-    let result = build_project(&args.path, args.release, args.verbose)?;
+    let result = build_project(&args.path, args.release, args.verbose, args.target_dir.clone())?;
     print_build_result(&result);
     Ok(())
 }
 
-fn build_project(path: &PathBuf, release: bool, verbose: bool) -> Result<BuildResult, Error> {
+fn build_project(path: &PathBuf, release: bool, verbose: bool, target_dir: Option<String>) -> Result<BuildResult, Error> {
     println!("🔨 Building Rust project...");
 
     // Validate project structure
@@ -78,7 +82,7 @@ fn build_project(path: &PathBuf, release: bool, verbose: bool) -> Result<BuildRe
     ensure_wasm_target()?;
 
     println!("📦 Running cargo build...");
-    run_cargo_build(path, release, verbose)?;
+    run_cargo_build(path, release, verbose, target_dir)?;
 
     // Define the expected output location
     let build_mode = if release { "release" } else { "debug" };
@@ -123,17 +127,19 @@ fn build_project(path: &PathBuf, release: bool, verbose: bool) -> Result<BuildRe
     })
 }
 
-fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool) -> Result<(), Error> {
+fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool, target_dir: Option<String>) -> Result<(), Error> {
     let mut build_args = vec![
-        "build",
-        "--target",
-        "wasm32-unknown-unknown",
-        "--no-default-features",
-        "--target-dir",
-        "./target",
+        "build".to_string(),
+        "--target".to_string(),
+        "wasm32-unknown-unknown".to_string(),
+        "--no-default-features".to_string(),
     ];
+    if let Some(target_dir) = target_dir {
+        build_args.push("--target-dir".to_string());
+        build_args.push(target_dir);
+    }
     if release {
-        build_args.push("--release");
+        build_args.push("--release".to_string());
     }
 
     let mut cmd = Command::new("cargo")
