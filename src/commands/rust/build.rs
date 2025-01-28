@@ -8,6 +8,7 @@ use std::{
     process::{Command, Stdio},
     time::Instant,
 };
+use std::str::from_utf8;
 
 #[derive(Args)]
 pub struct BuildArgs {
@@ -82,11 +83,38 @@ fn build_project(path: &PathBuf, release: bool, verbose: bool, target_dir: Optio
     ensure_wasm_target()?;
 
     println!("📦 Running cargo build...");
-    run_cargo_build(path, release, verbose, target_dir)?;
+    run_cargo_build(path, release, verbose, target_dir.clone())?;
+
+    let target_dir = if target_dir.is_none() {
+        let result = Command::new("cargo")
+            .arg("metadata")
+            .arg("--no-deps")
+            .output()
+            .map_err(|e| {
+                if verbose {
+                    println!("Failed to get target directory: {:?}", e);
+                }
+                Error::Build("Failed to get target directory".to_string())
+            })?;
+        let utf8_string = from_utf8(&result.stdout).map_err(|e| {
+            if verbose {
+                println!("Failed to decode UTF-8 output: {:?}", e);
+            }
+            Error::Build("Failed to get target directory".to_string())
+        })?;
+        let json_value = json::parse(utf8_string).unwrap();
+        json_value["target_directory"].to_string()
+    } else {
+        target_dir.unwrap()
+    };
+
+    if verbose {
+        println!("Checking target dir: {}", target_dir)
+    }
 
     // Define the expected output location
     let build_mode = if release { "release" } else { "debug" };
-    let target_dir = path.join("target/wasm32-unknown-unknown").join(build_mode);
+    let target_dir = path.join(target_dir).join("wasm32-unknown-unknown").join(build_mode);
 
     // Locate the generated .wasm file
     let wasm_file = target_dir
@@ -140,6 +168,10 @@ fn run_cargo_build(path: &PathBuf, release: bool, verbose: bool, target_dir: Opt
     }
     if release {
         build_args.push("--release".to_string());
+    }
+
+    if verbose {
+        println!("Running command: {}", build_args.join(" "));
     }
 
     let mut cmd = Command::new("cargo")
