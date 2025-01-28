@@ -9,7 +9,7 @@ include = [
 license = "MIT"
 name = "gblend"
 repository = "https://github.com/fluentlabs-xyz/gblend"
-version = "0.2.9"
+version = "0.2.10"
 
 [dependencies]
 anyhow = "1.0.86"
