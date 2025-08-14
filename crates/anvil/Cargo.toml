@@ -30,7 +30,7 @@ foundry-evm.workspace = true
 foundry-evm-core.workspace = true
 
 # alloy
-alloy-evm = { workspace = true, features = ["enforce-rwasm"] }
+alloy-evm = { workspace = true }
 alloy-op-evm.workspace = true
 alloy-primitives = { workspace = true, features = ["serde"] }
 alloy-consensus = { workspace = true, features = ["k256", "kzg"] }
@@ -68,7 +68,7 @@ revm = { workspace = true, features = [
     "json"
 ] }
 revm-inspectors.workspace = true
-op-revm = {workspace = true, features = ["json"]}
+op-revm = { workspace = true }
 
 # axum related
 axum.workspace = true

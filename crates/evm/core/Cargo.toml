@@ -20,7 +20,7 @@ foundry-config.workspace = true
 foundry-evm-abi.workspace = true
 
 alloy-dyn-abi = { workspace = true, features = ["arbitrary", "eip712"] }
-alloy-evm = { workspace = true, features = ["enforce-rwasm"] }
+alloy-evm = { workspace = true }
 alloy-genesis.workspace = true
 alloy-json-abi.workspace = true
 alloy-primitives = { workspace = true, features = [
@@ -49,7 +49,7 @@ revm = { workspace = true, features = [
     "secp256r1",
 ] }
 revm-inspectors.workspace = true
-op-revm = {workspace = true, features = ["json"]}
+op-revm = { workspace = true, features = ["json"] }
 alloy-op-evm.workspace = true
 
 auto_impl.workspace = true
