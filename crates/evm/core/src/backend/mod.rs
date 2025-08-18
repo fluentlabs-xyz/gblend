@@ -1871,7 +1871,7 @@ impl BackendInner {
                         let slot = U256::from_be_bytes(key.0);
                         let value = U256::from_be_bytes(value.0);
 
-                        (slot, EvmStorageSlot::new_changed(U256::ZERO, value))
+                        (slot, EvmStorageSlot::new_changed(U256::ZERO, value, 0))
                     })
                     .collect();
             }

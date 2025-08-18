@@ -87,7 +87,7 @@ pub trait CheatcodesExecutor {
         ccx: &mut CheatsCtxt,
     ) -> Result<CreateOutcome, EVMError<DatabaseError>> {
         with_evm(self, ccx, |evm| {
-            evm.inner.0.ctx.journaled_state.depth += 1;
+            evm.inner.ctx.journaled_state.depth += 1;
 
             let frame = FrameInput::Create(Box::new(inputs));
 
@@ -96,7 +96,7 @@ pub trait CheatcodesExecutor {
                 FrameResult::Create(create) => create,
             };
 
-            evm.inner.0.ctx.journaled_state.depth -= 1;
+            evm.inner.ctx.journaled_state.depth -= 1;
 
             Ok(outcome)
         })
@@ -144,11 +144,11 @@ where
 
     let res = f(&mut evm)?;
 
-    ccx.ecx.journaled_state.inner = evm.inner.0.ctx.journaled_state.inner;
-    ccx.ecx.block = evm.inner.0.ctx.block;
-    ccx.ecx.tx = evm.inner.0.ctx.tx;
-    ccx.ecx.cfg = evm.inner.0.ctx.cfg;
-    ccx.ecx.error = evm.inner.0.ctx.error;
+    ccx.ecx.journaled_state.inner = evm.inner.ctx.journaled_state.inner;
+    ccx.ecx.block = evm.inner.ctx.block;
+    ccx.ecx.tx = evm.inner.ctx.tx;
+    ccx.ecx.cfg = evm.inner.ctx.cfg;
+    ccx.ecx.error = evm.inner.ctx.error;
 
     Ok(res)
 }

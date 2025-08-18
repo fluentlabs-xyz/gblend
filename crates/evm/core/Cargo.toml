@@ -50,7 +50,7 @@ revm = { workspace = true, features = [
     "blst",
 ] }
 revm-inspectors.workspace = true
-op-revm = { workspace = true, features = ["json"] }
+op-revm.workspace = true
 alloy-op-evm.workspace = true
 
 auto_impl.workspace = true

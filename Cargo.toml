@@ -32,11 +32,11 @@ resolver = "2"
 version = "0.1.4"
 edition = "2024"
 # Remember to update clippy.toml as well
-rust-version = "1.88"
+rust-version = "1.89"
 authors = ["Foundry Contributors"]
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/foundry-rs/foundry"
-repository = "https://github.com/foundry-rs/foundry"
+homepage = "https://github.com/fluentlabs-xyz/gblend"
+repository = "https://github.com/fluentlabs-xyz/gblend"
 exclude = ["benches/", "tests/", "test-data/", "testdata/"]
 
 [workspace.lints.clippy]
@@ -71,8 +71,8 @@ all = "warn"
 # Uncomment this section if you're using a debugger.
 [profile.dev]
 # https://davidlattimore.github.io/posts/2024/02/04/speeding-up-the-rust-edit-build-run-cycle.html
-#debug = "line-tables-only"
-#split-debuginfo = "unpacked"
+debug = "line-tables-only"
+split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -87,8 +87,7 @@ codegen-units = 16
 [profile.profiling]
 inherits = "release"
 debug = "full"
-split-debuginfo = "unpacked"
-strip = false
+strip = "none"
 
 [profile.bench]
 inherits = "profiling"
@@ -204,10 +203,8 @@ foundry-wallets = { path = "crates/wallets" }
 foundry-linking = { path = "crates/linking" }
 
 # fluentbase
+fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", rev = "64797bf7"}
 
-#fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev", features = ["json"] }
-fluentbase-build = { path = "../fluentbase-v2/crates/build" }
-#fluentbase-genesis = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev", default-features = false }
 
 # solc & compilation utilities
 foundry-block-explorers = { version = "0.20.0", default-features = false }
@@ -368,33 +365,35 @@ flate2 = "1.1"
 idna_adapter = "=1.1.0"
 
 [patch.crates-io]
-# revm = { package = "revm", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-bytecode = { package = "revm-bytecode", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-database = { package = "revm-database", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-state = { package = "revm-state", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-primitives = { package = "revm-primitives", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-interpreter = { package = "revm-interpreter", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-inspector = { package = "revm-inspector", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-context = { package = "revm-context", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-context-interface = { package = "revm-context-interface", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# revm-database-interface = { package = "revm-database-interface", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# op-revm = { package = "op-revm", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-# alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-bytecode = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-database = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-state = { package = "revm-state", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-primitives = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-interpreter = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-inspector = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-context = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-context-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-database-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+op-revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
 
-## fluentbase
-revm = { path = "../fluentbase-v2/revm/crates/revm" }
-revm-bytecode = { path = "../fluentbase-v2/revm/crates/bytecode" }
-revm-database = { path = "../fluentbase-v2/revm/crates/database" }
-revm-database-interface = { path = "../fluentbase-v2/revm/crates/database/interface" }
-revm-state = { path = "../fluentbase-v2/revm/crates/state" }
-revm-primitives = { path = "../fluentbase-v2/revm/crates/primitives" }
-revm-interpreter = { path = "../fluentbase-v2/revm/crates/interpreter" }
-revm-inspector = { path = "../fluentbase-v2/revm/crates/inspector" }
-revm-context = { path = "../fluentbase-v2/revm/crates/context" }
-revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
-op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
+revm-handler = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-precompile = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
 
-alloy-evm = { path = "../alloy-rwasm/crates/evm" }
+# ## fluentbase
+# revm = { path = "../fluentbase-v2/revm/crates/revm" }
+# revm-bytecode = { path = "../fluentbase-v2/revm/crates/bytecode" }
+# revm-database = { path = "../fluentbase-v2/revm/crates/database" }
+# revm-database-interface = { path = "../fluentbase-v2/revm/crates/database/interface" }
+# revm-state = { path = "../fluentbase-v2/revm/crates/state" }
+# revm-primitives = { path = "../fluentbase-v2/revm/crates/primitives" }
+# revm-interpreter = { path = "../fluentbase-v2/revm/crates/interpreter" }
+# revm-inspector = { path = "../fluentbase-v2/revm/crates/inspector" }
+# revm-context = { path = "../fluentbase-v2/revm/crates/context" }
+# revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
+# op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
+
+# alloy-evm = { path = "../alloy-rwasm/crates/evm" }
 
 
 
@@ -439,8 +438,8 @@ alloy-evm = { path = "../alloy-rwasm/crates/evm" }
 # alloy-op-evm = { git = "https://github.com/alloy-rs/evm.git", rev = "7762adc" }
 
 ## revm
-revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
-op-revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
+# revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
+# op-revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
 # revm-inspectors = { git = "https://github.com/paradigmxyz/revm-inspectors.git", rev = "956bc98" }
 
 ## foundry
