@@ -38,10 +38,14 @@ impl<'ast> EarlyLintPass<'ast> for Imports {
     }
 
     fn check_full_source_unit(&mut self, ctx: &LintContext<'ast>, ast: &'ast SourceUnit<'ast>) {
-        let mut checker = UnusedChecker::new(ctx.session().source_map());
-        let _ = checker.visit_source_unit(ast);
-        checker.check_unused_imports(ast, ctx);
-        checker.clear();
+        // Despite disabled lints are filtered inside `ctx.emit()`, we explicitly check
+        // upfront to avoid the expensive full source unit traversal when unnecessary.
+        if ctx.is_lint_enabled(UNUSED_IMPORT.id) {
+            let mut checker = UnusedChecker::new(ctx.session().source_map());
+            let _ = checker.visit_source_unit(ast);
+            checker.check_unused_imports(ast, ctx);
+            checker.clear();
+        }
     }
 }
 
@@ -124,13 +128,18 @@ impl<'ast> Visit<'ast> for UnusedChecker<'ast> {
         self.walk_using_directive(using)
     }
 
-    fn visit_modifier(
+    fn visit_function_header(
         &mut self,
-        modifier: &'ast ast::Modifier<'ast>,
+        header: &'ast solar_ast::FunctionHeader<'ast>,
     ) -> ControlFlow<Self::BreakValue> {
-        self.mark_symbol_used(modifier.name.first().name);
+        // temporary workaround until solar also visits `override` and its paths <https://github.com/paradigmxyz/solar/pull/383>.
+        if let Some(ref override_) = header.override_ {
+            for path in override_.paths.iter() {
+                _ = self.visit_path(path);
+            }
+        }
 
-        self.walk_modifier(modifier)
+        self.walk_function_header(header)
     }
 
     fn visit_expr(&mut self, expr: &'ast ast::Expr<'ast>) -> ControlFlow<Self::BreakValue> {

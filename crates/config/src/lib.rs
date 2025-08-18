@@ -346,7 +346,11 @@ pub struct Config {
     /// the initial balance of each deployed test contract
     pub initial_balance: U256,
     /// the block.number value during EVM execution
-    pub block_number: u64,
+    #[serde(
+        deserialize_with = "crate::deserialize_u64_to_u256",
+        serialize_with = "crate::serialize_u64_or_u256"
+    )]
+    pub block_number: U256,
     /// pins the block number for the state fork
     pub fork_block_number: Option<u64>,
     /// The chain name or EIP-155 chain ID.
@@ -366,7 +370,11 @@ pub struct Config {
     /// The `block.coinbase` value during EVM execution.
     pub block_coinbase: Address,
     /// The `block.timestamp` value during EVM execution.
-    pub block_timestamp: u64,
+    #[serde(
+        deserialize_with = "crate::deserialize_u64_to_u256",
+        serialize_with = "crate::serialize_u64_or_u256"
+    )]
+    pub block_timestamp: U256,
     /// The `block.difficulty` value during EVM execution.
     pub block_difficulty: u64,
     /// Before merge the `block.max_hash`, after merge it is `block.prevrandao`.
@@ -1424,13 +1432,20 @@ impl Config {
 
         // etherscan fallback via API key
         if let Some(key) = self.etherscan_api_key.as_ref() {
-            return Ok(ResolvedEtherscanConfig::create(
+            match ResolvedEtherscanConfig::create(
                 key,
                 chain.or(self.chain).unwrap_or_default(),
                 default_api_version,
-            ));
+            ) {
+                Some(config) => return Ok(Some(config)),
+                None => {
+                    return Err(EtherscanConfigError::UnknownChain(
+                        String::new(),
+                        chain.unwrap_or_default(),
+                    ));
+                }
+            }
         }
-
         Ok(None)
     }
 
@@ -1682,8 +1697,8 @@ impl Config {
     pub fn dapptools() -> Self {
         Self {
             chain: Some(Chain::from_id(99)),
-            block_timestamp: 0,
-            block_number: 0,
+            block_timestamp: U256::ZERO,
+            block_number: U256::ZERO,
             ..Self::default()
         }
     }
@@ -2373,7 +2388,7 @@ impl Default for Config {
             sender: Self::DEFAULT_SENDER,
             tx_origin: Self::DEFAULT_SENDER,
             initial_balance: U256::from((1u128 << 96) - 1),
-            block_number: 1,
+            block_number: U256::from(1),
             fork_block_number: None,
             chain: None,
             gas_limit: (1u64 << 30).into(), // ~1B
@@ -2381,7 +2396,7 @@ impl Default for Config {
             gas_price: None,
             block_base_fee_per_gas: 0,
             block_coinbase: Address::ZERO,
-            block_timestamp: 1,
+            block_timestamp: U256::from(1),
             block_difficulty: 0,
             block_prevrandao: Default::default(),
             block_gas_limit: None,
@@ -2593,6 +2608,7 @@ mod tests {
         cache::{CachedChains, CachedEndpoints},
         endpoints::RpcEndpointType,
         etherscan::ResolvedEtherscanConfigs,
+        fmt::IndentStyle,
     };
     use NamedChain::Moonbeam;
     use endpoints::{RpcAuth, RpcEndpointConfig};
@@ -4178,7 +4194,7 @@ mod tests {
 
             let config = Config::load().unwrap();
 
-            assert_eq!(config.block_number, 1337);
+            assert_eq!(config.block_number, U256::from(1337));
             assert_eq!(config.sender, addr);
             assert_eq!(config.fuzz.runs, 420);
             assert_eq!(config.invariant.depth, 20);
@@ -4506,12 +4522,13 @@ mod tests {
         figment::Jail::expect_with(|jail| {
             jail.create_file(
                 "foundry.toml",
-                r"
+                r#"
                 [fmt]
                 line_length = 100
                 tab_width = 2
                 bracket_spacing = true
-            ",
+                style = "space"
+            "#,
             )?;
             let loaded = Config::load().unwrap().sanitized();
             assert_eq!(
@@ -4520,6 +4537,7 @@ mod tests {
                     line_length: 100,
                     tab_width: 2,
                     bracket_spacing: true,
+                    style: IndentStyle::Space,
                     ..Default::default()
                 }
             );
@@ -5073,5 +5091,46 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(endpoint.url, "https://rpc.sophon.xyz");
+    }
+
+    #[test]
+    fn test_get_etherscan_config_with_unknown_chain() {
+        figment::Jail::expect_with(|jail| {
+            jail.create_file(
+                "foundry.toml",
+                r#"
+                [etherscan]
+                mainnet = { chain = 3658348, key = "api-key"}
+            "#,
+            )?;
+            let config = Config::load().unwrap();
+            let unknown_chain = Chain::from_id(3658348);
+            let result = config.get_etherscan_config_with_chain(Some(unknown_chain));
+            assert!(result.is_err());
+            let error_msg = result.unwrap_err().to_string();
+            assert!(error_msg.contains("No known Etherscan API URL for chain `3658348`"));
+            assert!(error_msg.contains("Specify a `url`"));
+            assert!(error_msg.contains("Verify the chain `3658348` is correct"));
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn test_get_etherscan_config_with_existing_chain_and_url() {
+        figment::Jail::expect_with(|jail| {
+            jail.create_file(
+                "foundry.toml",
+                r#"
+                [etherscan]
+                mainnet = { chain = 1, key = "api-key" }
+            "#,
+            )?;
+            let config = Config::load().unwrap();
+            let unknown_chain = Chain::from_id(1);
+            let result = config.get_etherscan_config_with_chain(Some(unknown_chain));
+            assert!(result.is_ok());
+            Ok(())
+        });
     }
 }

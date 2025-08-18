@@ -2677,7 +2677,7 @@ contract GasReportFallbackTest is Test {
 +========================================================================================================+
 | Deployment Cost                                   | Deployment Size |       |        |       |         |
 |---------------------------------------------------+-----------------+-------+--------+-------+---------|
-| 117171                                            | 471             |       |        |       |         |
+| 117159                                            | 471             |       |        |       |         |
 |---------------------------------------------------+-----------------+-------+--------+-------+---------|
 |                                                   |                 |       |        |       |         |
 |---------------------------------------------------+-----------------+-------+--------+-------+---------|
@@ -2716,7 +2716,7 @@ Ran 1 test suite [ELAPSED]: 1 tests passed, 0 failed, 0 skipped (1 total tests)
   {
     "contract": "test/DelegateProxyTest.sol:DelegateProxy",
     "deployment": {
-      "gas": 117171,
+      "gas": 117159,
       "size": 471
     },
     "functions": {
@@ -2928,7 +2928,7 @@ contract NestedDeploy is Test {
 +============================================================================================+
 | Deployment Cost                           | Deployment Size |     |        |     |         |
 |-------------------------------------------+-----------------+-----+--------+-----+---------|
-| 328961                                    | 1163            |     |        |     |         |
+| 328949                                    | 1163            |     |        |     |         |
 |-------------------------------------------+-----------------+-----+--------+-----+---------|
 |                                           |                 |     |        |     |         |
 |-------------------------------------------+-----------------+-----+--------+-----+---------|
@@ -2983,7 +2983,7 @@ Ran 1 test suite [ELAPSED]: 1 tests passed, 0 failed, 0 skipped (1 total tests)
   {
     "contract": "test/NestedDeployTest.sol:Parent",
     "deployment": {
-      "gas": 328961,
+      "gas": 328949,
       "size": 1163
     },
     "functions": {
@@ -3022,9 +3022,9 @@ forgetest_init!(can_use_absolute_imports, |prj, cmd| {
     prj.add_lib(
         "myDependency/src/Config.sol",
         r#"
-        import "src/interfaces/IConfig.sol";
+        import {IConfig} from "myDependency/src/interfaces/IConfig.sol";
 
-    contract Config {}
+    contract Config is IConfig {}
    "#,
     )
     .unwrap();
@@ -3032,9 +3032,11 @@ forgetest_init!(can_use_absolute_imports, |prj, cmd| {
     prj.add_source(
         "Greeter",
         r#"
-        import "myDependency/src/Config.sol";
+        import {Config} from "myDependency/src/Config.sol";
 
-    contract Greeter {}
+    contract Greeter {
+        Config config;
+    }
    "#,
     )
     .unwrap();
@@ -3668,7 +3670,7 @@ forgetest_init!(gas_report_include_tests, |prj, cmd| {
 +================================================================================================+
 | Deployment Cost                         | Deployment Size |        |        |        |         |
 |-----------------------------------------+-----------------+--------+--------+--------+---------|
-| 1545498                                 | 7578            |        |        |        |         |
+| 1544498                                 | 7573            |        |        |        |         |
 |-----------------------------------------+-----------------+--------+--------+--------+---------|
 |                                         |                 |        |        |        |         |
 |-----------------------------------------+-----------------+--------+--------+--------+---------|
@@ -3676,7 +3678,7 @@ forgetest_init!(gas_report_include_tests, |prj, cmd| {
 |-----------------------------------------+-----------------+--------+--------+--------+---------|
 | setUp                                   | 218902          | 218902 | 218902 | 218902 | 1       |
 |-----------------------------------------+-----------------+--------+--------+--------+---------|
-| test_Increment                          | 54915           | 54915  | 54915  | 54915  | 1       |
+| test_Increment                          | 51847           | 51847  | 51847  | 51847  | 1       |
 ╰-----------------------------------------+-----------------+--------+--------+--------+---------╯
 
 
@@ -3723,8 +3725,8 @@ Ran 1 test suite [ELAPSED]: 1 tests passed, 0 failed, 0 skipped (1 total tests)
   {
     "contract": "test/Counter.t.sol:CounterTest",
     "deployment": {
-      "gas": 1545498,
-      "size": 7578
+      "gas": 1544498,
+      "size": 7573
     },
     "functions": {
       "setUp()": {
@@ -3736,10 +3738,10 @@ Ran 1 test suite [ELAPSED]: 1 tests passed, 0 failed, 0 skipped (1 total tests)
       },
       "test_Increment()": {
         "calls": 1,
-        "min": 54915,
-        "mean": 54915,
-        "median": 54915,
-        "max": 54915
+        "min": 51847,
+        "mean": 51847,
+        "median": 51847,
+        "max": 51847
       }
     }
   }
