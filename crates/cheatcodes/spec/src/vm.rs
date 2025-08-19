@@ -522,6 +522,11 @@ interface Vm {
     #[cheatcode(group = Evm, safety = Safe)]
     function getBlockTimestamp() external view returns (uint256 timestamp);
 
+    /// Gets the RLP encoded block header for a given block number.
+    /// Returns the block header in the same format as `cast block <block_number> --raw`.
+    #[cheatcode(group = Evm, safety = Safe)]
+    function getRawBlockHeader(uint256 blockNumber) external view returns (bytes memory rlpHeader);
+
     /// Sets `block.blobbasefee`
     #[cheatcode(group = Evm, safety = Unsafe)]
     function blobBaseFee(uint256 newBlobBaseFee) external;
@@ -2723,25 +2728,25 @@ interface Vm {
     #[cheatcode(group = Crypto)]
     function publicKeyP256(uint256 privateKey) external pure returns (uint256 publicKeyX, uint256 publicKeyY);
 
-    /// Derive a private key from a provided mnenomic string (or mnenomic file path)
+    /// Derive a private key from a provided mnemonic string (or mnemonic file path)
     /// at the derivation path `m/44'/60'/0'/0/{index}`.
     #[cheatcode(group = Crypto)]
     function deriveKey(string calldata mnemonic, uint32 index) external pure returns (uint256 privateKey);
-    /// Derive a private key from a provided mnenomic string (or mnenomic file path)
+    /// Derive a private key from a provided mnemonic string (or mnemonic file path)
     /// at `{derivationPath}{index}`.
     #[cheatcode(group = Crypto)]
     function deriveKey(string calldata mnemonic, string calldata derivationPath, uint32 index)
         external
         pure
         returns (uint256 privateKey);
-    /// Derive a private key from a provided mnenomic string (or mnenomic file path) in the specified language
+    /// Derive a private key from a provided mnemonic string (or mnemonic file path) in the specified language
     /// at the derivation path `m/44'/60'/0'/0/{index}`.
     #[cheatcode(group = Crypto)]
     function deriveKey(string calldata mnemonic, uint32 index, string calldata language)
         external
         pure
         returns (uint256 privateKey);
-    /// Derive a private key from a provided mnenomic string (or mnenomic file path) in the specified language
+    /// Derive a private key from a provided mnemonic string (or mnemonic file path) in the specified language
     /// at `{derivationPath}{index}`.
     #[cheatcode(group = Crypto)]
     function deriveKey(string calldata mnemonic, string calldata derivationPath, uint32 index, string calldata language)

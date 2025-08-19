@@ -24,7 +24,7 @@ foundry-evm-fuzz.workspace = true
 foundry-evm-traces.workspace = true
 
 alloy-dyn-abi = { workspace = true, features = ["arbitrary", "eip712"] }
-alloy-evm = { workspace = true, features = ["enforce-rwasm"] }
+alloy-evm = { workspace = true }
 alloy-json-abi.workspace = true
 alloy-primitives = { workspace = true, features = [
     "serde",
@@ -52,5 +52,6 @@ proptest.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 indicatif.workspace = true
+serde_json.workspace = true
 serde.workspace = true
 uuid.workspace = true

@@ -1,41 +1,45 @@
 //! Cheatcode EVM inspector.
 
 use crate::{
-    CheatsConfig, CheatsCtxt, DynCheatcode, Error, Result,
-    Vm::{self, AccountAccess},
     evm::{
-        DealRecord, GasRecord, RecordAccess,
-        mapping::{self, MappingSlots},
-        mock::{MockCallDataContext, MockCallReturnData},
-        prank::Prank,
-    },
-    inspector::utils::CommonCreateInput,
-    script::{Broadcast, Wallets},
-    test::{
+        mapping::{self, MappingSlots}, mock::{MockCallDataContext, MockCallReturnData}, prank::Prank,
+        DealRecord,
+        GasRecord,
+        RecordAccess,
+    }, inspector::utils::CommonCreateInput, script::{Broadcast, Wallets}, test::{
         assume::AssumeNoRevert,
         expect::{
             self, ExpectedCallData, ExpectedCallTracker, ExpectedCallType, ExpectedCreate,
             ExpectedEmitTracker, ExpectedRevert, ExpectedRevertKind,
         },
         revert_handlers,
-    },
-    utils::IgnoredTraces,
+    }, utils::IgnoredTraces,
+    CheatsConfig,
+    CheatsCtxt,
+    DynCheatcode,
+    Error,
+    Result,
+    Vm::{self, AccountAccess},
 };
 use alloy_consensus::BlobTransactionSidecar;
 use alloy_evm::eth::EthEvmContext;
 use alloy_network::TransactionBuilder4844;
 use alloy_primitives::{
-    Address, B256, Bytes, Log, TxKind, U256, hex,
-    map::{AddressHashMap, HashMap, HashSet},
+    hex, map::{AddressHashMap, HashMap, HashSet}, Address, Bytes, Log, TxKind, B256,
+    U256,
 };
 use alloy_rpc_types::{
-    AccessList,
     request::{TransactionInput, TransactionRequest},
+    AccessList,
 };
 use alloy_sol_types::{SolCall, SolInterface, SolValue};
-use foundry_common::{SELECTOR_LEN, TransactionMaybeSigned, evm::Breakpoints};
+use foundry_common::{evm::Breakpoints, TransactionMaybeSigned, SELECTOR_LEN};
 use foundry_evm_core::{
-    abi::Vm::stopExpectSafeMemoryCall, backend::{DatabaseError, DatabaseExt, RevertDiagnostic}, constants::{CHEATCODE_ADDRESS, HARDHAT_CONSOLE_ADDRESS, MAGIC_ASSUME}, evm::{new_evm_with_existing_context, FoundryEvm}, InspectorExt
+    abi::Vm::stopExpectSafeMemoryCall,
+    backend::{DatabaseError, DatabaseExt, RevertDiagnostic},
+    constants::{CHEATCODE_ADDRESS, HARDHAT_CONSOLE_ADDRESS, MAGIC_ASSUME},
+    evm::{new_evm_with_existing_context, FoundryEvm},
+    InspectorExt,
 };
 use foundry_evm_traces::{TracingInspector, TracingInspectorConfig};
 use foundry_wallets::multi_wallet::MultiWallet;
@@ -43,17 +47,17 @@ use itertools::Itertools;
 use proptest::test_runner::{RngAlgorithm, TestRng, TestRunner};
 use rand::Rng;
 use revm::{
-    Inspector, Journal,
-    bytecode::opcode as op,
-    context::{BlockEnv, JournalTr, LocalContext, TransactionType, result::EVMError},
-    context_interface::{CreateScheme, transaction::SignedAuthorization},
+    bytecode::opcode as op, context::{result::EVMError, BlockEnv, JournalTr, LocalContext, TransactionType},
+    context_interface::{transaction::SignedAuthorization, CreateScheme},
     handler::FrameResult,
     interpreter::{
-        CallInputs, CallOutcome, CallScheme, CreateInputs, CreateOutcome, FrameInput, Gas, Host,
-        InstructionResult, Interpreter, InterpreterAction, InterpreterResult,
-        interpreter_types::{Jumps, MemoryTr},
+        interpreter_types::{Jumps, LoopControl, MemoryTr}, CallInputs, CallOutcome, CallScheme, CreateInputs, CreateOutcome, FrameInput, Gas,
+        Host, InstructionResult, Interpreter, InterpreterAction,
+        InterpreterResult,
     },
     state::EvmStorageSlot,
+    Inspector,
+    Journal,
 };
 use serde_json::Value;
 use std::{
@@ -92,7 +96,7 @@ pub trait CheatcodesExecutor {
             let frame = FrameInput::Create(Box::new(inputs));
 
             let outcome = match evm.run_execution(frame)? {
-                FrameResult::Call(_) | FrameResult::EOFCreate(_) => unreachable!(),
+                FrameResult::Call(_) => unreachable!(),
                 FrameResult::Create(create) => create,
             };
 
@@ -152,7 +156,6 @@ where
 
     Ok(res)
 }
-
 
 /// Basic implementation of [CheatcodesExecutor] that simply returns the [Cheatcodes] instance as an
 /// inspector.
@@ -307,7 +310,7 @@ impl ArbitraryStorage {
     pub fn save(&mut self, ecx: Ecx, address: Address, slot: U256, data: U256) {
         self.values.get_mut(&address).expect("missing arbitrary address entry").insert(slot, data);
         if let Ok(mut account) = ecx.journaled_state.load_account(address) {
-            account.storage.insert(slot, EvmStorageSlot::new(data));
+            account.storage.insert(slot, EvmStorageSlot::new(data, 0));
         }
     }
 
@@ -325,14 +328,14 @@ impl ArbitraryStorage {
                 storage_cache.insert(slot, new_value);
                 // Update source storage with new value.
                 if let Ok(mut source_account) = ecx.journaled_state.load_account(*source) {
-                    source_account.storage.insert(slot, EvmStorageSlot::new(new_value));
+                    source_account.storage.insert(slot, EvmStorageSlot::new(new_value, 0));
                 }
                 new_value
             }
         };
         // Update target storage with new value.
         if let Ok(mut target_account) = ecx.journaled_state.load_account(target) {
-            target_account.storage.insert(slot, EvmStorageSlot::new(value));
+            target_account.storage.insert(slot, EvmStorageSlot::new(value, 0));
         }
         value
     }
@@ -661,7 +664,7 @@ impl Cheatcodes {
         &mut self,
         ecx: Ecx,
         call: &mut CallInputs,
-        executor: &mut impl CheatcodesExecutor,
+        executor: &mut dyn CheatcodesExecutor,
     ) -> Option<CallOutcome> {
         let gas = Gas::new(call.gas_limit);
         let curr_depth = ecx.journaled_state.depth();
@@ -779,7 +782,7 @@ impl Cheatcodes {
             // Apply delegate call, `call.caller`` will not equal `prank.prank_caller`
             if prank.delegate_call
                 && curr_depth == prank.depth
-                && let CallScheme::DelegateCall | CallScheme::ExtDelegateCall = call.scheme
+                && let CallScheme::DelegateCall = call.scheme
             {
                 call.target_address = prank.new_caller;
                 call.caller = prank.new_caller;
@@ -937,9 +940,6 @@ impl Cheatcodes {
                 CallScheme::CallCode => crate::Vm::AccountAccessKind::CallCode,
                 CallScheme::DelegateCall => crate::Vm::AccountAccessKind::DelegateCall,
                 CallScheme::StaticCall => crate::Vm::AccountAccessKind::StaticCall,
-                CallScheme::ExtCall => crate::Vm::AccountAccessKind::Call,
-                CallScheme::ExtStaticCall => crate::Vm::AccountAccessKind::StaticCall,
-                CallScheme::ExtDelegateCall => crate::Vm::AccountAccessKind::DelegateCall,
             };
             // Record this call by pushing it to a new pending vector; all subsequent calls at
             // that depth will be pushed to the same vector. When the call ends, the
@@ -1052,7 +1052,7 @@ impl Inspector<EthEvmContext<&mut dyn DatabaseExt>> for Cheatcodes {
 
         // Record gas for current frame.
         if self.gas_metering.paused {
-            self.gas_metering.paused_frames.push(interpreter.control.gas);
+            self.gas_metering.paused_frames.push(interpreter.gas);
         }
 
         // `expectRevert`: track the max call depth during `expectRevert`
@@ -1061,7 +1061,6 @@ impl Inspector<EthEvmContext<&mut dyn DatabaseExt>> for Cheatcodes {
         }
     }
 
-    #[inline]
     fn step(&mut self, interpreter: &mut Interpreter, ecx: Ecx) {
         self.pc = interpreter.bytecode.pc();
 
@@ -1104,7 +1103,6 @@ impl Inspector<EthEvmContext<&mut dyn DatabaseExt>> for Cheatcodes {
         }
     }
 
-    #[inline]
     fn step_end(&mut self, interpreter: &mut Interpreter, ecx: Ecx) {
         if self.gas_metering.paused {
             self.meter_gas_end(interpreter);
@@ -1532,6 +1530,7 @@ impl Inspector<EthEvmContext<&mut dyn DatabaseExt>> for Cheatcodes {
     }
 
     fn create(&mut self, ecx: Ecx, mut input: &mut CreateInputs) -> Option<CreateOutcome> {
+        let gas = Gas::new(input.gas_limit());
         // Check if we should intercept this create
         if self.intercept_next_create_call {
             // Reset the flag
@@ -1542,16 +1541,11 @@ impl Inspector<EthEvmContext<&mut dyn DatabaseExt>> for Cheatcodes {
 
             // Return a revert with the initcode as error data
             return Some(CreateOutcome {
-                result: InterpreterResult {
-                    result: InstructionResult::Revert,
-                    output,
-                    gas: Gas::new(input.gas_limit()),
-                },
+                result: InterpreterResult { result: InstructionResult::Revert, output, gas },
                 address: None,
             });
         }
 
-        let gas = Gas::new(input.gas_limit());
         let curr_depth = ecx.journaled_state.depth();
 
         // Apply our prank
@@ -1811,36 +1805,33 @@ impl Cheatcodes {
         if let Some(paused_gas) = self.gas_metering.paused_frames.last() {
             // Keep gas constant if paused.
             // Make sure we record the memory changes so that memory expansion is not paused.
-            let memory = *interpreter.control.gas.memory();
-            interpreter.control.gas = *paused_gas;
-            interpreter.control.gas.memory_mut().words_num = memory.words_num;
-            interpreter.control.gas.memory_mut().expansion_cost = memory.expansion_cost;
+            let memory = *interpreter.gas.memory();
+            interpreter.gas = *paused_gas;
+            interpreter.gas.memory_mut().words_num = memory.words_num;
+            interpreter.gas.memory_mut().expansion_cost = memory.expansion_cost;
         } else {
             // Record frame paused gas.
-            self.gas_metering.paused_frames.push(interpreter.control.gas);
+            self.gas_metering.paused_frames.push(interpreter.gas);
         }
     }
 
     #[cold]
     fn meter_gas_record(&mut self, interpreter: &mut Interpreter, ecx: Ecx) {
-        if matches!(interpreter.control.instruction_result, InstructionResult::Continue) {
+        if interpreter.bytecode.action.as_ref().and_then(|i| i.instruction_result()).is_none() {
             self.gas_metering.gas_records.iter_mut().for_each(|record| {
                 let curr_depth = ecx.journaled_state.depth();
                 if curr_depth == record.depth {
                     // Skip the first opcode of the first call frame as it includes the gas cost of
                     // creating the snapshot.
                     if self.gas_metering.last_gas_used != 0 {
-                        let gas_diff = interpreter
-                            .control
-                            .gas
-                            .spent()
-                            .saturating_sub(self.gas_metering.last_gas_used);
+                        let gas_diff =
+                            interpreter.gas.spent().saturating_sub(self.gas_metering.last_gas_used);
                         record.gas_used = record.gas_used.saturating_add(gas_diff);
                     }
 
                     // Update `last_gas_used` to the current spent gas for the next iteration to
                     // compare against.
-                    self.gas_metering.last_gas_used = interpreter.control.gas.spent();
+                    self.gas_metering.last_gas_used = interpreter.gas.spent();
                 }
             });
         }
@@ -1849,27 +1840,31 @@ impl Cheatcodes {
     #[cold]
     fn meter_gas_end(&mut self, interpreter: &mut Interpreter) {
         // Remove recorded gas if we exit frame.
-        if will_exit(interpreter.control.instruction_result) {
+        if let Some(interpreter_action) = interpreter.bytecode.action.as_ref()
+            && will_exit(interpreter_action)
+        {
             self.gas_metering.paused_frames.pop();
         }
     }
 
     #[cold]
     fn meter_gas_reset(&mut self, interpreter: &mut Interpreter) {
-        interpreter.control.gas = Gas::new(interpreter.control.gas.limit());
+        interpreter.gas = Gas::new(interpreter.gas.limit());
         self.gas_metering.reset = false;
     }
 
     #[cold]
     fn meter_gas_check(&mut self, interpreter: &mut Interpreter) {
-        if will_exit(interpreter.control.instruction_result) {
+        if let Some(interpreter_action) = interpreter.bytecode.action.as_ref()
+            && will_exit(interpreter_action)
+        {
             // Reset gas if spent is less than refunded.
             // This can happen if gas was paused / resumed or reset.
             // https://github.com/foundry-rs/foundry/issues/4370
-            if interpreter.control.gas.spent()
-                < u64::try_from(interpreter.control.gas.refunded()).unwrap_or_default()
+            if interpreter.gas.spent()
+                < u64::try_from(interpreter.gas.refunded()).unwrap_or_default()
             {
-                interpreter.control.gas = Gas::new(interpreter.control.gas.limit());
+                interpreter.gas = Gas::new(interpreter.gas.limit());
             }
         }
     }
@@ -2289,14 +2284,11 @@ fn disallowed_mem_write(
         ranges.iter().map(|r| format!("(0x{:02X}, 0x{:02X}]", r.start, r.end)).join(" U ")
     );
 
-    interpreter.control.instruction_result = InstructionResult::Revert;
-    interpreter.control.next_action = InterpreterAction::Return {
-        result: InterpreterResult {
-            output: Error::encode(revert_string),
-            gas: interpreter.control.gas,
-            result: InstructionResult::Revert,
-        },
-    };
+    interpreter.bytecode.set_action(InterpreterAction::new_return(
+        InstructionResult::Revert,
+        Bytes::from(revert_string.into_bytes()),
+        interpreter.gas,
+    ));
 }
 
 // Determines if the gas limit on a given call was manually set in the script and should therefore
@@ -2424,6 +2416,11 @@ fn calls_as_dyn_cheatcode(calls: &Vm::VmCalls) -> &dyn DynCheatcode {
 }
 
 /// Helper function to check if frame execution will exit.
-fn will_exit(ir: InstructionResult) -> bool {
-    !matches!(ir, InstructionResult::Continue | InstructionResult::CallOrCreate)
+fn will_exit(action: &InterpreterAction) -> bool {
+    match action {
+        InterpreterAction::Return(result) => {
+            result.result.is_ok_or_revert() || result.result.is_error()
+        }
+        _ => false,
+    }
 }

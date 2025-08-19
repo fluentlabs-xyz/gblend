@@ -29,9 +29,23 @@ const OTHER_CONTRACT: &str = r#"
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.8.0;
 
-    contract ContractWithLints {
+    // forge-lint: disable-next-line
+    import { ContractWithLints } from "./ContractWithLints.sol";
+
+    contract OtherContractWithLints {
         uint256 VARIABLE_MIXED_CASE_INFO;
     }
+        "#;
+
+const ONLY_IMPORTS: &str = r#"
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.0;
+
+    // forge-lint: disable-next-line
+    import { ContractWithLints } from "./ContractWithLints.sol";
+
+    import { _PascalCaseInfo } from "./ContractWithLints.sol";
+    import "./ContractWithLints.sol";
         "#;
 
 forgetest!(can_use_config, |prj, cmd| {
@@ -77,9 +91,9 @@ forgetest!(can_use_config_ignore, |prj, cmd| {
     });
     cmd.arg("lint").assert_success().stderr_eq(str![[r#"
 note[mixed-case-variable]: mutable variables should use mixedCase
- [FILE]:6:17
+ [FILE]:9:17
   |
-6 |         uint256 VARIABLE_MIXED_CASE_INFO;
+9 |         uint256 VARIABLE_MIXED_CASE_INFO;
   |                 ------------------------
   |
   = help: https://book.getfoundry.sh/reference/forge/forge-lint#mixed-case-variable
@@ -115,9 +129,9 @@ forgetest!(can_override_config_severity, |prj, cmd| {
     });
     cmd.arg("lint").args(["--severity", "info"]).assert_success().stderr_eq(str![[r#"
 note[mixed-case-variable]: mutable variables should use mixedCase
- [FILE]:6:17
+ [FILE]:9:17
   |
-6 |         uint256 VARIABLE_MIXED_CASE_INFO;
+9 |         uint256 VARIABLE_MIXED_CASE_INFO;
   |                 ------------------------
   |
   = help: https://book.getfoundry.sh/reference/forge/forge-lint#mixed-case-variable
@@ -343,6 +357,38 @@ Warning (2018): Function state mutability can be restricted to pure
 
 "#]]);
 });
+
+forgetest!(can_process_inline_config_regardless_of_input_order, |prj, cmd| {
+    prj.wipe_contracts();
+    prj.add_source("ContractWithLints", CONTRACT).unwrap();
+    prj.add_source("OtherContractWithLints", OTHER_CONTRACT).unwrap();
+    cmd.arg("lint").assert_success();
+
+    prj.wipe_contracts();
+    prj.add_source("OtherContractWithLints", OTHER_CONTRACT).unwrap();
+    prj.add_source("ContractWithLints", CONTRACT).unwrap();
+    cmd.arg("lint").assert_success();
+});
+
+// <https://github.com/foundry-rs/foundry/issues/11080>
+forgetest!(can_use_only_lint_with_multilint_passes, |prj, cmd| {
+    prj.wipe_contracts();
+    prj.add_source("ContractWithLints", CONTRACT).unwrap();
+    prj.add_source("OnlyImports", ONLY_IMPORTS).unwrap();
+    cmd.arg("lint").args(["--only-lint", "unused-import"]).assert_success().stderr_eq(str![[r#"
+note[unused-import]: unused imports should be removed
+ [FILE]:8:14
+  |
+8 |     import { _PascalCaseInfo } from "./ContractWithLints.sol";
+  |              ---------------
+  |
+  = help: https://book.getfoundry.sh/reference/forge/forge-lint#unused-import
+
+
+"#]]);
+});
+
+// ------------------------------------------------------------------------------------------------
 
 #[tokio::test]
 async fn ensure_lint_rule_docs() {

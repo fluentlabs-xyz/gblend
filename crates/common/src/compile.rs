@@ -162,7 +162,7 @@ impl ProjectCompiler {
     {
         self.project_root = project.root().to_path_buf();
 
-        self.build_rust_contracts(&project)?;
+        let rust_contracts = self.build_rust_contracts(&project)?;
 
         // TODO: Avoid using std::process::exit(0).
         // Replacing this with a return (e.g., Ok(ProjectCompileOutput::default())) would be more
@@ -171,8 +171,10 @@ impl ProjectCompiler {
         // broader refactor across the call chain. Leaving it as-is for now until a larger
         // refactor is feasible.
         if !project.paths.has_input_files() && self.files.is_empty() {
-            sh_println!("Nothing to compile")?;
-            std::process::exit(0);
+            if rust_contracts == 0 {
+                sh_println!("Nothing to compile")?;
+                std::process::exit(0);
+            }
         }
 
         // Taking is fine since we don't need these in `compile_with`.
@@ -251,16 +253,17 @@ impl ProjectCompiler {
     fn build_rust_contracts<C: Compiler<CompilerContract = Contract>>(
         &mut self,
         project: &Project<C>,
-    ) -> Result<()> {
+    ) -> Result<usize> {
         // Find all Rust projects (crates) in source directories
         let rust_projects = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
 
         if rust_projects.is_empty() {
             sh_println!("No Rust contracts found")?;
-            return Ok(());
+            return Ok(0);
         }
 
         sh_println!("Compiling {} Rust contract(s)...", rust_projects.len())?;
+        let contracts_count = rust_projects.len();
         let timer = Instant::now();
 
         // Iterate through each found Rust project and compile it
@@ -307,7 +310,7 @@ impl ProjectCompiler {
         }
         sh_println!("Finished compiling Rust contracts in {:.2?}", timer.elapsed())?;
 
-        Ok(())
+        Ok(contracts_count)
     }
 
     /// Normalizes contract directory name to PascalCase contract name

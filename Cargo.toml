@@ -32,11 +32,11 @@ resolver = "2"
 version = "0.1.4"
 edition = "2024"
 # Remember to update clippy.toml as well
-rust-version = "1.88"
+rust-version = "1.89"
 authors = ["Foundry Contributors"]
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/foundry-rs/foundry"
-repository = "https://github.com/foundry-rs/foundry"
+homepage = "https://github.com/fluentlabs-xyz/gblend"
+repository = "https://github.com/fluentlabs-xyz/gblend"
 exclude = ["benches/", "tests/", "test-data/", "testdata/"]
 
 [workspace.lints.clippy]
@@ -71,8 +71,8 @@ all = "warn"
 # Uncomment this section if you're using a debugger.
 [profile.dev]
 # https://davidlattimore.github.io/posts/2024/02/04/speeding-up-the-rust-edit-build-run-cycle.html
-#debug = "line-tables-only"
-#split-debuginfo = "unpacked"
+# debug = "line-tables-only"
+# split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -87,8 +87,7 @@ codegen-units = 16
 [profile.profiling]
 inherits = "release"
 debug = "full"
-split-debuginfo = "unpacked"
-strip = false
+strip = "none"
 
 [profile.bench]
 inherits = "profiling"
@@ -204,20 +203,19 @@ foundry-wallets = { path = "crates/wallets" }
 foundry-linking = { path = "crates/linking" }
 
 # fluentbase
+fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.3-dev" }
 
-fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev", features = ["json"] }
-#fluentbase-genesis = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev", default-features = false }
 
 # solc & compilation utilities
-foundry-block-explorers = { version = "0.19.1", default-features = false }
-foundry-compilers = { version = "0.17.4", default-features = false }
-foundry-fork-db = "0.15"
+foundry-block-explorers = { version = "0.20.0", default-features = false }
+foundry-compilers = { version = "0.18.2", default-features = false }
+foundry-fork-db = "0.16"
 solang-parser = { version = "=0.3.9", package = "foundry-solang-parser" }
-solar-ast = { version = "=0.1.4", default-features = false }
-solar-parse = { version = "=0.1.4", default-features = false }
-solar-interface = { version = "=0.1.4", default-features = false }
-solar-sema = { version = "=0.1.4", default-features = false }
-solar-data-structures = { version = "=0.1.4", default-features = false }
+solar-ast = { version = "=0.1.5", default-features = false }
+solar-parse = { version = "=0.1.5", default-features = false }
+solar-interface = { version = "=0.1.5", default-features = false }
+solar-sema = { version = "=0.1.5", default-features = false }
+solar-data-structures = { version = "=0.1.5", default-features = false }
 
 ## alloy
 alloy-consensus = { version = "1.0.22", default-features = false }
@@ -268,13 +266,13 @@ op-alloy-rpc-types = "0.17.2"
 op-alloy-flz = "0.13.1"
 
 ## revm
-revm = { version = "24.0.1", default-features = false }
-revm-inspectors = { version = "0.23.0", features = ["serde"] }
-op-revm = { version = "5.0.1", default-features = false }
+revm = { version = "27.0.3", default-features = false }
+revm-inspectors = { version = "0.26.5", features = ["serde"] }
+op-revm = { version = "8.0.3", default-features = false }
 
 ## alloy-evm
-alloy-evm = { version = "0.10.0", features = ["enforce-rwasm"] }
-alloy-op-evm = { version = "0.10.0" }
+alloy-evm = "0.15.0"
+alloy-op-evm = "0.15.0"
 
 ## cli
 anstream = "0.6"
@@ -340,12 +338,12 @@ semver = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
 similar-asserts = "1.7"
-soldeer-commands = "=0.5.4"
-soldeer-core = { version = "=0.5.4", features = ["serde"] }
+soldeer-commands = "=0.6.1"
+soldeer-core = { version = "=0.6.1", features = ["serde"] }
 strum = "0.27"
 tempfile = "3.20"
 tokio = "1"
-toml = "0.8"
+toml = "0.9"
 tower = "0.5"
 tower-http = "0.6"
 tracing = "0.1"
@@ -365,37 +363,39 @@ flate2 = "1.1"
 # by the `url` crate.
 # See the `idna_adapter` README.md for more details: https://docs.rs/crate/idna_adapter/latest
 idna_adapter = "=1.1.0"
-# Avoid duplicating `zip 2` and `zip 3`. Remove once all `zip` dependencies are updated to `zip 3`.
-zip-extract = "=0.2.1"
 
 [patch.crates-io]
-revm = { package = "revm", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-bytecode = { package = "revm-bytecode", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-database = { package = "revm-database", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-state = { package = "revm-state", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-primitives = { package = "revm-primitives", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-interpreter = { package = "revm-interpreter", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-inspector = { package = "revm-inspector", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-context = { package = "revm-context", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-context-interface = { package = "revm-context-interface", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-revm-database-interface = { package = "revm-database-interface", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-op-revm = { package = "op-revm", git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.0-dev" }
-alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-bytecode = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-database = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-state = { package = "revm-state", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-primitives = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-interpreter = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-inspector = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-context = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-context-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-database-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+op-revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
 
-## fluentbase
-#revm = { path = "../fluentbase-v2/revm/crates/revm" }
-#revm-bytecode = { path = "../fluentbase-v2/revm/crates/bytecode" }
-#revm-database = { path = "../fluentbase-v2/revm/crates/database" }
-#revm-database-interface = { path = "../fluentbase-v2/revm/crates/database/interface" }
-#revm-state = { path = "../fluentbase-v2/revm/crates/state" }
-#revm-primitives = { path = "../fluentbase-v2/revm/crates/primitives" }
-#revm-interpreter = { path = "../fluentbase-v2/revm/crates/interpreter" }
-#revm-inspector = { path = "../fluentbase-v2/revm/crates/inspector" }
-#revm-context = { path = "../fluentbase-v2/revm/crates/context" }
-#revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
-#op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
-#
-#alloy-evm = { path = "../alloy-rwasm/crates/evm" }
+revm-handler = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+revm-precompile = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+alloy-op-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+
+
+# ## fluentbase
+# revm = { path = "../fluentbase-v2/revm/crates/revm" }
+# revm-bytecode = { path = "../fluentbase-v2/revm/crates/bytecode" }
+# revm-database = { path = "../fluentbase-v2/revm/crates/database" }
+# revm-database-interface = { path = "../fluentbase-v2/revm/crates/database/interface" }
+# revm-state = { path = "../fluentbase-v2/revm/crates/state" }
+# revm-primitives = { path = "../fluentbase-v2/revm/crates/primitives" }
+# revm-interpreter = { path = "../fluentbase-v2/revm/crates/interpreter" }
+# revm-inspector = { path = "../fluentbase-v2/revm/crates/inspector" }
+# revm-context = { path = "../fluentbase-v2/revm/crates/context" }
+# revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
+# op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
+
 
 
 
@@ -436,18 +436,18 @@ alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "d
 # alloy-transport-ws = { git = "https://github.com/alloy-rs/alloy", rev = "7fab7ee" }
 
 ## alloy-evm
-# alloy-evm = { git = "https://github.com/alloy-rs/evm.git", rev = "dce752f" }
-# alloy-op-evm = { git = "https://github.com/alloy-rs/evm.git", rev = "dce752f" }
+# alloy-evm = { git = "https://github.com/alloy-rs/evm.git", rev = "7762adc" }
+# alloy-op-evm = { git = "https://github.com/alloy-rs/evm.git", rev = "7762adc" }
 
 ## revm
-# revm = { git = "https://github.com/bluealloy/revm.git", rev = "b5808253" }
-# op-revm = { git = "https://github.com/bluealloy/revm.git", rev = "b5808253" }
-# revm-inspectors = { git = "https://github.com/paradigmxyz/revm-inspectors.git", rev = "a625c04" }
+# revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
+# op-revm = { git = "https://github.com/bluealloy/revm.git", rev = "d9cda3a" }
+# revm-inspectors = { git = "https://github.com/paradigmxyz/revm-inspectors.git", rev = "956bc98" }
 
 ## foundry
 # foundry-block-explorers = { git = "https://github.com/foundry-rs/block-explorers.git", rev = "e09cb89" }
 # foundry-compilers = { git = "https://github.com/foundry-rs/compilers.git", rev = "e4a9b04" }
-# foundry-fork-db = { git = "https://github.com/foundry-rs/foundry-fork-db", rev = "811a61a" }
+# foundry-fork-db = { git = "https://github.com/foundry-rs/foundry-fork-db", rev = "4ed9afb" }
 
 ## solar
 # solar-ast = { git = "https://github.com/paradigmxyz/solar.git", branch = "main" }

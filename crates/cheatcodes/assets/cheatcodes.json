@@ -4177,7 +4177,7 @@
     {
       "func": {
         "id": "deriveKey_0",
-        "description": "Derive a private key from a provided mnenomic string (or mnenomic file path)\nat the derivation path `m/44'/60'/0'/0/{index}`.",
+        "description": "Derive a private key from a provided mnemonic string (or mnemonic file path)\nat the derivation path `m/44'/60'/0'/0/{index}`.",
         "declaration": "function deriveKey(string calldata mnemonic, uint32 index) external pure returns (uint256 privateKey);",
         "visibility": "external",
         "mutability": "pure",
@@ -4197,7 +4197,7 @@
     {
       "func": {
         "id": "deriveKey_1",
-        "description": "Derive a private key from a provided mnenomic string (or mnenomic file path)\nat `{derivationPath}{index}`.",
+        "description": "Derive a private key from a provided mnemonic string (or mnemonic file path)\nat `{derivationPath}{index}`.",
         "declaration": "function deriveKey(string calldata mnemonic, string calldata derivationPath, uint32 index) external pure returns (uint256 privateKey);",
         "visibility": "external",
         "mutability": "pure",
@@ -4217,7 +4217,7 @@
     {
       "func": {
         "id": "deriveKey_2",
-        "description": "Derive a private key from a provided mnenomic string (or mnenomic file path) in the specified language\nat the derivation path `m/44'/60'/0'/0/{index}`.",
+        "description": "Derive a private key from a provided mnemonic string (or mnemonic file path) in the specified language\nat the derivation path `m/44'/60'/0'/0/{index}`.",
         "declaration": "function deriveKey(string calldata mnemonic, uint32 index, string calldata language) external pure returns (uint256 privateKey);",
         "visibility": "external",
         "mutability": "pure",
@@ -4237,7 +4237,7 @@
     {
       "func": {
         "id": "deriveKey_3",
-        "description": "Derive a private key from a provided mnenomic string (or mnenomic file path) in the specified language\nat `{derivationPath}{index}`.",
+        "description": "Derive a private key from a provided mnemonic string (or mnemonic file path) in the specified language\nat `{derivationPath}{index}`.",
         "declaration": "function deriveKey(string calldata mnemonic, string calldata derivationPath, uint32 index, string calldata language) external pure returns (uint256 privateKey);",
         "visibility": "external",
         "mutability": "pure",
@@ -6368,6 +6368,26 @@
           116,
           138,
           173
+        ]
+      },
+      "group": "evm",
+      "status": "stable",
+      "safety": "safe"
+    },
+    {
+      "func": {
+        "id": "getRawBlockHeader",
+        "description": "Gets the RLP encoded block header for a given block number.\nReturns the block header in the same format as `cast block <block_number> --raw`.",
+        "declaration": "function getRawBlockHeader(uint256 blockNumber) external view returns (bytes memory rlpHeader);",
+        "visibility": "external",
+        "mutability": "view",
+        "signature": "getRawBlockHeader(uint256)",
+        "selector": "0x2c667606",
+        "selectorBytes": [
+          44,
+          102,
+          118,
+          6
         ]
       },
       "group": "evm",
