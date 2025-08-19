@@ -71,8 +71,8 @@ all = "warn"
 # Uncomment this section if you're using a debugger.
 [profile.dev]
 # https://davidlattimore.github.io/posts/2024/02/04/speeding-up-the-rust-edit-build-run-cycle.html
-debug = "line-tables-only"
-split-debuginfo = "unpacked"
+# debug = "line-tables-only"
+# split-debuginfo = "unpacked"
 
 [profile.release]
 opt-level = 3
@@ -203,7 +203,7 @@ foundry-wallets = { path = "crates/wallets" }
 foundry-linking = { path = "crates/linking" }
 
 # fluentbase
-fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", rev = "64797bf7"}
+fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.3-dev" }
 
 
 # solc & compilation utilities
@@ -379,6 +379,9 @@ op-revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "
 
 revm-handler = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
 revm-precompile = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "devel" }
+alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+alloy-op-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
+
 
 # ## fluentbase
 # revm = { path = "../fluentbase-v2/revm/crates/revm" }
@@ -393,7 +396,6 @@ revm-precompile = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", br
 # revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
 # op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
 
-# alloy-evm = { path = "../alloy-rwasm/crates/evm" }
 
 
 

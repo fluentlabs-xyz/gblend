@@ -1,41 +1,45 @@
 //! Cheatcode EVM inspector.
 
 use crate::{
-    CheatsConfig, CheatsCtxt, DynCheatcode, Error, Result,
-    Vm::{self, AccountAccess},
     evm::{
-        DealRecord, GasRecord, RecordAccess,
-        mapping::{self, MappingSlots},
-        mock::{MockCallDataContext, MockCallReturnData},
-        prank::Prank,
-    },
-    inspector::utils::CommonCreateInput,
-    script::{Broadcast, Wallets},
-    test::{
+        mapping::{self, MappingSlots}, mock::{MockCallDataContext, MockCallReturnData}, prank::Prank,
+        DealRecord,
+        GasRecord,
+        RecordAccess,
+    }, inspector::utils::CommonCreateInput, script::{Broadcast, Wallets}, test::{
         assume::AssumeNoRevert,
         expect::{
             self, ExpectedCallData, ExpectedCallTracker, ExpectedCallType, ExpectedCreate,
             ExpectedEmitTracker, ExpectedRevert, ExpectedRevertKind,
         },
         revert_handlers,
-    },
-    utils::IgnoredTraces,
+    }, utils::IgnoredTraces,
+    CheatsConfig,
+    CheatsCtxt,
+    DynCheatcode,
+    Error,
+    Result,
+    Vm::{self, AccountAccess},
 };
 use alloy_consensus::BlobTransactionSidecar;
 use alloy_evm::eth::EthEvmContext;
 use alloy_network::TransactionBuilder4844;
 use alloy_primitives::{
-    Address, B256, Bytes, Log, TxKind, U256, hex,
-    map::{AddressHashMap, HashMap, HashSet},
+    hex, map::{AddressHashMap, HashMap, HashSet}, Address, Bytes, Log, TxKind, B256,
+    U256,
 };
 use alloy_rpc_types::{
-    AccessList,
     request::{TransactionInput, TransactionRequest},
+    AccessList,
 };
 use alloy_sol_types::{SolCall, SolInterface, SolValue};
-use foundry_common::{SELECTOR_LEN, TransactionMaybeSigned, evm::Breakpoints};
+use foundry_common::{evm::Breakpoints, TransactionMaybeSigned, SELECTOR_LEN};
 use foundry_evm_core::{
-    abi::Vm::stopExpectSafeMemoryCall, backend::{DatabaseError, DatabaseExt, RevertDiagnostic}, constants::{CHEATCODE_ADDRESS, HARDHAT_CONSOLE_ADDRESS, MAGIC_ASSUME}, evm::{new_evm_with_existing_context, FoundryEvm}, InspectorExt
+    abi::Vm::stopExpectSafeMemoryCall,
+    backend::{DatabaseError, DatabaseExt, RevertDiagnostic},
+    constants::{CHEATCODE_ADDRESS, HARDHAT_CONSOLE_ADDRESS, MAGIC_ASSUME},
+    evm::{new_evm_with_existing_context, FoundryEvm},
+    InspectorExt,
 };
 use foundry_evm_traces::{TracingInspector, TracingInspectorConfig};
 use foundry_wallets::multi_wallet::MultiWallet;
@@ -43,17 +47,17 @@ use itertools::Itertools;
 use proptest::test_runner::{RngAlgorithm, TestRng, TestRunner};
 use rand::Rng;
 use revm::{
-    Inspector, Journal,
-    bytecode::opcode as op,
-    context::{BlockEnv, JournalTr, LocalContext, TransactionType, result::EVMError},
-    context_interface::{CreateScheme, transaction::SignedAuthorization},
+    bytecode::opcode as op, context::{result::EVMError, BlockEnv, JournalTr, LocalContext, TransactionType},
+    context_interface::{transaction::SignedAuthorization, CreateScheme},
     handler::FrameResult,
     interpreter::{
-        CallInputs, CallOutcome, CallScheme, CreateInputs, CreateOutcome, FrameInput, Gas, Host,
-        InstructionResult, Interpreter, InterpreterAction, InterpreterResult,
-        interpreter_types::{Jumps, LoopControl, MemoryTr},
+        interpreter_types::{Jumps, LoopControl, MemoryTr}, CallInputs, CallOutcome, CallScheme, CreateInputs, CreateOutcome, FrameInput, Gas,
+        Host, InstructionResult, Interpreter, InterpreterAction,
+        InterpreterResult,
     },
     state::EvmStorageSlot,
+    Inspector,
+    Journal,
 };
 use serde_json::Value;
 use std::{
@@ -87,7 +91,7 @@ pub trait CheatcodesExecutor {
         ccx: &mut CheatsCtxt,
     ) -> Result<CreateOutcome, EVMError<DatabaseError>> {
         with_evm(self, ccx, |evm| {
-            evm.inner.ctx.journaled_state.depth += 1;
+            evm.inner.0.ctx.journaled_state.depth += 1;
 
             let frame = FrameInput::Create(Box::new(inputs));
 
@@ -96,7 +100,7 @@ pub trait CheatcodesExecutor {
                 FrameResult::Create(create) => create,
             };
 
-            evm.inner.ctx.journaled_state.depth -= 1;
+            evm.inner.0.ctx.journaled_state.depth -= 1;
 
             Ok(outcome)
         })
@@ -144,15 +148,14 @@ where
 
     let res = f(&mut evm)?;
 
-    ccx.ecx.journaled_state.inner = evm.inner.ctx.journaled_state.inner;
-    ccx.ecx.block = evm.inner.ctx.block;
-    ccx.ecx.tx = evm.inner.ctx.tx;
-    ccx.ecx.cfg = evm.inner.ctx.cfg;
-    ccx.ecx.error = evm.inner.ctx.error;
+    ccx.ecx.journaled_state.inner = evm.inner.0.ctx.journaled_state.inner;
+    ccx.ecx.block = evm.inner.0.ctx.block;
+    ccx.ecx.tx = evm.inner.0.ctx.tx;
+    ccx.ecx.cfg = evm.inner.0.ctx.cfg;
+    ccx.ecx.error = evm.inner.0.ctx.error;
 
     Ok(res)
 }
-
 
 /// Basic implementation of [CheatcodesExecutor] that simply returns the [Cheatcodes] instance as an
 /// inspector.
