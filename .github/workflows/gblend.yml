@@ -106,6 +106,16 @@ jobs:
             platform: win32
             arch: amd64
     steps:
+      - name: Enable long paths (Windows)
+        if: contains(matrix.target, 'windows')
+        shell: bash
+        run: git config --global core.longpaths true
+
+      - name: Make Cargo use CLI git
+        if: contains(matrix.target, 'windows')
+        shell: bash
+        run: echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
