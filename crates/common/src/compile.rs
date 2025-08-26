@@ -68,6 +68,9 @@ pub struct ProjectCompiler {
 
     /// Whether to compile with dynamic linking tests and scripts.
     dynamic_test_linking: bool,
+
+    /// Whether to use docker for the reproducible build
+    no_docker: bool,
 }
 
 impl Default for ProjectCompiler {
@@ -91,6 +94,8 @@ impl ProjectCompiler {
             ignore_eip_3860: false,
             files: Vec::new(),
             dynamic_test_linking: false,
+            // docker enabled by default
+            no_docker: false,
         }
     }
 
@@ -150,6 +155,14 @@ impl ProjectCompiler {
         self.dynamic_test_linking = preprocess;
         self
     }
+
+    /// Sets no-docker flag
+    #[inline]
+    pub fn no_docker(mut self, yes: bool) -> Self {
+        self.no_docker = yes;
+        self
+    }
+    
     // TODO(d1r1): move rust compilation to the foundry-compilers crate.
     //
     /// Compiles the project.
@@ -291,7 +304,7 @@ impl ProjectCompiler {
                     FluentArtifact::Wat,
                     FluentArtifact::Metadata,
                 ],
-                docker: true,
+                docker: !self.no_docker,
                 mount_dir: Some(project.root().to_path_buf()),
                 output: Some(project.artifacts_path().to_path_buf()),
                 ..Default::default()

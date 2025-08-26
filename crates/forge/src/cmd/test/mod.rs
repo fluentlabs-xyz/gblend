@@ -328,7 +328,8 @@ impl TestArgs {
         let compiler = ProjectCompiler::new()
             .dynamic_test_linking(config.dynamic_test_linking)
             .quiet(shell::is_json() || self.junit)
-            .files(sources_to_compile);
+            .files(sources_to_compile)
+            .no_docker(config.no_docker);
 
         let output = compiler.compile(&project)?;
 

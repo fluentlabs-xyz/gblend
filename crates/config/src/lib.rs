@@ -552,6 +552,9 @@ pub struct Config {
 
     /// Wether the contract is wasm
     pub wasm: bool,
+
+    /// Do not use docker for rust (wasm) contracts
+    pub no_docker: bool,
 }
 
 /// Mapping of fallback standalone sections. See [`FallbackProfileProvider`].
@@ -2457,6 +2460,7 @@ impl Default for Config {
             script_execution_protection: true,
             _non_exhaustive: (),
             wasm: false,
+            no_docker: false,
         }
     }
 }
