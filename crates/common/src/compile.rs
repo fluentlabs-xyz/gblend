@@ -292,21 +292,33 @@ impl ProjectCompiler {
             let contract_name = format!("{contract_name_clean}.wasm");
 
             sh_println!("  - Compiling contract {contract_dir}:{contract_name}...");
-
-            // Configure the build to generate Foundry artifact
-            let build_args = BuildArgs {
-                contract_name: Some(contract_name.clone()),
-                generate: vec![
+            let generate_artifacts = if !self.no_docker {
+                vec![
                     FluentArtifact::Solidity,
                     FluentArtifact::Abi,
                     FluentArtifact::Foundry,
                     FluentArtifact::Rwasm,
                     FluentArtifact::Wat,
                     FluentArtifact::Metadata,
-                ],
+                ]
+            } else {
+                vec![
+                    FluentArtifact::Solidity,
+                    FluentArtifact::Abi,
+                    FluentArtifact::Foundry,
+                    FluentArtifact::Rwasm,
+                    FluentArtifact::Metadata,
+                ]
+            };
+
+            // Configure the build to generate the Foundry artifact
+            let build_args = BuildArgs {
+                contract_name: Some(contract_name.clone()),
+                generate: generate_artifacts,
                 docker: !self.no_docker,
                 mount_dir: Some(project.root().to_path_buf()),
                 output: Some(project.artifacts_path().to_path_buf()),
+                wasm_opt: !self.no_docker,
                 ..Default::default()
             };
 
@@ -318,7 +330,7 @@ impl ProjectCompiler {
                 .wrap_err_with(|| {
                     format!("Failed to build Rust contract at {}", pkg_info.path.display())
                 })?;
-            // remove directory after proccessing
+            // remove the directory after proccessing
             self.files.retain(|file| !file.starts_with(&pkg_info.path));
         }
         sh_println!("Finished compiling Rust contracts in {:.2?}", timer.elapsed())?;
