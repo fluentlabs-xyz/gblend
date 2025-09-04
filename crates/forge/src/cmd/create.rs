@@ -130,6 +130,7 @@ impl CreateArgs {
         // TODO(d1r1): after move compilation logic into Founry compiler - we can simplify this flow
         // completely
         let rust_contracts = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
+        let mut is_rust_contract = false;
         let contract_name = normalize_contract_name(&self.contract.name);
 
         let target_path = if let Some(ref mut path) = self.contract.path {
@@ -144,6 +145,7 @@ impl CreateArgs {
 
         let (abi, bin, id) =
             if rust_contracts.contains_key(&normalize_contract_name(&self.contract.name)) {
+                is_rust_contract = true;
                 let artifact_dir = project.artifacts_path().join(&self.contract.name);
                 let artifact: serde_json::Value =
                     serde_json::from_str(&fs::read_to_string(&artifact_dir.join("foundry.json"))?)?;
@@ -199,15 +201,6 @@ impl CreateArgs {
             vec![]
         };
 
-        let rust_args = match self.constructor_args.first() {
-            Some(hex_string) => {
-                let bytes = Bytes::from_hex(hex_string.trim_start_matches("0x"))
-                    .map_err(|e| eyre::eyre!("Invalid hex string: {}", e))?;
-                Some(bytes)
-            }
-            None => None,
-        };
-
         let provider = utils::get_provider(&config)?;
 
         // respect chain, if set explicitly via cmd args
@@ -233,7 +226,7 @@ impl CreateArgs {
                 config.transaction_timeout,
                 id,
                 dry_run,
-                rust_args,
+                is_rust_contract,
             )
             .await
         } else {
@@ -253,7 +246,7 @@ impl CreateArgs {
                 config.transaction_timeout,
                 id,
                 dry_run,
-                rust_args,
+                is_rust_contract,
             )
             .await
         }
@@ -335,7 +328,7 @@ impl CreateArgs {
         timeout: u64,
         id: ArtifactId,
         dry_run: bool,
-        rust_constructor_args: Option<Bytes>,
+        is_rust_contract: bool,
     ) -> Result<()> {
         let bin = bin.into_bytes().unwrap_or_default();
         if bin.is_empty() {
@@ -346,17 +339,14 @@ impl CreateArgs {
         let factory = ContractFactory::new(abi.clone(), bin.clone(), provider.clone(), timeout);
 
         let is_args_empty = args.is_empty();
-        let mut deployer = if let Some(encoded_args) = rust_constructor_args {
-            factory.deploy_with_encoded_constructor(encoded_args)?
-        } else {
-            factory.deploy_tokens(args.clone()).context("failed to deploy contract").map_err(|e| {
+
+        let mut deployer = factory.deploy_tokens(args.clone(), is_rust_contract).context("failed to deploy contract").map_err(|e| {
                 if is_args_empty {
                     e.wrap_err("no arguments provided for contract constructor; consider --constructor-args or --constructor-args-path")
                 } else {
                     e
                 }
-            })?
-        };
+            })?;
 
         let is_legacy = self.tx.legacy || Chain::from(chain).is_legacy();
 
@@ -636,6 +626,7 @@ impl<P: Provider<AnyNetwork> + Clone> DeploymentTxFactory<P> {
     pub fn deploy_tokens(
         self,
         params: Vec<DynSolValue>,
+        is_rust_contract: bool,
     ) -> Result<Deployer<P>, ContractDeploymentError> {
         // Encode the constructor args & concatenate with the bytecode if necessary
         let data: Bytes = match (self.abi.constructor(), params.is_empty()) {
@@ -646,29 +637,17 @@ impl<P: Provider<AnyNetwork> + Clone> DeploymentTxFactory<P> {
                     .abi_encode_input(&params)
                     .map_err(ContractDeploymentError::DetokenizationError)?
                     .into();
-                // Concatenate the bytecode and abi-encoded constructor call.
-                self.bytecode.iter().copied().chain(input).collect()
+                if is_rust_contract {
+                    add_constructor_params_section(&self.bytecode, input)
+                } else {
+                    // Concatenate the bytecode and abi-encoded constructor call.
+                    self.bytecode.iter().copied().chain(input).collect()
+                }
             }
         };
 
         // create the tx object. Since we're deploying a contract, `to` is `None`
         let tx = WithOtherFields::new(TransactionRequest::default().input(data.into()));
-
-        Ok(Deployer { client: self.client.clone(), tx, confs: 1, timeout: self.timeout })
-    }
-
-    /// Create a deployment tx using the encoded
-    pub fn deploy_with_encoded_constructor(
-        self,
-        data: Bytes,
-    ) -> Result<Deployer<P>, ContractDeploymentError> {
-        if data.is_empty() {
-            return Err(ContractDeploymentError::ConstructorError);
-        }
-
-        let input: Bytes = add_constructor_params_section(&self.bytecode, data);
-
-        let tx = WithOtherFields::new(TransactionRequest::default().input(input.into()));
 
         Ok(Deployer { client: self.client.clone(), tx, confs: 1, timeout: self.timeout })
     }
