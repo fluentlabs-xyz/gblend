@@ -3,6 +3,7 @@ use alloy_chains::Chain;
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt, Specifier};
 use alloy_json_abi::{Constructor, JsonAbi};
 use alloy_network::{AnyNetwork, AnyTransactionReceipt, EthereumWallet, TransactionBuilder};
+use alloy_primitives::hex::FromHex;
 use alloy_primitives::{hex, Address, Bytes};
 use alloy_provider::{PendingTransactionError, Provider, ProviderBuilder};
 use alloy_rpc_types::TransactionRequest;
@@ -16,7 +17,12 @@ use foundry_cli::{
     opts::{BuildOpts, EthereumOpts, EtherscanOpts, TransactionOpts},
     utils::{self, read_constructor_args_file, remove_contract, LoadConfig},
 };
-use foundry_common::{compile::{self}, find_rust_contracts, fmt::parse_tokens, normalize_contract_name, shell};
+use foundry_common::{
+    compile::{self},
+    find_rust_contracts,
+    fmt::parse_tokens,
+    normalize_contract_name, shell,
+};
 use foundry_compilers::{
     artifacts::{BytecodeObject, CompactBytecode}, info::ContractInfo,
     utils::canonicalize,
@@ -33,8 +39,10 @@ use foundry_config::{
 };
 use rand::{distributions::Alphanumeric, Rng};
 use serde_json::json;
+use solar_sema::interface::data_structures::smallvec::alloc;
 use std::{borrow::Borrow, fs, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
-
+use wasm_encoder::{CustomSection, Module, RawSection};
+use wasmparser::Parser as WasmpParser;
 fn generate_build_id() -> String {
     rand::thread_rng().sample_iter(&Alphanumeric).take(8).map(char::from).collect()
 }
@@ -122,6 +130,7 @@ impl CreateArgs {
         // TODO(d1r1): after move compilation logic into Founry compiler - we can simplify this flow
         // completely
         let rust_contracts = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
+        let mut is_rust_contract = false;
         let contract_name = normalize_contract_name(&self.contract.name);
 
         let target_path = if let Some(ref mut path) = self.contract.path {
@@ -134,31 +143,33 @@ impl CreateArgs {
 
         let output = compile::compile_target(&target_path, &project, shell::is_json())?;
 
-        let (abi, bin, id) = if rust_contracts.contains_key(&normalize_contract_name(&self.contract.name)) {
-            let artifact_dir = project.artifacts_path().join(&self.contract.name);
-            let artifact: serde_json::Value =
-                serde_json::from_str(&fs::read_to_string(&artifact_dir.join("foundry.json"))?)?;
+        let (abi, bin, id) =
+            if rust_contracts.contains_key(&normalize_contract_name(&self.contract.name)) {
+                is_rust_contract = true;
+                let artifact_dir = project.artifacts_path().join(&self.contract.name);
+                let artifact: serde_json::Value =
+                    serde_json::from_str(&fs::read_to_string(&artifact_dir.join("foundry.json"))?)?;
 
-            // Extract ABI
-            let abi: JsonAbi = serde_json::from_value(artifact["abi"].clone())?;
+                // Extract ABI
+                let abi: JsonAbi = serde_json::from_value(artifact["abi"].clone())?;
 
-            // Extract Bytecode
-            let bin: CompactBytecode = serde_json::from_value(artifact["bytecode"].clone())?;
+                // Extract Bytecode
+                let bin: CompactBytecode = serde_json::from_value(artifact["bytecode"].clone())?;
 
-            // Create ArtifactId
-            let id = ArtifactId {
-                path: artifact_dir,
-                name: self.contract.name.clone(),
-                source: target_path.clone(),
-                version: semver::Version::new(0, 1, 0),
-                profile: "release".to_string(),
-                // TODO(d1r1): use actual build id (that used for caching)
-                build_id: generate_build_id(),
+                // Create ArtifactId
+                let id = ArtifactId {
+                    path: artifact_dir,
+                    name: self.contract.name.clone(),
+                    source: target_path.clone(),
+                    version: semver::Version::new(0, 1, 0),
+                    profile: "release".to_string(),
+                    // TODO(d1r1): use actual build id (that used for caching)
+                    build_id: generate_build_id(),
+                };
+                (abi, bin, id)
+            } else {
+                remove_contract(output, &target_path, &self.contract.name)?
             };
-            (abi, bin, id)
-        } else {
-            remove_contract(output, &target_path, &self.contract.name)?
-        };
 
         let bin = match bin.object {
             BytecodeObject::Bytecode(_) => bin.object,
@@ -215,6 +226,7 @@ impl CreateArgs {
                 config.transaction_timeout,
                 id,
                 dry_run,
+                is_rust_contract,
             )
             .await
         } else {
@@ -234,6 +246,7 @@ impl CreateArgs {
                 config.transaction_timeout,
                 id,
                 dry_run,
+                is_rust_contract,
             )
             .await
         }
@@ -315,6 +328,7 @@ impl CreateArgs {
         timeout: u64,
         id: ArtifactId,
         dry_run: bool,
+        is_rust_contract: bool,
     ) -> Result<()> {
         let bin = bin.into_bytes().unwrap_or_default();
         if bin.is_empty() {
@@ -325,14 +339,15 @@ impl CreateArgs {
         let factory = ContractFactory::new(abi.clone(), bin.clone(), provider.clone(), timeout);
 
         let is_args_empty = args.is_empty();
-        let mut deployer =
-            factory.deploy_tokens(args.clone()).context("failed to deploy contract").map_err(|e| {
+
+        let mut deployer = factory.deploy_tokens(args.clone(), is_rust_contract).context("failed to deploy contract").map_err(|e| {
                 if is_args_empty {
                     e.wrap_err("no arguments provided for contract constructor; consider --constructor-args or --constructor-args-path")
                 } else {
                     e
                 }
             })?;
+
         let is_legacy = self.tx.legacy || Chain::from(chain).is_legacy();
 
         deployer.tx.set_from(deployer_address);
@@ -412,9 +427,9 @@ impl CreateArgs {
                 )?;
             } else {
                 let output = json!({
-                    "contract": self.contract.name,
-                    "transaction": &deployer.tx,
-                    "abi":&abi
+                "contract": self.contract.name,
+                "transaction": &deployer.tx,
+                "abi": &abi
                 });
                 sh_println!("{}", serde_json::to_string_pretty(&output)?)?;
             }
@@ -428,9 +443,9 @@ impl CreateArgs {
         let address = deployed_contract;
         if shell::is_json() {
             let output = json!({
-                "deployer": deployer_address.to_string(),
-                "deployedTo": address.to_string(),
-                "transactionHash": receipt.transaction_hash
+            "deployer": deployer_address.to_string(),
+            "deployedTo": address.to_string(),
+            "transactionHash": receipt.transaction_hash
             });
             sh_println!("{}", serde_json::to_string_pretty(&output)?)?;
         } else {
@@ -611,6 +626,7 @@ impl<P: Provider<AnyNetwork> + Clone> DeploymentTxFactory<P> {
     pub fn deploy_tokens(
         self,
         params: Vec<DynSolValue>,
+        is_rust_contract: bool,
     ) -> Result<Deployer<P>, ContractDeploymentError> {
         // Encode the constructor args & concatenate with the bytecode if necessary
         let data: Bytes = match (self.abi.constructor(), params.is_empty()) {
@@ -621,8 +637,12 @@ impl<P: Provider<AnyNetwork> + Clone> DeploymentTxFactory<P> {
                     .abi_encode_input(&params)
                     .map_err(ContractDeploymentError::DetokenizationError)?
                     .into();
-                // Concatenate the bytecode and abi-encoded constructor call.
-                self.bytecode.iter().copied().chain(input).collect()
+                if is_rust_contract {
+                    add_constructor_params_section(&self.bytecode, input)
+                } else {
+                    // Concatenate the bytecode and abi-encoded constructor call.
+                    self.bytecode.iter().copied().chain(input).collect()
+                }
             }
         };
 
@@ -631,6 +651,28 @@ impl<P: Provider<AnyNetwork> + Clone> DeploymentTxFactory<P> {
 
         Ok(Deployer { client: self.client.clone(), tx, confs: 1, timeout: self.timeout })
     }
+}
+
+fn add_constructor_params_section(
+    input_wasm: impl AsRef<[u8]>,
+    constructor_args: impl AsRef<[u8]>,
+) -> Bytes {
+    let mut module = Module::new();
+
+    WasmpParser::new(0)
+        .parse_all(input_wasm.as_ref())
+        .flatten()
+        .filter_map(|payload| payload.as_section())
+        .for_each(|(id, range)| {
+            module.section(&RawSection { id, data: &input_wasm.as_ref()[range] });
+        });
+
+    module.section(&CustomSection {
+        name: alloc::borrow::Cow::Borrowed("input"),
+        data: alloc::borrow::Cow::Borrowed(constructor_args.as_ref()),
+    });
+
+    Bytes::from(module.finish())
 }
 
 #[derive(thiserror::Error, Debug)]

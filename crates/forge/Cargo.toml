@@ -23,6 +23,10 @@ path = "tests/ui.rs"
 harness = false
 
 [dependencies]
+
+# wasm
+wasmparser = { version = "0.238.1" }
+wasm-encoder = { version = "0.238.1" }
 # lib
 foundry-block-explorers = { workspace = true, features = ["foundry-compilers"] }
 foundry-common.workspace = true
