@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "alloy-evm"
 version = "0.15.0"
-source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=devel#6b394b5563e0a7aa8fab20e93739530ea4770d98"
+source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=devel#1df11e4d3b42d333bc34ae46562e3ae970b1a85c"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -337,7 +337,7 @@ dependencies = [
 [[package]]
 name = "alloy-op-evm"
 version = "0.15.0"
-source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=devel#6b394b5563e0a7aa8fab20e93739530ea4770d98"
+source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=devel#1df11e4d3b42d333bc34ae46562e3ae970b1a85c"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -4193,8 +4193,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-build"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "anyhow",
  "cargo_metadata 0.19.2",
@@ -4216,8 +4216,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-codec"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "alloy-primitives",
  "byteorder",
@@ -4229,8 +4229,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-codec-derive"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "convert_case 0.6.0",
  "crypto-hashes",
@@ -4242,8 +4242,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-revm"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "fluentbase-runtime",
  "fluentbase-sdk",
@@ -4255,8 +4255,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-runtime"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -4273,7 +4273,7 @@ dependencies = [
  "num-traits",
  "paste",
  "rwasm",
- "secp256k1 0.29.1",
+ "secp256k1 0.30.0",
  "sha2 0.10.9",
  "solana-poseidon",
  "sp1-curves",
@@ -4283,8 +4283,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-sdk"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "fluentbase-codec",
  "fluentbase-sdk-derive",
@@ -4294,8 +4294,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-sdk-derive"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "alloy-sol-macro-input",
  "crypto-hashes",
@@ -4308,8 +4308,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-sdk-derive-core"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "alloy-sol-macro-input",
  "anyhow",
@@ -4331,8 +4331,8 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-types"
-version = "0.4.3-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.3-dev#8e5340c2b62d0a5b036038167ce09b350df01cbd"
+version = "0.4.5-dev"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?tag=v0.4.5-dev#68c82315d48447bf79ac8669c69b375a63102b66"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
@@ -9501,16 +9501,6 @@ dependencies = [
 
 [[package]]
 name = "secp256k1"
-version = "0.29.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9465315bc9d4566e1724f0fffcbcc446268cb522e60f9a27bcded6b19c108113"
-dependencies = [
- "rand 0.8.5",
- "secp256k1-sys 0.10.1",
-]
-
-[[package]]
-name = "secp256k1"
 version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b50c5943d326858130af85e049f2661ba3c78b26589b8ab98e65e80ae44a1252"
@@ -9995,12 +9985,12 @@ dependencies = [
 [[package]]
 name = "solana-define-syscall"
 version = "2.1.18"
-source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#ed11239e492666bd8279b7cd479ee5d18c8eb602"
+source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#46c158255cbb7c68086457caeacfc4ed05067a44"
 
 [[package]]
 name = "solana-poseidon"
 version = "2.1.18"
-source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#ed11239e492666bd8279b7cd479ee5d18c8eb602"
+source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#46c158255cbb7c68086457caeacfc4ed05067a44"
 dependencies = [
  "ark-bn254",
  "light-poseidon",

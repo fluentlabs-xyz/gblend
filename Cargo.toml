@@ -203,7 +203,7 @@ foundry-wallets = { path = "crates/wallets" }
 foundry-linking = { path = "crates/linking" }
 
 # fluentbase
-fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.3-dev" }
+fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.5-dev" }
 
 
 # solc & compilation utilities
