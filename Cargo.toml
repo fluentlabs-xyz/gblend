@@ -204,6 +204,8 @@ foundry-linking = { path = "crates/linking" }
 
 # fluentbase
 fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "devel" }
+# fluentbase-build = { path = "../fluentbase-v3/crates/build" }
+
 
 
 # solc & compilation utilities
@@ -382,19 +384,23 @@ revm-precompile = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", br
 alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
 alloy-op-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "devel" }
 
+# revm = { path = "../revm-rwasm/crates/revm" }
+# revm-bytecode = { path = "../revm-rwasm/crates/bytecode" }
+# revm-database = { path = "../revm-rwasm/crates/database" }
+# revm-state = { package = "revm-state", path = "../revm-rwasm/crates/state" }
+# revm-primitives = { path = "../revm-rwasm/crates/primitives" }
+# revm-interpreter = { path = "../revm-rwasm/crates/interpreter" }
+# revm-inspector = { path = "../revm-rwasm/crates/inspector" }
+# revm-context = { path = "../revm-rwasm/crates/context" }
+# revm-context-interface = { path = "../revm-rwasm/crates/context/interface" }
+# revm-database-interface = { path = "../revm-rwasm/crates/database/interface" }
+# op-revm = { path = "../revm-rwasm/crates/op-revm" }
 
-# ## fluentbase
-# revm = { path = "../fluentbase-v2/revm/crates/revm" }
-# revm-bytecode = { path = "../fluentbase-v2/revm/crates/bytecode" }
-# revm-database = { path = "../fluentbase-v2/revm/crates/database" }
-# revm-database-interface = { path = "../fluentbase-v2/revm/crates/database/interface" }
-# revm-state = { path = "../fluentbase-v2/revm/crates/state" }
-# revm-primitives = { path = "../fluentbase-v2/revm/crates/primitives" }
-# revm-interpreter = { path = "../fluentbase-v2/revm/crates/interpreter" }
-# revm-inspector = { path = "../fluentbase-v2/revm/crates/inspector" }
-# revm-context = { path = "../fluentbase-v2/revm/crates/context" }
-# revm-context-interface = { path = "../fluentbase-v2/revm/crates/context/interface" }
-# op-revm = { path = "../fluentbase-v2/revm/crates/op-revm" }
+# revm-handler = { path = "../revm-rwasm/crates/handler" }
+# revm-precompile = { path = "../revm-rwasm/crates/precompile" }
+# alloy-evm = { path = "../alloy-evm/crates/evm" }
+# alloy-op-evm = { path = "../alloy-evm/crates/op-evm" }
+
 
 
 

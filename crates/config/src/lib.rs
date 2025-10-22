@@ -595,7 +595,7 @@ impl Config {
     pub const FILE_NAME: &'static str = "foundry.toml";
 
     /// The name of the directory foundry reserves for itself under the user's home directory: `~`
-    pub const FOUNDRY_DIR_NAME: &'static str = ".foundry";
+    pub const FOUNDRY_DIR_NAME: &'static str = ".gblend";
 
     /// Default address for tx.origin
     ///

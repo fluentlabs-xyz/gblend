@@ -10,7 +10,7 @@ use alloy_json_abi::JsonAbi;
 use alloy_primitives::hex;
 use comfy_table::{modifiers::UTF8_ROUND_CORNERS, Cell, Color, Table};
 use eyre::{eyre, ContextCompat, Result, WrapErr};
-use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, BuildResult};
+use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, BuildResult, DEFAULT_DOCKER_TAG};
 use foundry_block_explorers::contract::Metadata;
 use foundry_compilers::{
     artifacts::{remappings::Remapping, BytecodeObject, Contract, Evm, Source, SourceFile}, compilers::{
@@ -307,6 +307,7 @@ impl ProjectCompiler {
                     FluentArtifact::Abi,
                     FluentArtifact::Foundry,
                     FluentArtifact::Rwasm,
+                    // FluentArtifact::Wat,
                     FluentArtifact::Metadata,
                 ]
             };
@@ -316,9 +317,11 @@ impl ProjectCompiler {
                 contract_name: Some(contract_name.clone()),
                 generate: generate_artifacts,
                 docker: !self.no_docker,
+                docker_tag: pkg_info.sdk_version.unwrap_or(DEFAULT_DOCKER_TAG.to_string()),
                 mount_dir: Some(project.root().to_path_buf()),
                 output: Some(project.artifacts_path().to_path_buf()),
                 wasm_opt: !self.no_docker,
+                locked: false,
                 ..Default::default()
             };
 
