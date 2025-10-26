@@ -245,7 +245,7 @@ fn print_examples() -> Result<()> {
 
     sh_println!("\n Usage:");
     sh_println!("  gblend init ./path                      # default (counter)");
-    sh_println!("  gblend init --template erc20 ./path     # specific example");
+    sh_println!("  gblend init --template erc20-rs ./path  # specific example");
     sh_println!("  gblend init --template user/repo ./path # custom template");
 
     Ok(())
