@@ -203,7 +203,7 @@ foundry-wallets = { path = "crates/wallets" }
 foundry-linking = { path = "crates/linking" }
 
 # fluentbase
-fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.11-dev" }
+fluentbase-build = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/revm-git-deps" }
 #  fluentbase-build = { path = "../fluentbase-v2/crates/build" }
 
 
@@ -367,31 +367,32 @@ flate2 = "1.1"
 idna_adapter = "=1.1.0"
 
 [patch.crates-io]
-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-bytecode = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-database = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-state = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-primitives = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-interpreter = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-inspector = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-context = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-context-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-revm-database-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-op-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
-# revm = { package = "revm-rwasm", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-bytecode = { package = "revm-rwasm-bytecode", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-database = { package = "revm-rwasm-database", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-state = { package = "revm-rwasm-state", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-primitives = { package = "revm-rwasm-primitives", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-interpreter = { package = "revm-rwasm-interpreter", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-inspector = { package = "revm-rwasm-inspector", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-context = { package = "revm-rwasm-context", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-context-interface = { package = "revm-rwasm-context-interface", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# revm-database-interface = { package = "revm-rwasm-database-interface", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
-# op-revm = { package = "op-revm-rwasm", git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-renamed" }
+#revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-bytecode = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-database = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-state = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-primitives = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-interpreter = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-inspector = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-context = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-context-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#revm-database-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+#op-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched" }
+revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-bytecode = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-database = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-state = {  git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-primitives = {  git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-interpreter = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-inspector = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-context = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-context-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+revm-database-interface = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
+op-revm = { git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v82-patched-update-rwasm" }
 
-alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", rev = "6c4ee0f" }
-alloy-op-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", rev = "6c4ee0f" }
+alloy-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "feat/revm-git-deps" }
+alloy-op-evm = { git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "feat/revm-git-deps" }
+
 
 # revm = { path = "../revm-rwasm/crates/revm" }
 # revm-bytecode = { path = "../revm-rwasm/crates/bytecode" }
