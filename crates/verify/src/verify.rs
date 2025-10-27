@@ -15,7 +15,7 @@ use foundry_cli::{
     opts::{EtherscanOpts, RpcOpts},
     utils::{self, LoadConfig},
 };
-use foundry_common::{compile::ProjectCompiler, find_rust_contracts, normalize_contract_name, ContractsByArtifact};
+use foundry_common::{compile::ProjectCompiler, ContractsByArtifact};
 use foundry_compilers::{
     artifacts::EvmVersion, compilers::solc::Solc, info::ContractInfo, utils::canonicalize,
 };
@@ -24,6 +24,7 @@ use itertools::Itertools;
 use reqwest::Url;
 use semver::BuildMetadata;
 use std::{fs, path::PathBuf};
+use foundry_common::rust_contracts::RustContractsRegistry;
 
 /// The programming language used for smart contract development.
 ///
@@ -324,15 +325,15 @@ impl VerifyArgs {
 
         // Find Project & Compile
         let project = config.project()?;
-        let rust_contracts = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
+        let rust_registry = RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
 
         let contract_info = self
             .contract
             .as_ref()
             .ok_or_else(|| eyre::eyre!("Contract name is required for WASM verification"))?;
 
-        let pkg_info = rust_contracts
-            .get(&normalize_contract_name(&contract_info.name))
+        let pkg_info = rust_registry
+            .get(&contract_info.name)
             .ok_or_else(|| {
                 eyre::eyre!("Rust contract '{}' not found in project", contract_info.name)
             })?;

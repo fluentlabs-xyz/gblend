@@ -38,6 +38,7 @@ mod utils;
 pub mod version;
 
 mod rust_compiler;
+pub mod rust_contracts;
 
 pub use constants::*;
 pub use contracts::*;

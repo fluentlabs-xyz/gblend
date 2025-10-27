@@ -1,6 +1,6 @@
 //! Support for compiling [foundry_compilers::Project]
 use crate::{
-    find_rust_contracts, preprocessor::TestOptimizerPreprocessor,
+    preprocessor::TestOptimizerPreprocessor,
     reports::{report_kind, ReportKind},
     shell,
     term::SpinnerReporter,
@@ -12,6 +12,7 @@ use comfy_table::{modifiers::UTF8_ROUND_CORNERS, Cell, Color, Table};
 use eyre::{eyre, ContextCompat, Result, WrapErr};
 use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, BuildResult, DEFAULT_DOCKER_TAG};
 use foundry_block_explorers::contract::Metadata;
+use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{
     artifacts::{remappings::Remapping, BytecodeObject, Contract, Evm, Source, SourceFile}, compilers::{
         solc::{Solc, SolcCompiler},
@@ -262,100 +263,83 @@ impl ProjectCompiler {
         Ok(output)
     }
 
-    /// Finds and compiles Rust contracts, returning aggregated compilation output.
+    /// Finds and compiles Rust contracts, returning the number of compiled contracts.
     fn build_rust_contracts<C: Compiler<CompilerContract = Contract>>(
         &mut self,
         project: &Project<C>,
     ) -> Result<usize> {
         // Find all Rust projects (crates) in source directories
-        let rust_projects = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
+        let rust_registry = RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
 
-        if rust_projects.is_empty() {
+        if rust_registry.is_empty() {
             sh_println!("No Rust contracts found")?;
             return Ok(0);
         }
 
-        sh_println!("Compiling {} Rust contract(s)...", rust_projects.len())?;
-        let contracts_count = rust_projects.len();
+        sh_println!("Compiling {} Rust contract(s)...", rust_registry.len())?;
+        let contracts_count = rust_registry.len();
         let timer = Instant::now();
 
+        // Determine which artifacts to generate
+        let generate_artifacts = vec![
+            FluentArtifact::Solidity,
+            FluentArtifact::Abi,
+            FluentArtifact::Foundry,
+            FluentArtifact::Rwasm,
+            FluentArtifact::Metadata,
+        ];
+
         // Iterate through each found Rust project and compile it
-        for (pkg_name, pkg_info) in rust_projects {
-            let contract_dir = pkg_info
-                .path
+        for (package_name, info) in rust_registry.iter() {
+            // Get the directory name for logging
+            let project_dir_name = info.path
                 .file_name()
-                .ok_or_else(|| eyre!("Rust project path has no name: {}", pkg_info.path.display()))?
-                .to_str()
-                .ok_or_else(|| eyre!("Rust project path is not valid UTF-8"))?;
+                .and_then(|n| n.to_str())
+                .unwrap_or(package_name);
 
-            let contract_name_clean = Self::normalize_contract_name(&pkg_name);
-            let contract_name = format!("{contract_name_clean}.wasm");
+            // Artifact name is always: {package_name}.wasm
+            let artifact_name = info.artifact_name();
 
-            sh_println!("  - Compiling contract {contract_dir}:{contract_name}...");
-            let generate_artifacts = if !self.no_docker {
-                vec![
-                    FluentArtifact::Solidity,
-                    FluentArtifact::Abi,
-                    FluentArtifact::Foundry,
-                    FluentArtifact::Rwasm,
-                    FluentArtifact::Wat,
-                    FluentArtifact::Metadata,
-                ]
-            } else {
-                vec![
-                    FluentArtifact::Solidity,
-                    FluentArtifact::Abi,
-                    FluentArtifact::Foundry,
-                    FluentArtifact::Rwasm,
-                    // FluentArtifact::Wat,
-                    FluentArtifact::Metadata,
-                ]
-            };
+            sh_println!(
+            "  - Compiling {} (package: {})...",
+            project_dir_name,
+            package_name
+        );
 
-            // Configure the build to generate the Foundry artifact
+            // Configure the build
             let build_args = BuildArgs {
-                contract_name: Some(contract_name.clone()),
-                generate: generate_artifacts,
+                contract_name: Some(artifact_name),
+                generate: generate_artifacts.clone(),
                 docker: !self.no_docker,
-                docker_tag: pkg_info.sdk_version.unwrap_or(DEFAULT_DOCKER_TAG.to_string()),
+                docker_tag: info.sdk_version.clone().unwrap_or_else(|| DEFAULT_DOCKER_TAG.to_string()),
                 mount_dir: Some(project.root().to_path_buf()),
                 output: Some(project.artifacts_path().to_path_buf()),
-                wasm_opt: !self.no_docker,
+                wasm_opt: false,
                 locked: false,
+                rust_version: Some("1.88.0-x86_64-unknown-linux-gnu".to_string()),
                 ..Default::default()
             };
 
             sh_println!("  - Build args: {build_args:?}");
 
             // Execute Rust contract build
-            execute_build(&build_args, Some(pkg_info.path.clone()))
+            execute_build(&build_args, Some(info.path.clone()))
                 .map_err(|e| eyre::eyre!("Build failed: {}", e))
                 .wrap_err_with(|| {
-                    format!("Failed to build Rust contract at {}", pkg_info.path.display())
+                    format!(
+                        "Failed to build Rust contract '{}' at {}",
+                        package_name,
+                        info.path.display()
+                    )
                 })?;
-            // remove the directory after proccessing
-            self.files.retain(|file| !file.starts_with(&pkg_info.path));
+
+            // Remove the directory from file tracking after processing
+            self.files.retain(|file| !file.starts_with(&info.path));
         }
+
         sh_println!("Finished compiling Rust contracts in {:.2?}", timer.elapsed())?;
 
         Ok(contracts_count)
-    }
-
-    /// Normalizes contract directory name to PascalCase contract name
-    fn normalize_contract_name(contract_dir: &str) -> String {
-        contract_dir
-            .split('-')
-            .filter(|word| !word.is_empty())
-            .map(|word| {
-                let mut chars = word.chars();
-                match chars.next() {
-                    None => String::new(),
-                    Some(first) => {
-                        first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase()
-                    }
-                }
-            })
-            .collect()
     }
 
     /// If configured, this will print sizes or names

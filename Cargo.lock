@@ -5201,6 +5201,7 @@ dependencies = [
  "serde_json",
  "solar-parse",
  "solar-sema",
+ "tempfile",
  "terminal_size",
  "thiserror 2.0.12",
  "tokio",

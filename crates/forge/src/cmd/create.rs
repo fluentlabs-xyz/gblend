@@ -17,11 +17,11 @@ use foundry_cli::{
     opts::{BuildOpts, EthereumOpts, EtherscanOpts, TransactionOpts},
     utils::{self, read_constructor_args_file, remove_contract, LoadConfig},
 };
+use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_common::{
     compile::{self},
-    find_rust_contracts,
-    fmt::parse_tokens,
-    normalize_contract_name, shell,
+    fmt::parse_tokens
+    , shell,
 };
 use foundry_compilers::{
     artifacts::{BytecodeObject, CompactBytecode}, info::ContractInfo,
@@ -43,6 +43,7 @@ use solar_sema::interface::data_structures::smallvec::alloc;
 use std::{borrow::Borrow, fs, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 use wasm_encoder::{CustomSection, Module, RawSection};
 use wasmparser::Parser as WasmpParser;
+
 fn generate_build_id() -> String {
     rand::thread_rng().sample_iter(&Alphanumeric).take(8).map(char::from).collect()
 }
@@ -126,51 +127,69 @@ impl CreateArgs {
         // Find Project & Compile
         let project = config.project()?;
 
-        // Check if the contract is rust
-        // TODO(d1r1): after move compilation logic into Founry compiler - we can simplify this flow
-        // completely
-        let rust_contracts = find_rust_contracts(&project.paths.sources, Some(project.root()))?;
-        let mut is_rust_contract = false;
-        let contract_name = normalize_contract_name(&self.contract.name);
+        // Create Rust contracts registry
+        let rust_registry = RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
 
+        // Determine target path
         let target_path = if let Some(ref mut path) = self.contract.path {
+            // User provided explicit path
             canonicalize(project.root().join(path))?
-        } else if let Some(project_info) = rust_contracts.get(&contract_name) {
-            project_info.path.clone()
+        } else if let Some(info) = rust_registry.get(&self.contract.name) {
+            // Found Rust contract by name (supports any format: erc20, erc20.wasm, ERC20, etc.)
+            info.path.clone()
         } else {
+            // Fallback to Solidity contract search
             project.find_contract_path(&self.contract.name)?
         };
 
+        sh_println!("target_path: {:?}", target_path);
+
         let output = compile::compile_target(&target_path, &project, shell::is_json())?;
+        let mut is_rust_contract = false;
 
-        let (abi, bin, id) =
-            if rust_contracts.contains_key(&normalize_contract_name(&self.contract.name)) {
-                is_rust_contract = true;
-                let artifact_dir = project.artifacts_path().join(&self.contract.name);
-                let artifact: serde_json::Value =
-                    serde_json::from_str(&fs::read_to_string(&artifact_dir.join("foundry.json"))?)?;
+        // Load artifacts (either Rust or Solidity)
+        let (abi, bin, id) = if let Some(info) = rust_registry.get(&self.contract.name) {
+            // This is a Rust contract
+            let foundry_json_path = info.foundry_artifact_path(project.artifacts_path());
 
-                // Extract ABI
-                let abi: JsonAbi = serde_json::from_value(artifact["abi"].clone())?;
+            if !foundry_json_path.exists() {
+                eyre::bail!(
+                "Artifact not found at {:?}\nPackage: {}\nContract input: {}\nDid you run 'gblend build'?",
+                foundry_json_path,
+                info.package_name,
+                self.contract.name
+            );
+            }
+            is_rust_contract = true;
 
-                // Extract Bytecode
-                let bin: CompactBytecode = serde_json::from_value(artifact["bytecode"].clone())?;
+            sh_println!("Loading Rust artifact: {:?}", foundry_json_path);
 
-                // Create ArtifactId
-                let id = ArtifactId {
-                    path: artifact_dir,
-                    name: self.contract.name.clone(),
-                    source: target_path.clone(),
-                    version: semver::Version::new(0, 1, 0),
-                    profile: "release".to_string(),
-                    // TODO(d1r1): use actual build id (that used for caching)
-                    build_id: generate_build_id(),
-                };
-                (abi, bin, id)
-            } else {
-                remove_contract(output, &target_path, &self.contract.name)?
+            let artifact: serde_json::Value =
+                serde_json::from_str(&fs::read_to_string(&foundry_json_path)?)?;
+
+            // Extract ABI
+            let abi: JsonAbi = serde_json::from_value(artifact["abi"].clone())?;
+
+            // Extract Bytecode
+            let bin: CompactBytecode = serde_json::from_value(artifact["bytecode"].clone())?;
+
+            // Create ArtifactId using package name from Cargo.toml
+            let id = ArtifactId {
+                path: info.artifact_dir(project.artifacts_path()),
+                name: info.package_name.clone(), // Use package name from Cargo.toml
+                source: target_path.clone(),
+                version: semver::Version::new(0, 1, 0),
+                profile: "release".to_string(),
+                build_id: generate_build_id(),
             };
 
+            (abi, bin, id)
+        } else {
+            // This is a Solidity contract
+            remove_contract(output, &target_path, &self.contract.name)?
+        };
+
+        // Verify bytecode doesn't require dynamic linking
         let bin = match bin.object {
             BytecodeObject::Bytecode(_) => bin.object,
             _ => {
@@ -183,9 +202,9 @@ impl CreateArgs {
                     .collect::<Vec<String>>()
                     .join("\n");
                 eyre::bail!(
-                    "Dynamic linking not supported in `create` command - deploy the following library contracts first, then provide the address to link at compile time\n{}",
-                    link_refs
-                )
+                "Dynamic linking not supported in `create` command - deploy the following library contracts first, then provide the address to link at compile time\n{}",
+                link_refs
+            )
             }
         };
 
