@@ -164,7 +164,7 @@ impl InitArgs {
             let script_path = script.join("BlendedCounter.s.sol");
             fs::write(
                 script_path,
-                include_str!("../../examples/blended-counter/script/BlendedCounter.s.sol"),
+                include_str!("../../examples/blended-counter/script/Deploy.s.sol"),
             )?;
 
             // Write the Rust WASM module files

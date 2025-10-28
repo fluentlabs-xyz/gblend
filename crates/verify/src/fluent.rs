@@ -1,6 +1,6 @@
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use eyre::{eyre, Result, WrapErr};
-use flate2::{write::GzEncoder, Compression};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
+use eyre::{Result, WrapErr, eyre};
+use flate2::{Compression, write::GzEncoder};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, io::Write, path::Path, time::Duration};
@@ -134,11 +134,7 @@ impl FluentVerificationClient {
         );
 
         // Add delay to allow contract indexing
-        println!("Waiting 15 seconds for contract to be indexed...");
-        std::thread::sleep(Duration::from_secs(15));
-
-        println!("Sending verification request to: {}", url);
-        println!("Contract: {} at address: {}", request.contract_name, request.address_hash);
+        std::thread::sleep(Duration::from_secs(20));
 
         let response = self
             .http_client
@@ -151,15 +147,16 @@ impl FluentVerificationClient {
         let status = response.status();
 
         if status.is_success() {
-            // Get response as text first to see what we actually received
-            let response_text = response.text().await.wrap_err("Failed to read response")?;
-            println!("Response: {}", response_text);
+            sh_println!(
+                "Contract submitted for verification. \
+    It will appear at: {} once verified.",
+                format!("{}/address/{}?tab=contract", self.base_url, request.address_hash)
+            );
 
             Ok(())
         } else {
             let error_text = response.text().await.wrap_err("Failed to read error response")?;
-
-            // Try to parse as structured error
+            
             if let Ok(error_response) = serde_json::from_str::<ApiErrorResponse>(&error_text) {
                 Err(eyre!("API error ({}): {}", status.as_u16(), error_response.message))
             } else {
