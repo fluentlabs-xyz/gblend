@@ -1,6 +1,6 @@
 # Blended Counter
 
-This project demonstrates how to build, test, and deploy a **blended Solidity + Rust (WASM)** smart contract using **Gblend** — a Foundry-compatible CLI for the Fluent network.
+This example demonstrates how to build, test, and deploy a **blended Solidity + Rust (WASM)** smart contract using **Gblend** — a Foundry-compatible CLI for the **Fluent** network.
 
 ---
 
@@ -10,79 +10,142 @@ This project demonstrates how to build, test, and deploy a **blended Solidity + 
 src/
 ├── BlendedCounter.sol        # Main Solidity contract
 └── power-calculator/         # Rust WASM module for power calculations
-test/                         # Solidity tests (Forge-compatible)
+test/                         # Solidity tests
 script/                       # Deployment scripts
-foundry.toml / gblend.toml    # Project configuration
+foundry.toml                  # Project configuration
 ```
 
 **How it works:**
 
-* The Solidity contract `BlendedCounter.sol` calls a Rust module compiled to WASM.
-* The Rust module (`power-calculator/`) contains compute logic built with `fluentbase-sdk`.
-* Gblend compiles both Solidity and Rust components into a unified project ready for deployment.
+* The Solidity contract `BlendedCounter.sol` interacts with a Rust module compiled to **WASM**.
+* The Rust module (`power-calculator/`) implements computation logic using **fluentbase-sdk**.
+* **Gblend** builds, tests, and deploys both Solidity and Rust components in a single unified workflow.
 
 ---
 
-## Usage
+## 1. Project Setup
 
-### Build
+Create a new blended project:
+
+```bash
+gblend init my-blended-app
+cd my-blended-app
+```
+
+### VS Code Configuration (optional)
+
+To enable Rust Analyzer and Solidity support, create `.vscode/settings.json`:
+
+```json
+{
+  "rust-analyzer.linkedProjects": [
+    "src/power-calculator/Cargo.toml"
+  ],
+  "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/out/**": true
+  },
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "solidity.packageDefaultDependenciesContractsDirectory": ""
+}
+```
+
+Make sure you have the **wasm32** target installed:
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+---
+
+## 2. Build
 
 ```bash
 gblend build
 ```
 
-Compiles both Solidity and Rust sources into deployable artifacts.
+Compiles both Solidity and Rust (WASM) contracts and generates artifacts in the `out/` directory.
+The first build may take longer as the Fluent build image is downloaded for reproducible builds.
 
 ---
 
-### Test
+## 3. Test
 
 ```bash
-gblend test
+gblend test -v
 ```
 
-Runs unit tests written in Solidity from the `test/` directory using Forge-compatible syntax.
+Runs all tests in a shared Fluent-compatible runtime.
+Both Solidity and Rust contracts execute in the same environment — identical to the runtime used by Fluent nodes on-chain.
 
 ---
 
-### Deploy with a Script
+## 4. Deploy
+
+Use the provided Forge-style script to deploy both contracts:
 
 ```bash
-gblend script script/BlendedCounter.sol:Deploy \
-  --rpc-url <your_rpc_url> \
-  --private-key <your_private_key>
+gblend script script/Deploy.s.sol \
+  --private-key $PK \
+  --rpc-url https://rpc.devnet.fluent.xyz \
+  --broadcast
 ```
 
-Executes the deployment script using the specified RPC endpoint and private key.
+This script:
+
+* Deploys the **Rust PowerCalculator** (compiled to WASM)
+* Deploys the **Solidity BlendedCounter**
+* Links them together on-chain
 
 ---
 
-### Direct Deployment with `gblend create`
+## 5. Verify
 
-You can also deploy a compiled WASM contract directly:
+Contracts can be verified separately on Blockscout.
+
+### Rust (WASM) Contract
 
 ```bash
-gblend create RustToken.wasm \
-  --rpc-url <your_rpc_url> \
-  --private-key <your_private_key> \
+gblend verify-contract <POWER_CALCULATOR_ADDRESS> power-calculator.wasm \
+  --rpc-url https://rpc.devnet.fluent.xyz \
+  --wasm \
+  --verifier blockscout \
+  --verifier-url https://devnet.fluentscan.xyz/api/
+```
+
+### Solidity Contract
+
+```bash
+gblend verify-contract <BLENDED_COUNTER_ADDRESS> BlendedCounter \
+  --rpc-url https://rpc.devnet.fluent.xyz \
+  --verifier blockscout \
+  --verifier-url https://devnet.fluentscan.xyz/api/
+```
+
+Verification for WASM contracts may take several minutes.
+
+---
+
+## 6. Alternative: Direct Deployment
+
+You can also deploy a single compiled WASM contract directly:
+
+```bash
+gblend create power-calculator.wasm \
+  --rpc-url https://rpc.devnet.fluent.xyz \
+  --private-key $PK \
   --broadcast \
   --verify \
   --wasm \
   --verifier blockscout \
-  --verifier-url https://testnet.fluentscan.xyz/api/
+  --verifier-url https://devnet.fluentscan.xyz/api/
 ```
 
-This command deploys the `RustToken` contract to Fluent Testnet, broadcasts the transaction, and verifies it on Blockscout.
-
 ---
 
-## Documentation
+## References
 
-* Network parameters: [Connect to Fluent](https://docs.fluent.xyz/connect-to-fluent/#fluent-testnet)
-* Gblend usage: [Fluent Docs → Gblend](https://docs.fluent.xyz/gblend/usage)
-* Foundry basics: [Foundry Book](https://getfoundry.sh/forge/overview)
-* Fluent overview: [Fluent Knowledge Base](https://docs.fluent.xyz/knowledge-base/fluent-overview/)
-
----
-
-Добавить секцию о “Common Issues” (типичные ошибки при установке и сборке) будет полезно для тех, кто впервые пробует Gblend. Хочешь, я подготовлю короткий блок с ними?
+* [Gblend Installation Guide](https://docs.fluent.xyz/gblend/installation)
+* [Fluent Overview](https://docs.fluent.xyz/knowledge-base/fluent-overview)
+* [Foundry Book](https://getfoundry.sh/forge/overview)

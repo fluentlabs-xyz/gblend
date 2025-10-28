@@ -20,8 +20,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-
-
-# Exclude from foundry workspace
-[workspace]
