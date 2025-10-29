@@ -150,7 +150,7 @@ impl FluentVerificationClient {
             sh_println!(
                 "Contract submitted for verification. \
     It will appear at: {} once verified.",
-                format!("{}/address/{}?tab=contract", self.base_url, request.address_hash)
+                format!("{}/address/{}?tab=contract", self.base_url.trim_end_matches("/api"), request.address_hash)
             );
 
             Ok(())
