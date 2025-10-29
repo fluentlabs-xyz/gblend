@@ -134,7 +134,7 @@ impl FluentVerificationClient {
         );
 
         // Add delay to allow contract indexing
-        std::thread::sleep(Duration::from_secs(20));
+        std::thread::sleep(Duration::from_secs(10));
 
         let response = self
             .http_client

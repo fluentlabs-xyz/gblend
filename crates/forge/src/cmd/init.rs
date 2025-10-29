@@ -161,7 +161,7 @@ impl InitArgs {
             fs::write(test_path, include_str!("../../examples/blended-counter/test/BlendedCounter.t.sol"))?;
 
             // Write the deployment script
-            let script_path = script.join("BlendedCounter.s.sol");
+            let script_path = script.join("Deploy.s.sol");
             fs::write(
                 script_path,
                 include_str!("../../examples/blended-counter/script/Deploy.s.sol"),
