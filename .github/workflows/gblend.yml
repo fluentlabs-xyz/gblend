@@ -1,0 +1,401 @@
+name: gblend-release
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Version releases (v1.0.0, v2.1.3, etc.)
+  workflow_dispatch: # Manual trigger
+
+env:
+  CARGO_TERM_COLOR: always
+  IS_NIGHTLY: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+  PROFILE: maxperf
+  STABLE_VERSION: "v0.1.0"
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      tag_name: ${{ steps.release_info.outputs.tag_name }}
+      release_name: ${{ steps.release_info.outputs.release_name }}
+      changelog: ${{ steps.build_changelog.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute release name and tag
+        id: release_info
+        run: |
+          if [[ ${IS_NIGHTLY} == 'true' ]]; then
+            echo "tag_name=nightly-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+            echo "release_name=Nightly ($(date '+%Y-%m-%d'))" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+            echo "release_name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
+
+      # Creates a `nightly-SHA` tag for this specific nightly
+      # This tag is used for this specific nightly version's release
+      # which allows users to roll back. It is also used to build
+      # the changelog.
+      - name: Create build-specific nightly tag
+        if: ${{ env.IS_NIGHTLY == 'true' }}
+        uses: actions/github-script@v7
+        env:
+          TAG_NAME: ${{ steps.release_info.outputs.tag_name }}
+        with:
+          script: |
+            const createTag = require('./.github/scripts/create-tag.js')
+            await createTag({ github, context }, process.env.TAG_NAME)
+
+  release:
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    name: ${{ matrix.target }} (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `runner`: GHA runner label
+          # `target`: Rust build target triple
+          # `platform` and `arch`: Used in tarball names
+          # `svm`: target platform to use for the Solc binary: https://github.com/roynalnaruto/svm-rs/blob/84cbe0ac705becabdc13168bae28a45ad2299749/svm-builds/build.rs#L4-L24
+          - runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            svm_target_platform: linux-amd64
+            platform: linux
+            arch: amd64
+          # - runner: ubuntu-22.04
+          #   target: x86_64-unknown-linux-musl
+          #   svm_target_platform: linux-amd64
+          #   platform: alpine
+          #   arch: amd64
+          # - runner: ubuntu-22.04
+          #   target: aarch64-unknown-linux-gnu
+          #   svm_target_platform: linux-aarch64
+          #   platform: linux
+          #   arch: arm64
+          # - runner: ubuntu-22.04
+          #   target: aarch64-unknown-linux-musl
+          #   svm_target_platform: linux-aarch64
+          #   platform: alpine
+          #   arch: arm64
+          # This is pinned to `macos-13-large` to support old SDK versions.
+          # If the runner is deprecated it should be pinned to the oldest available version of the runner.
+          - runner: macos-13-large
+            target: x86_64-apple-darwin
+            svm_target_platform: macosx-amd64
+            platform: darwin
+            arch: amd64
+          - runner: macos-14
+            target: aarch64-apple-darwin
+            svm_target_platform: macosx-aarch64
+            platform: darwin
+            arch: arm64
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            svm_target_platform: windows-amd64
+            platform: win32
+            arch: amd64
+    steps:
+      - name: Enable long paths (Windows)
+        if: contains(matrix.target, 'windows')
+        shell: bash
+        run: git config --global core.longpaths true
+
+      - name: Make Cargo use CLI git
+        if: contains(matrix.target, 'windows')
+        shell: bash
+        run: echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+          cache-on-failure: true
+
+      - name: Apple M1 setup
+        if: matrix.target == 'aarch64-apple-darwin'
+        run: |
+          echo "SDKROOT=$(xcrun -sdk macosx --show-sdk-path)" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx --show-sdk-platform-version)" >> $GITHUB_ENV
+      - name: Install OpenSSL for cross-compilation targets
+        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config
+
+          if [[ "${{ matrix.target }}" == "x86_64-unknown-linux-musl" ]]; then
+            # Install musl toolchain and development packages
+            sudo apt-get install -y musl-tools musl-dev linux-libc-dev
+            
+            # For musl, we need to compile OpenSSL from source with musl
+            wget -O - https://www.openssl.org/source/openssl-1.1.1w.tar.gz | tar xzf -
+            cd openssl-1.1.1w
+            CC=musl-gcc ./Configure no-shared no-async no-secure-memory \
+              --prefix=/usr/local/musl --openssldir=/usr/local/musl linux-x86_64
+            make -j$(nproc)
+            sudo make install_sw
+            cd ..
+            
+            # Set environment variables for musl OpenSSL
+            echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
+            echo "OPENSSL_DIR=/usr/local/musl" >> $GITHUB_ENV
+            
+          elif [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
+            # Add ARM64 architecture support to package manager
+            sudo dpkg --add-architecture arm64
+            sudo apt-get update
+            
+            # Install cross-compiler and ARM64 OpenSSL development packages
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+            sudo apt-get install -y libssl-dev:arm64
+            
+            # Set environment variables for cross-compilation
+            echo "OPENSSL_DIR=/usr" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+            
+          elif [[ "${{ matrix.target }}" == "aarch64-unknown-linux-musl" ]]; then
+            # Install musl cross-compiler for ARM64
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+            
+            # Download and extract musl cross-compilation toolchain
+            wget -O - https://musl.cc/aarch64-linux-musl-cross.tgz | tar xzf -
+            export PATH="$PWD/aarch64-linux-musl-cross/bin:$PATH"
+            
+            # For ARM64 musl, compile OpenSSL from source with musl
+            wget -O - https://www.openssl.org/source/openssl-1.1.1w.tar.gz | tar xzf -
+            cd openssl-1.1.1w
+            
+            # Configure OpenSSL for static linking with musl
+            CC=aarch64-linux-musl-gcc ./Configure no-shared no-async no-secure-memory \
+              --prefix=/usr/local/aarch64-musl \
+              --openssldir=/usr/local/aarch64-musl \
+              linux-aarch64
+            
+            # Compile and install OpenSSL
+            make -j$(nproc)
+            sudo make install_sw
+            cd ..
+            
+            # Set environment variables for Rust build
+            echo "OPENSSL_DIR=/usr/local/aarch64-musl" >> $GITHUB_ENV
+            echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
+          fi
+
+      - name: cross setup
+        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          cargo install cross
+
+      - name: Build binaries
+        env:
+          TAG_NAME: ${{ (env.IS_NIGHTLY == 'true' && 'nightly') || needs.prepare.outputs.tag_name }}
+          SVM_TARGET_PLATFORM: ${{ matrix.svm_target_platform }}
+          PLATFORM_NAME: ${{ matrix.platform }}
+          TARGET: ${{ matrix.target }}
+          OUT_DIR: target/${{ matrix.target }}/${{ env.PROFILE }}
+        shell: bash
+        run: |
+          set -eo pipefail
+          flags=(--target $TARGET --profile $PROFILE --bin gblend --no-default-features --features aws-kms,gcp-kms,cli,asm-keccak)
+
+          # `jemalloc` is not fully supported on MSVC or aarch64 Linux.
+          if [[ "$TARGET" != *msvc* && "$TARGET" != "aarch64-unknown-linux-gnu" ]]; then
+            flags+=(--features jemalloc)
+          fi
+
+          [[ "$TARGET" == *windows* ]] && ext=".exe"
+
+          if [[ "$TARGET" == *-musl || "$TARGET" == "aarch64-unknown-linux-gnu" ]]; then
+            cross build "${flags[@]}"
+          else
+            cargo build "${flags[@]}"
+          fi
+
+          bin=$OUT_DIR/gblend$ext
+          echo "Built binary: $bin"
+          file "$bin" || true
+          du -h "$bin" || true
+          ldd "$bin" || true
+          $bin --version || true
+          echo "gblend_bin_path=${bin}" >> $GITHUB_ENV
+
+      - name: Archive binaries
+        id: artifacts
+        env:
+          PLATFORM_NAME: ${{ matrix.platform }}
+          OUT_DIR: target/${{ matrix.target }}/${{ env.PROFILE }}
+          VERSION_NAME: ${{ (env.IS_NIGHTLY == 'true' && 'nightly') || needs.prepare.outputs.tag_name }}
+          ARCH: ${{ matrix.arch }}
+        shell: bash
+        run: |
+          if [[ "$PLATFORM_NAME" == "linux" || "$PLATFORM_NAME" == "alpine" ]]; then
+            tar -czvf "gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.tar.gz" -C $OUT_DIR gblend
+            echo "file_name=gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.tar.gz" >> $GITHUB_OUTPUT
+          elif [ "$PLATFORM_NAME" == "darwin" ]; then
+            # We need to use gtar here otherwise the archive is corrupt.
+            # See: https://github.com/actions/virtual-environments/issues/2619
+            gtar -czvf "gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.tar.gz" -C $OUT_DIR gblend
+            echo "file_name=gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.tar.gz" >> $GITHUB_OUTPUT
+          else
+            cd $OUT_DIR
+            7z a -tzip "gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.zip" gblend.exe
+            mv "gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.zip" ../../../
+            echo "file_name=gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.zip" >> $GITHUB_OUTPUT
+          fi
+          echo "gblend_attestation=gblend_${VERSION_NAME}_${PLATFORM_NAME}_${ARCH}.attestation.txt" >> $GITHUB_OUTPUT
+
+      # Create additional artifacts with latest in the name for stable releases
+      - name: Create latest artifacts
+        if: ${{ env.IS_NIGHTLY != 'true' && startsWith(github.ref, 'refs/tags/v') }}
+        id: latest_artifacts
+        env:
+          PLATFORM_NAME: ${{ matrix.platform }}
+          OUT_DIR: target/${{ matrix.target }}/${{ env.PROFILE }}
+          ARCH: ${{ matrix.arch }}
+        shell: bash
+        run: |
+          if [[ "$PLATFORM_NAME" == "linux" ]]; then
+            tar -czvf "gblend_latest_${PLATFORM_NAME}_${ARCH}.tar.gz" -C $OUT_DIR gblend
+            echo "latest_file_name=gblend_latest_${PLATFORM_NAME}_${ARCH}.tar.gz" >> $GITHUB_OUTPUT
+          elif [ "$PLATFORM_NAME" == "darwin" ]; then
+            gtar -czvf "gblend_latest_${PLATFORM_NAME}_${ARCH}.tar.gz" -C $OUT_DIR gblend
+            echo "latest_file_name=gblend_latest_${PLATFORM_NAME}_${ARCH}.tar.gz" >> $GITHUB_OUTPUT
+          else
+            cd $OUT_DIR
+            7z a -tzip "gblend_latest_${PLATFORM_NAME}_${ARCH}.zip" gblend.exe
+            mv "gblend_latest_${PLATFORM_NAME}_${ARCH}.zip" ../../../
+            echo "latest_file_name=gblend_latest_${PLATFORM_NAME}_${ARCH}.zip" >> $GITHUB_OUTPUT
+          fi
+          echo "Created latest artifact: gblend_latest_${PLATFORM_NAME}_${ARCH}"
+
+      - name: Build man page
+        id: man
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        env:
+          OUT_DIR: target/${{ matrix.target }}/${{ env.PROFILE }}
+          VERSION_NAME: ${{ (env.IS_NIGHTLY == 'true' && 'nightly') || needs.prepare.outputs.tag_name }}
+        shell: bash
+        run: |
+          sudo apt-get -y install help2man
+          help2man -N $OUT_DIR/gblend > gblend.1
+          gzip gblend.1
+          tar -czvf "gblend_man_${VERSION_NAME}.tar.gz" gblend.1.gz
+          echo "gblend_man=gblend_man_${VERSION_NAME}.tar.gz" >> $GITHUB_OUTPUT
+
+      # Create latest man page for stable releases
+      - name: Build latest man page
+        id: latest_man
+        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' && env.IS_NIGHTLY != 'true' && startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          OUT_DIR: target/${{ matrix.target }}/${{ env.PROFILE }}
+        shell: bash
+        run: |
+          help2man -N $OUT_DIR/gblend > gblend_latest.1
+          gzip gblend_latest.1
+          tar -czvf "gblend_man_latest.tar.gz" gblend_latest.1.gz
+          echo "latest_man=gblend_man_latest.tar.gz" >> $GITHUB_OUTPUT
+
+      # - name: Binaries attestation
+      #   id: attestation
+      #   uses: actions/attest-build-provenance@v2
+      #   with:
+      #     subject-path: |
+      #       ${{ env.gblend_bin_path }}
+
+      # - name: Record attestation URL
+      #   run: |
+      #     echo "${{ steps.attestation.outputs.attestation-url }}" > ${{ steps.artifacts.outputs.gblend_attestation }}
+
+      # Creates the release for this specific version
+      - name: Create release
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          name: ${{ needs.prepare.outputs.release_name }}
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          prerelease: ${{ env.IS_NIGHTLY == 'true' }}
+          body: ${{ needs.prepare.outputs.changelog }}
+          files: |
+            ${{ steps.artifacts.outputs.file_name }}
+            ${{ steps.artifacts.outputs.gblend_attestation }}
+            ${{ steps.man.outputs.gblend_man }}
+
+      # Update the latest release with latest artifacts for stable releases
+      - name: Update latest release
+        if: ${{ env.IS_NIGHTLY != 'true' && startsWith(github.ref, 'refs/tags/v') }}
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          name: "Latest Release"
+          tag_name: "latest"
+          prerelease: false
+          body: |
+            This release always points to the latest stable version: ${{ needs.prepare.outputs.tag_name }}
+
+            **Current stable version:** ${{ needs.prepare.outputs.tag_name }}
+            **Release date:** ${{ github.event.head_commit.timestamp }}
+
+            For version-specific releases, please check the [releases page](https://github.com/${{ github.repository }}/releases).
+          files: |
+            ${{ steps.latest_artifacts.outputs.latest_file_name }}
+            ${{ steps.latest_man.outputs.latest_man }}
+
+      # # If this is a nightly release, it also updates the release
+      # # tagged `nightly` for compatibility with `gblendup`
+      # - name: Update nightly release
+      #   if: ${{ env.IS_NIGHTLY == 'true' }}
+      #   uses: softprops/action-gh-release@v2.2.2
+      #   with:
+      #     name: "Nightly"
+      #     tag_name: "nightly"
+      #     prerelease: true
+      #     body: ${{ needs.prepare.outputs.changelog }}
+      #     files: |
+      #       ${{ steps.artifacts.outputs.file_name }}
+      #       ${{ steps.artifacts.outputs.gblend_attestation }}
+      #       ${{ steps.man.outputs.gblend_man }}
+
+  cleanup:
+    name: Release cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: release
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      # Moves the `nightly` tag to `HEAD`
+      - name: Move nightly tag
+        if: ${{ env.IS_NIGHTLY == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const moveTag = require('./.github/scripts/move-tag.js')
+            await moveTag({ github, context }, 'nightly')
+
+      - name: Delete old nightlies
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prunePrereleases = require('./.github/scripts/prune-prereleases.js')
+            await prunePrereleases({github, context})
+
+      # Update latest tag for stable releases
+      - name: Update latest tag for stable releases
+        if: ${{ env.IS_NIGHTLY != 'true' && startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const moveTag = require('./.github/scripts/move-tag.js')
+            await moveTag({ github, context }, 'latest')

@@ -1,48 +1,51 @@
 [package]
-name = "forge-verify"
 description = "Contract verification tools"
+name = "forge-verify"
 
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
 authors.workspace = true
-license.workspace = true
+edition.workspace = true
 homepage.workspace = true
+license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
 
 [lints]
 workspace = true
 
 [dependencies]
-foundry-config.workspace = true
-foundry-cli.workspace = true
-foundry-common.workspace = true
-foundry-evm.workspace = true
-foundry-evm-networks.workspace = true
-serde_json.workspace = true
+alloy-dyn-abi.workspace = true
 alloy-json-abi.workspace = true
 alloy-primitives.workspace = true
-alloy-rpc-types = { workspace = true, features = ["eth", "trace"] }
-alloy-dyn-abi.workspace = true
-serde.workspace = true
+alloy-provider = {workspace = true, features = ["trace-api"]}
+alloy-rpc-types = {workspace = true, features = ["eth", "trace"]}
 eyre.workspace = true
-alloy-provider = { workspace = true, features = ["trace-api"] }
-tracing.workspace = true
+foundry-block-explorers = {workspace = true, features = ["foundry-compilers"]}
+foundry-cli.workspace = true
+foundry-common.workspace = true
 foundry-compilers.workspace = true
-foundry-block-explorers = { workspace = true, features = ["foundry-compilers"] }
-revm.workspace = true
+foundry-config.workspace = true
+foundry-evm-networks.workspace = true
+foundry-evm.workspace = true
+revm = {workspace = true}
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
 
-clap = { version = "4", features = ["derive", "env", "unicode", "wrap_help"] }
-reqwest = { workspace = true, features = ["json"] }
 async-trait.workspace = true
+base64 = "0.22.1"
+clap = {version = "4", features = ["derive", "env", "unicode", "wrap_help"]}
+flate2 = "1.1.2"
 futures.workspace = true
-semver.workspace = true
-regex = { workspace = true, default-features = false }
-yansi.workspace = true
 itertools.workspace = true
+regex = {workspace = true, default-features = false}
+reqwest = {workspace = true, features = ["json"]}
+semver.workspace = true
+tar = "0.4.44"
 url.workspace = true
+yansi.workspace = true
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros"] }
 foundry-test-utils.workspace = true
 tempfile.workspace = true
+tokio = {workspace = true, features = ["macros"]}

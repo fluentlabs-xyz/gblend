@@ -3532,7 +3532,6 @@ enum GasEstimationCallResult {
     Revert(Option<Bytes>),
     EvmError(InstructionResult),
 }
-
 /// Converts the result of a call to revm EVM into a [`GasEstimationCallResult`].
 ///
 /// Expected to stay up to date with: <https://github.com/bluealloy/revm/blob/main/crates/interpreter/src/instruction_result.rs>
@@ -3563,7 +3562,8 @@ impl TryFrom<Result<(InstructionResult, Option<Output>, u128, State)>> for GasEs
                 | InstructionResult::MemoryLimitOOG
                 | InstructionResult::PrecompileOOG
                 | InstructionResult::InvalidOperandOOG
-                | InstructionResult::ReentrancySentryOOG => Ok(Self::OutOfGas),
+                | InstructionResult::ReentrancySentryOOG
+                | InstructionResult::OutOfFuel => Ok(Self::OutOfGas),
 
                 // Other errors:
                 InstructionResult::OpcodeNotFound
@@ -3582,7 +3582,24 @@ impl TryFrom<Result<(InstructionResult, Option<Output>, u128, State)>> for GasEs
                 | InstructionResult::CreateContractSizeLimit
                 | InstructionResult::CreateContractStartingWithEF
                 | InstructionResult::CreateInitCodeSizeLimit
-                | InstructionResult::FatalExternalError => Ok(Self::EvmError(exit)),
+                | InstructionResult::FatalExternalError
+                // Fluentbase error codes:
+                | InstructionResult::RootCallOnly
+                | InstructionResult::MalformedBuiltinParams
+                | InstructionResult::CallDepthOverflow
+                | InstructionResult::NonNegativeExitCode
+                | InstructionResult::UnknownError
+                | InstructionResult::InputOutputOutOfBounds
+                // rWasm trap error codes:
+                | InstructionResult::UnreachableCodeReached
+                | InstructionResult::MemoryOutOfBounds
+                | InstructionResult::TableOutOfBounds
+                | InstructionResult::IndirectCallToNull
+                | InstructionResult::IntegerDivisionByZero
+                | InstructionResult::IntegerOverflow
+                | InstructionResult::BadConversionToInteger
+                | InstructionResult::BadSignature
+                | InstructionResult::UnknownExternalFunction => Ok(Self::EvmError(exit)),
             },
         }
     }

@@ -277,7 +277,9 @@ impl TestArgs {
         let compiler = ProjectCompiler::new()
             .dynamic_test_linking(config.dynamic_test_linking)
             .quiet(shell::is_json() || self.junit)
-            .files(self.get_sources_to_compile(&config, &filter)?);
+            .files(self.get_sources_to_compile(&config, &filter)?)
+            .no_docker(config.no_docker);
+
         let output = compiler.compile(&project)?;
 
         self.run_tests(&project.paths.root, config, evm_opts, &output, &filter, false).await

@@ -4,6 +4,7 @@ use crate::{
     constants::DEFAULT_CREATE2_DEPLOYER,
     fork::{CreateFork, configure_env},
 };
+use alloy_genesis::Genesis;
 use alloy_network::Network;
 use alloy_primitives::{Address, B256, U256};
 use alloy_provider::{Provider, network::AnyRpcBlock};
@@ -16,7 +17,7 @@ use foundry_config::{Chain, Config, GasLimit};
 use foundry_evm_networks::NetworkConfigs;
 use revm::context::{BlockEnv, TxEnv};
 use serde::{Deserialize, Serialize};
-use std::fmt::Write;
+use std::{fmt::Write, sync::Arc};
 use url::Url;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -86,6 +87,10 @@ pub struct EvmOpts {
 
     /// The CREATE2 deployer's address.
     pub create2_deployer: Address,
+
+    /// Set genesis
+    #[serde(skip)]
+    pub genesis: Option<Arc<Genesis>>,
 }
 
 impl Default for EvmOpts {
@@ -111,6 +116,7 @@ impl Default for EvmOpts {
             enable_tx_gas_limit: false,
             networks: NetworkConfigs::default(),
             create2_deployer: DEFAULT_CREATE2_DEPLOYER,
+            genesis: None,
         }
     }
 }
@@ -275,6 +281,11 @@ impl EvmOpts {
         }
 
         None
+    }
+    /// Add custom genesis
+    pub fn with_genesis(mut self, genesis: Genesis) -> Self {
+        self.genesis = Some(Arc::new(genesis));
+        self
     }
 }
 

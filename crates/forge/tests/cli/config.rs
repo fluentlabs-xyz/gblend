@@ -223,7 +223,6 @@ forgetest!(can_extract_config_values, |prj, cmd| {
     // explicitly set all values
     let input = Config {
         profile: Config::DEFAULT_PROFILE,
-        // `profiles` is not serialized.
         profiles: vec![],
         root: ".".into(),
         extends: None,
@@ -368,6 +367,8 @@ forgetest!(can_extract_config_values, |prj, cmd| {
         compilation_restrictions: Default::default(),
         script_execution_protection: true,
         _non_exhaustive: (),
+        wasm: false,
+        no_docker: false,
     };
     prj.write_config(input.clone());
     let config = cmd.config();

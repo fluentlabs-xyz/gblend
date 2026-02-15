@@ -13,6 +13,7 @@ use yansi::Paint;
 pub enum Networks {
     Tempo,
 }
+const EXAMPLES_REPO: &str = "https://github.com/fluentlabs-xyz/examples";
 
 /// CLI arguments for `forge init`.
 #[derive(Clone, Debug, Default, Parser)]
@@ -22,8 +23,17 @@ pub struct InitArgs {
     pub root: PathBuf,
 
     /// The template to start from.
+    ///
+    /// Can be:
+    /// - Example name: "erc20" -> uses fluentlabs-xyz/examples/erc20
+    /// - GitHub shorthand: "user/repo" -> uses github.com/user/repo
+    /// - Full URL: "https://github.com/user/repo"
     #[arg(long, short)]
     pub template: Option<String>,
+
+    /// List all available examples from fluentlabs-xyz/examples
+    #[arg(long, alias = "ls")]
+    pub list_examples: bool,
 
     /// Branch argument that can only be used with template option.
     /// If not specified, the default branch is used.
@@ -69,18 +79,23 @@ impl InitArgs {
         let Self {
             root,
             template,
+            list_examples,
             branch,
             install,
             offline,
             force,
             vscode,
-            use_parent_git,
             vyper,
             network,
+            use_parent_git,
             empty,
         } = self;
-        let DependencyInstallOpts { shallow, no_git, commit } = install;
 
+        if list_examples {
+            return print_examples();
+        }
+
+        let DependencyInstallOpts { shallow, no_git, commit } = install;
         let tempo = matches!(network, Some(Networks::Tempo));
 
         // create the root dir if it does not exist
@@ -90,10 +105,23 @@ impl InitArgs {
         let root = dunce::canonicalize(root)?;
         let git = Git::new(&root).shallow(shallow);
 
-        // if a template is provided, then this command initializes a git repo,
-        // fetches the template repo, and resets the git history to the head of the fetched
-        // repo with no other history
+        // if a template is provided, normalize it and fetch
         if let Some(template) = template {
+            // Check if this is an example name (no slash) or external repo
+            let is_example = !template.contains('/') && !template.contains("://");
+
+            // Handle fluentlabs-xyz/examples templates with sparse checkout
+            if is_example {
+                sh_println!(
+                    "Initializing {} from fluentlabs-xyz/examples/{}...",
+                    root.display(),
+                    template
+                )?;
+                clone_example_template(&root, &template, branch.as_deref())?;
+                sh_println!("{}", "    Initialized forge project".green())?;
+                return Ok(());
+            }
+
             let template = if template.contains("://") {
                 template
             } else if template.starts_with("github.com/") {
@@ -202,25 +230,50 @@ impl InitArgs {
                         include_str!("../../assets/tempo/MailTemplate.s.sol"),
                     )?;
                 } else {
-                    // write the contract file
-                    let contract_path = src.join("Counter.sol");
+                    // Default: blended-counter example with Rust WASM module
+
+                    // Create the power-calculator subdirectory structure
+                    let power_calc_dir = src.join("power-calculator");
+                    fs::create_dir_all(&power_calc_dir)?;
+                    let power_calc_src = power_calc_dir.join("src");
+                    fs::create_dir_all(&power_calc_src)?;
+
+                    // Write the BlendedCounter.sol contract file
+                    let contract_path = src.join("BlendedCounter.sol");
                     fs::write(
                         contract_path,
-                        include_str!("../../assets/solidity/CounterTemplate.sol"),
+                        include_str!("../../examples/blended-counter/src/BlendedCounter.sol"),
                     )?;
 
-                    // write the tests
-                    let contract_path = test.join("Counter.t.sol");
+                    // Write the test file
+                    let test_path = test.join("BlendedCounter.t.sol");
                     fs::write(
-                        contract_path,
-                        include_str!("../../assets/solidity/CounterTemplate.t.sol"),
+                        test_path,
+                        include_str!("../../examples/blended-counter/test/BlendedCounter.t.sol"),
                     )?;
 
-                    // write the script
-                    let contract_path = script.join("Counter.s.sol");
+                    // Write the deployment script
+                    let script_path = script.join("Deploy.s.sol");
                     fs::write(
-                        contract_path,
-                        include_str!("../../assets/solidity/CounterTemplate.s.sol"),
+                        script_path,
+                        include_str!("../../examples/blended-counter/script/Deploy.s.sol"),
+                    )?;
+
+                    // Write the Rust WASM module files
+                    let cargo_toml_path = power_calc_dir.join("Cargo.toml");
+                    fs::write(
+                        cargo_toml_path,
+                        include_str!(
+                            "../../examples/blended-counter/src/power-calculator/Cargo.toml"
+                        ),
+                    )?;
+
+                    let lib_rs_path = power_calc_src.join("lib.rs");
+                    fs::write(
+                        lib_rs_path,
+                        include_str!(
+                            "../../examples/blended-counter/src/power-calculator/src/lib.rs"
+                        ),
                     )?;
                 }
             }
@@ -230,11 +283,13 @@ impl InitArgs {
             if tempo {
                 fs::write(readme_path, include_str!("../../assets/tempo/README.md"))?;
             } else {
-                fs::write(readme_path, include_str!("../../assets/README.md"))?;
+                fs::write(readme_path, include_str!("../../examples/blended-counter/README.md"))?;
             }
 
             // write foundry.toml, if it doesn't exist already
             let dest = root.join(Config::FILE_NAME);
+
+            // Load config after writing custom foundry.toml
             let mut config = Config::load_with_root(&root)?;
             if !dest.exists() {
                 fs::write(dest, config.clone().into_basic().to_string_pretty()?)?;
@@ -278,6 +333,119 @@ impl InitArgs {
         Ok(())
     }
 }
+fn print_examples() -> Result<()> {
+    sh_println!("Available examples:\n")?;
+
+    sh_println!("Remote (from fluentlabs-xyz/examples):")?;
+
+    match fetch_examples_list() {
+        Ok(manifest) => {
+            for ex in manifest.examples {
+                let difficulty_badge = match ex.difficulty.as_str() {
+                    "beginner" => "🟢",
+                    "intermediate" => "🟡",
+                    "advanced" => "🔴",
+                    _ => "⚪",
+                };
+                sh_println!("  {} {:<18} {}", difficulty_badge, ex.name, ex.description)?;
+            }
+        }
+        Err(e) => {
+            sh_warn!("Unable to fetch examples list: {}", e)?;
+            sh_println!("  (Check your internet connection)")?;
+        }
+    }
+
+    sh_println!("\n Usage:")?;
+    sh_println!("  gblend init ./path                      # default (counter)")?;
+    sh_println!("  gblend init --template erc20-rs ./path  # specific example")?;
+    sh_println!("  gblend init --template user/repo ./path # custom template")?;
+
+    Ok(())
+}
+
+fn clone_example_template(root: &Path, example_name: &str, branch: Option<&str>) -> Result<()> {
+    let examples_cache_dir = Config::foundry_cache_dir()
+        .ok_or_else(|| eyre::eyre!("Could not find foundry cache directory"))?
+        .join("examples");
+
+    if examples_cache_dir.exists() {
+        sh_println!("Updating cached examples...")?;
+        let git = Git::new(&examples_cache_dir);
+
+        // Fetch latest changes
+        git.fetch(true, "origin", branch)?;
+
+        // Reset to latest
+        git.reset(true, "FETCH_HEAD")?;
+    } else {
+        sh_println!("Downloading examples repository...")?;
+        fs::create_dir_all(&examples_cache_dir)?;
+        Git::clone_with_branch(
+            true,
+            EXAMPLES_REPO,
+            branch.unwrap_or("main"),
+            Some(&examples_cache_dir),
+        )?;
+    }
+
+    let example_source = examples_cache_dir.join(example_name);
+    if !example_source.exists() {
+        eyre::bail!(
+            "Example '{}' not found in repository.\n\
+            Available examples: gblend init --list-examples",
+            example_name
+        );
+    }
+
+    copy_dir_all(&example_source, root)?;
+
+    Ok(())
+}
+
+fn copy_dir_all(src: &Path, dst: &Path) -> Result<()> {
+    fs::create_dir_all(dst)?;
+
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+
+        if entry.file_type()?.is_dir() {
+            copy_dir_all(&src_path, &dst_path)?;
+        } else {
+            fs::copy(&src_path, &dst_path)?;
+        }
+    }
+
+    Ok(())
+}
+
+const EXAMPLES_JSON_URL: &str =
+    "https://raw.githubusercontent.com/fluentlabs-xyz/examples/main/examples.json";
+
+fn fetch_examples_list() -> Result<ExamplesManifest> {
+    let content = ureq::get(EXAMPLES_JSON_URL).call().into_string()?;
+
+    let manifest: ExamplesManifest = serde_json::from_str(&content)?;
+    Ok(manifest)
+}
+#[derive(Debug, serde::Deserialize)]
+struct ExamplesManifest {
+    #[serde(rename = "version")]
+    _version: String,
+    examples: Vec<Example>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct Example {
+    name: String,
+    description: String,
+    #[serde(default)]
+    difficulty: String,
+    #[serde(default, rename = "tags")]
+    _tags: Vec<String>,
+}
 
 /// Initialises `root` as a git repository, if it isn't one already, unless 'use_parent_git' is
 /// true.
@@ -300,7 +468,7 @@ fn init_git_repo(
     // .gitignore
     let gitignore = git.root.join(".gitignore");
     if !gitignore.exists() {
-        fs::write(gitignore, include_str!("../../assets/.gitignoreTemplate"))?;
+        fs::write(gitignore, include_str!("../../examples/blended-counter/.gitignoreTemplate"))?;
     }
 
     // github workflow

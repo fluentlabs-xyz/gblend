@@ -14,7 +14,9 @@ use foundry_cli::{
     opts::{EtherscanOpts, RpcOpts},
     utils::{self, LoadConfig},
 };
-use foundry_common::{ContractsByArtifact, compile::ProjectCompiler};
+use foundry_common::{
+    ContractsByArtifact, compile::ProjectCompiler, rust_contracts::RustContractsRegistry,
+};
 use foundry_compilers::{artifacts::EvmVersion, compilers::solc::Solc, info::ContractInfo};
 use foundry_config::{
     Chain, Config, SolcReq, figment, impl_figment_convert, impl_figment_convert_cast,
@@ -22,7 +24,7 @@ use foundry_config::{
 use itertools::Itertools;
 use reqwest::Url;
 use semver::BuildMetadata;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 /// The programming language used for smart contract development.
 ///
@@ -33,6 +35,25 @@ pub enum ContractLanguage {
     Solidity,
     /// Vyper programming language  
     Vyper,
+}
+
+/// Optional Etherscan API version selector for custom verifier endpoints.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum EtherscanApiVersion {
+    V1,
+    V2,
+}
+
+impl std::str::FromStr for EtherscanApiVersion {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value {
+            "v1" | "V1" => Ok(Self::V1),
+            "v2" | "V2" => Ok(Self::V2),
+            _ => Err("invalid API version, expected `v1` or `v2`".to_string()),
+        }
+    }
 }
 
 /// Verification provider arguments
@@ -49,6 +70,15 @@ pub struct VerifierArgs {
     /// The verifier URL, if using a custom provider.
     #[arg(long, help_heading = "Verifier options", env = "VERIFIER_URL")]
     pub verifier_url: Option<String>,
+
+    /// The verifier API version, if using a custom provider.
+    #[arg(long, help_heading = "Verifier options", env = "VERIFIER_API_VERSION")]
+    pub verifier_api_version: Option<EtherscanApiVersion>,
+
+    // TODO(d1r1): move to languages?
+    /// Verify WASM contract
+    #[arg(long, help_heading = "Enable to verify WASM contracts")]
+    pub wasm: bool,
 }
 
 impl Default for VerifierArgs {
@@ -57,10 +87,11 @@ impl Default for VerifierArgs {
             verifier: VerificationProviderType::Sourcify,
             verifier_api_key: None,
             verifier_url: None,
+            verifier_api_version: None,
+            wasm: false,
         }
     }
 }
-
 /// CLI arguments for `forge verify-contract`.
 #[derive(Clone, Debug, Parser)]
 pub struct VerifyArgs {
@@ -218,6 +249,9 @@ impl figment::Provider for VerifyArgs {
         if let Some(api_key) = &self.verifier.verifier_api_key {
             dict.insert("etherscan_api_key".into(), api_key.as_str().into());
         }
+        if self.verifier.wasm {
+            dict.insert("wasm".to_string(), self.verifier.wasm.into());
+        }
 
         Ok(figment::value::Map::from([(Config::selected_profile(), dict)]))
     }
@@ -243,6 +277,10 @@ impl VerifyArgs {
             }
             None => config.chain.unwrap_or_default(),
         };
+
+        if self.verifier.wasm {
+            return self.handle_wasm_verification().await;
+        }
 
         let context = self.resolve_context().await?;
 
@@ -284,12 +322,12 @@ impl VerifyArgs {
         }
         self.verifier.verifier.client(self.etherscan.key().as_deref(), self.etherscan.chain, self.verifier.verifier_url.is_some())?.verify(self, context).await.map_err(|err| {
             if let Some(verifier_url) = verifier_url {
-                 match Url::parse(&verifier_url) {
+                match Url::parse(&verifier_url) {
                     Ok(url) => {
                         if is_host_only(&url) {
                             return err.wrap_err(format!(
                                 "Provided URL `{verifier_url}` is host only.\n Did you mean to use the API endpoint`{verifier_url}/api` ?"
-                            ))
+                            ));
                         }
                     }
                     Err(url_err) => {
@@ -300,6 +338,103 @@ impl VerifyArgs {
                 }
             }
 
+            err
+        })
+    }
+
+    async fn handle_wasm_verification(&self) -> Result<()> {
+        // Get verifier URL (required for WASM)
+        // Validate URL following the same pattern as the original code
+        let base_url = if let Some(verifier_url) = &self.verifier.verifier_url {
+            match Url::parse(verifier_url) {
+                Ok(url) => {
+                    if is_host_only(&url) {
+                        eyre::bail!(
+                            "Provided URL `{verifier_url}` is host only.\n Did you mean to use the API endpoint `{verifier_url}/api`?"
+                        );
+                    }
+                    verifier_url.clone()
+                }
+                Err(url_err) => {
+                    eyre::bail!("Invalid URL {verifier_url} provided: {url_err}");
+                }
+            }
+        } else {
+            eyre::bail!("WASM verification requires --verifier-url to be set");
+        };
+
+        // resolve context for wasm
+
+        let mut config = self.load_config()?;
+        config.libraries.extend(self.libraries.clone());
+
+        // Find Project & Compile
+        let project = config.project()?;
+        let rust_registry =
+            RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
+
+        let contract_info = self
+            .contract
+            .as_ref()
+            .ok_or_else(|| eyre::eyre!("Contract name is required for WASM verification"))?;
+
+        let pkg_info = rust_registry.get(&contract_info.name).ok_or_else(|| {
+            eyre::eyre!("Rust contract '{}' not found in project", contract_info.name)
+        })?;
+
+        let artifact_dir = project.artifacts_path().join(contract_info.clone().name);
+        let abi: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(artifact_dir.join("abi.json"))?)?;
+        let metadata: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(artifact_dir.join("metadata.json"))?)?;
+        // Extract compile settings from metadata
+        let compile_settings = crate::fluent::CompileSettings {
+            sdk_version: metadata["environment"]["fluentbase_sdk"]["git_tag"]
+                .as_str()
+                .unwrap_or("unknown")
+                .to_string(),
+            features: metadata["build_config"]["features"]
+                .as_array()
+                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+                .unwrap_or_default(),
+            no_default_features: metadata["build_config"]["no_default_features"]
+                .as_bool()
+                .unwrap_or(true),
+        };
+
+        // Create verification request using new API
+        let request = crate::fluent::VerificationRequest::new_archive(
+            pkg_info.package_name.clone(),
+            self.address.to_string(),
+            &pkg_info.path,
+            compile_settings,
+            abi,
+        ).await.map_err(|err| {
+            // Enhanced error handling for archive creation
+            if let Some(verifier_url) = &self.verifier.verifier_url
+                && let Ok(url) = Url::parse(verifier_url)
+                    && is_host_only(&url) {
+                        return err.wrap_err(format!(
+                            "Archive creation failed. Also check URL `{verifier_url}` - it appears to be host only.\n\
+                         For WASM verification, try: `{verifier_url}/api/v1/fluent/verify-wasm`"
+                        ));
+                    }
+            err
+        })?;
+
+        // Create client and send verification
+        let client = crate::fluent::FluentVerificationClient::new(base_url);
+        client.verify(request).await.map_err(|err| {
+            // Enhanced error handling for verification
+            if let Some(verifier_url) = &self.verifier.verifier_url
+                && let Ok(url) = Url::parse(verifier_url)
+                && is_host_only(&url)
+            {
+                return err.wrap_err(format!(
+                    "Verification failed. URL `{verifier_url}` is host only.\n\
+                         For WASM verification, try: `{verifier_url}/api/v1/fluent/verify-wasm`"
+                ));
+            }
             err
         })
     }
@@ -320,6 +455,10 @@ impl VerifyArgs {
         config.libraries.extend(self.libraries.clone());
 
         let project = config.project()?;
+
+        if self.verifier.wasm {
+            unreachable!("You don't need to call resolve context for wasm contracts");
+        }
 
         if let Some(ref contract) = self.contract {
             let contract_path = if let Some(ref path) = contract.path {
