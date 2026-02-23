@@ -273,8 +273,7 @@ foundry-test-utils = {path = "crates/test-utils"}
 foundry-wallets = {path = "crates/wallets"}
 
 # fluentbase
-fluentbase-build = {git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/revm-git-deps"}
-#  fluentbase-build = { path = "../fluentbase-v2/crates/build" }
+fluentbase-build = {git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "devel" }
 
 # solc & compilation utilities
 foundry-block-explorers = {version = "0.22.0", default-features = false}

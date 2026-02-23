@@ -4,20 +4,11 @@ version = 4
 
 [[package]]
 name = "addr2line"
-version = "0.24.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfbe277e56a376000877090da837660b4427aad530e3028d44e0bffe4f89a1c1"
-dependencies = [
- "gimli 0.31.1",
-]
-
-[[package]]
-name = "addr2line"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5d307320b3181d6d7954e663bd7c774a838b8220fe0593c86d9fb09f498b4b"
 dependencies = [
- "gimli 0.32.3",
+ "gimli",
 ]
 
 [[package]]
@@ -88,9 +79,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e4ff99651d46cef43767b5e8262ea228cd05287409ccb0c947cc25e70a952f9"
+checksum = "b0c0dc44157867da82c469c13186015b86abef209bf0e41625e4b68bac61d728"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -115,9 +106,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus-any"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a0701b0eda8051a2398591113e7862f807ccdd3315d0b441f06c2a0865a379b"
+checksum = "ba4cdb42df3871cd6b346d6a938ec2ba69a9a0f49d1f82714bc5c48349268434"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -129,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-contract"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c83c7a3c4e1151e8cac383d0a67ddf358f37e5ea51c95a1283d897c9de0a5a"
+checksum = "ca63b7125a981415898ffe2a2a696c83696c9c6bdb1671c8a912946bbd8e49e7"
 dependencies = [
  "alloy-consensus",
  "alloy-dyn-abi",
@@ -234,9 +225,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-eips"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "def1626eea28d48c6cc0a6f16f34d4af0001906e4f889df6c660b39c86fd044d"
+checksum = "b9f7ef09f21bd1e9cb8a686f168cb4a206646804567f0889eadb8dcc4c9288c8"
 dependencies = [
  "alloy-eip2124",
  "alloy-eip2930",
@@ -254,7 +245,7 @@ dependencies = [
  "ethereum_ssz_derive",
  "serde",
  "serde_with",
- "sha2 0.10.9",
+ "sha2",
  "thiserror 2.0.18",
 ]
 
@@ -275,7 +266,7 @@ dependencies = [
 [[package]]
 name = "alloy-evm"
 version = "0.26.3"
-source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=v26-patched#b3fa11ba2ea3391feeb928918bf1de5b9427be95"
+source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=v26-patched#d518a3aa2206bdc413508fb6cfc28fd95f76917f"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -288,7 +279,7 @@ dependencies = [
  "auto_impl",
  "derive_more 2.1.1",
  "fluentbase-revm",
- "fluentbase-types 0.5.0",
+ "fluentbase-types",
  "op-alloy",
  "op-revm",
  "revm",
@@ -297,9 +288,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-genesis"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55d9d1aba3f914f0e8db9e4616ae37f3d811426d95bdccf44e47d0605ab202f6"
+checksum = "7c9cf3b99f46615fbf7dc1add0c96553abb7bf88fc9ec70dfbe7ad0b47ba7fe8"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -337,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-json-rpc"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e57586581f2008933241d16c3e3f633168b3a5d2738c5c42ea5246ec5e0ef17a"
+checksum = "ff42cd777eea61f370c0b10f2648a1c81e0b783066cd7269228aa993afd487f7"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -352,9 +343,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b36c2a0ed74e48851f78415ca5b465211bd678891ba11e88fee09eac534bab1"
+checksum = "8cbca04f9b410fdc51aaaf88433cbac761213905a65fe832058bcf6690585762"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -378,9 +369,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network-primitives"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "636c8051da58802e757b76c3b65af610b95799f72423dc955737dec73de234fd"
+checksum = "42d6d15e069a8b11f56bef2eccbad2a873c6dd4d4c81d04dda29710f5ea52f04"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -392,7 +383,7 @@ dependencies = [
 [[package]]
 name = "alloy-op-evm"
 version = "0.26.3"
-source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=v26-patched#b3fa11ba2ea3391feeb928918bf1de5b9427be95"
+source = "git+https://github.com/fluentlabs-xyz/alloy-rwasm?branch=v26-patched#d518a3aa2206bdc413508fb6cfc28fd95f76917f"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -450,9 +441,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-provider"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3dd56e2eafe8b1803e325867ac2c8a4c73c9fb5f341ffd8347f9344458c5922"
+checksum = "d181c8cc7cf4805d7e589bf4074d56d55064fa1a979f005a45a62b047616d870"
 dependencies = [
  "alloy-chains",
  "alloy-consensus",
@@ -495,9 +486,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-pubsub"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6eebf54983d4fccea08053c218ee5c288adf2e660095a243d0532a8070b43955"
+checksum = "e8bd82953194dec221aa4cbbbb0b1e2df46066fe9d0333ac25b43a311e122d13"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -534,14 +525,14 @@ checksum = "ce8849c74c9ca0f5a03da1c865e3eb6f768df816e67dd3721a398a8a7e398011"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
 name = "alloy-rpc-client"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91577235d341a1bdbee30a463655d08504408a4d51e9f72edbfc5a622829f402"
+checksum = "f2792758a93ae32a32e9047c843d536e1448044f78422d71bf7d7c05149e103f"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -565,9 +556,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79cff039bf01a17d76c0aace3a3a773d5f895eb4c68baaae729ec9da9e86c99c"
+checksum = "7bdcbf9dfd5eea8bfeb078b1d906da8cd3a39c4d4dbe7a628025648e323611f6"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-anvil",
@@ -581,9 +572,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-anvil"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d22250cf438b6a3926de67683c08163bfa1fd1efa47ee9512cbcd631b6b0243c"
+checksum = "e0a3100b76987c1b1dc81f3abe592b7edc29e92b1242067a69d65e0030b35cf9"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-eth",
@@ -593,9 +584,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-any"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73234a141ecce14e2989748c04fcac23deee67a445e2c4c167cfb42d4dacd1b6"
+checksum = "dd720b63f82b457610f2eaaf1f32edf44efffe03ae25d537632e7d23e7929e1a"
 dependencies = [
  "alloy-consensus-any",
  "alloy-rpc-types-eth",
@@ -604,9 +595,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-beacon"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "625af0c3ebd3c31322edb1fb6b8e3e518acc39e164ed07e422eaff05310ff2fa"
+checksum = "4a22e13215866f5dfd5d3278f4c41f1fad9410dc68ce39022f58593c873c26f8"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -620,9 +611,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-debug"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "779f70ab16a77e305571881b07a9bc6b0068ae6f962497baf5762825c5b839fb"
+checksum = "e1b21e1ad18ff1b31ff1030e046462ab8168cf8894e6778cd805c8bdfe2bd649"
 dependencies = [
  "alloy-primitives",
  "derive_more 2.1.1",
@@ -632,9 +623,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-engine"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10620d600cc46538f613c561ac9a923843c6c74c61f054828dcdb8dd18c72ec4"
+checksum = "e4ac61f03f1edabccde1c687b5b25fff28f183afee64eaa2e767def3929e4457"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -652,9 +643,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-eth"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "010e101dbebe0c678248907a2545b574a87d078d82c2f6f5d0e8e7c9a6149a10"
+checksum = "9b2dc411f13092f237d2bf6918caf80977fc2f51485f9b90cb2a2f956912c8c9"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -673,9 +664,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-trace"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be096f74d85e1f927580b398bf7bc5b4aa62326f149680ec0867e3c040c9aced"
+checksum = "1ad79f1e27e161943b5a4f99fe5534ef0849876214be411e0032c12f38e94daa"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-eth",
@@ -687,9 +678,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-txpool"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14ab75189fbc29c5dd6f0bc1529bccef7b00773b458763f4d9d81a77ae4a1a2d"
+checksum = "d459f902a2313737bc66d18ed094c25d2aeb268b74d98c26bbbda2aa44182ab0"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-eth",
@@ -699,9 +690,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-serde"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e6d631f8b975229361d8af7b2c749af31c73b3cf1352f90e144ddb06227105e"
+checksum = "e2ce1e0dbf7720eee747700e300c99aac01b1a95bb93f493a01e78ee28bb1a37"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -710,9 +701,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97f40010b5e8f79b70bf163b38cd15f529b18ca88c4427c0e43441ee54e4ed82"
+checksum = "2425c6f314522c78e8198979c8cbf6769362be4da381d4152ea8eefce383535d"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-primitives",
@@ -784,9 +775,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-local"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c4ec1cc27473819399a3f0da83bc1cef0ceaac8c1c93997696e46dc74377a58"
+checksum = "c3ecb71ee53d8d9c3fa7bac17542c8116ebc7a9726c91b1bf333ec3d04f5a789"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -846,7 +837,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -864,7 +855,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "sha3",
- "syn 2.0.115",
+ "syn 2.0.116",
  "syn-solidity",
 ]
 
@@ -882,7 +873,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_json",
- "syn 2.0.115",
+ "syn 2.0.116",
  "syn-solidity",
 ]
 
@@ -910,9 +901,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a03bb3f02b9a7ab23dacd1822fa7f69aa5c8eefcdcf57fad085e0b8d76fb4334"
+checksum = "fa186e560d523d196580c48bf00f1bf62e63041f28ecf276acc22f8b27bb9f53"
 dependencies = [
  "alloy-json-rpc",
  "auto_impl",
@@ -933,9 +924,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-http"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ce599598ef8ebe067f3627509358d9faaa1ef94f77f834a7783cd44209ef55c"
+checksum = "aa501ad58dd20acddbfebc65b52e60f05ebf97c52fa40d1b35e91f5e2da0ad0e"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -949,9 +940,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-ipc"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49963a2561ebd439549915ea61efb70a7b13b97500ec16ca507721c9d9957d07"
+checksum = "c2ef85688e5ac2da72afc804e0a1f153a1f309f05a864b1998bbbed7804dbaab"
 dependencies = [
  "alloy-json-rpc",
  "alloy-pubsub",
@@ -969,9 +960,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-ws"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ed38ea573c6658e0c2745af9d1f1773b1ed83aa59fbd9c286358ad469c3233a"
+checksum = "b9f00445db69d63298e2b00a0ea1d859f00e6424a3144ffc5eba9c31da995e16"
 dependencies = [
  "alloy-pubsub",
  "alloy-transport",
@@ -1003,14 +994,14 @@ dependencies = [
 
 [[package]]
 name = "alloy-tx-macros"
-version = "1.6.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "397406cf04b11ca2a48e6f81804c70af3f40a36abf648e11dc7416043eb0834d"
+checksum = "6fa0c53e8c1e1ef4d01066b01c737fb62fc9397ab52c6e7bb5669f97d281b9bc"
 dependencies = [
  "darling 0.21.3",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1244,15 +1235,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f0e0fee31ef5ed1ba1316088939cea399010ed7731dba877ed44aeb407a75ea"
 
 [[package]]
-name = "ar_archive_writer"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eb93bbb63b9c227414f6eb3a0adfddca591a8ce1e9b60661bb08969b87e340b"
-dependencies = [
- "object 0.37.3",
-]
-
-[[package]]
 name = "arbitrary"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1391,7 +1373,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62945a2f7e6de02a31fe400aa489f0e0f5b2502e69f95f853adb82a96c7a6b60"
 dependencies = [
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1429,7 +1411,7 @@ dependencies = [
  "num-traits",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1518,7 +1500,7 @@ checksum = "213888f660fddcca0d257e88e54ac05bca01885f258ccdf695bafd77031bb69d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1615,7 +1597,7 @@ checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1626,7 +1608,7 @@ checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1679,7 +1661,7 @@ checksum = "ffdcb70bdbc4d478427380519163274ac86e52916e10f0a8889adf0f96d3fee7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -1891,7 +1873,7 @@ dependencies = [
  "http 0.2.12",
  "http 1.4.0",
  "percent-encoding",
- "sha2 0.10.9",
+ "sha2",
  "time 0.3.47",
  "tracing",
 ]
@@ -2124,22 +2106,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "az"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be5eb007b7cacc6c660343e96f650fedf4b5a77512399eb952ca6642cf8d13f7"
-
-[[package]]
 name = "backtrace"
 version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb531853791a215d7c62a30daf0dde835f381ab5de4589cfe7c649d2cbe92bd6"
 dependencies = [
- "addr2line 0.25.1",
+ "addr2line",
  "cfg-if",
  "libc",
  "miniz_oxide",
- "object 0.37.3",
+ "object",
  "rustc-demangle",
  "windows-link",
 ]
@@ -2330,15 +2306,6 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
-dependencies = [
- "generic-array 0.14.7",
-]
-
-[[package]]
-name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
@@ -2472,7 +2439,7 @@ dependencies = [
  "cow-utils",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "synstructure",
 ]
 
@@ -2530,7 +2497,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustversion",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -2553,7 +2520,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -2568,7 +2535,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
 dependencies = [
- "sha2 0.10.9",
+ "sha2",
  "tinyvec",
 ]
 
@@ -2615,7 +2582,7 @@ checksum = "f9abbd1bc6865053c427f7198e6af43bfdedc55ab791faed4fbd361d789575ff"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -2923,9 +2890,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.58"
+version = "4.5.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63be97961acde393029492ce0be7a1af7e323e6bae9511ebfac33751be5e6806"
+checksum = "c5caf74d17c3aec5495110c34cc3f78644bfa89af6c8993ed4de2790e49b6499"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -2943,9 +2910,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.58"
+version = "4.5.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f13174bda5dfd69d7e947827e5af4b0f2f94a4a3ee92912fba07a66150f21e2"
+checksum = "370daa45065b80218950227371916a1633217ae42b2715b2287b606dcd618e24"
 dependencies = [
  "anstream",
  "anstyle",
@@ -2984,7 +2951,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3059,7 +3026,7 @@ dependencies = [
  "hmac",
  "k256",
  "serde",
- "sha2 0.10.9",
+ "sha2",
  "thiserror 1.0.69",
 ]
 
@@ -3075,7 +3042,7 @@ dependencies = [
  "once_cell",
  "pbkdf2 0.12.2",
  "rand 0.8.5",
- "sha2 0.10.9",
+ "sha2",
  "thiserror 1.0.69",
 ]
 
@@ -3093,7 +3060,7 @@ dependencies = [
  "generic-array 0.14.7",
  "ripemd",
  "serde",
- "sha2 0.10.9",
+ "sha2",
  "sha3",
  "thiserror 1.0.69",
 ]
@@ -3405,28 +3372,10 @@ dependencies = [
 
 [[package]]
 name = "cranelift-assembler-x64"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ce81edaca6167d1f78da026afa92d7ff957a80aa82a79076e11cd34cde20165"
-dependencies = [
- "cranelift-assembler-x64-meta 0.121.2",
-]
-
-[[package]]
-name = "cranelift-assembler-x64"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-assembler-x64-meta 0.128.2",
-]
-
-[[package]]
-name = "cranelift-assembler-x64-meta"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d0d51e12f958551165969c6e8767e1e461729f6c1ccae923b0ba1d5cbcbbbf8"
-dependencies = [
- "cranelift-srcgen 0.121.2",
+ "cranelift-assembler-x64-meta",
 ]
 
 [[package]]
@@ -3434,16 +3383,7 @@ name = "cranelift-assembler-x64-meta"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-srcgen 0.128.2",
-]
-
-[[package]]
-name = "cranelift-bforest"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41294c755094d2c8a514cea903039742474423f2e91601332eab5f4094f76333"
-dependencies = [
- "cranelift-entity 0.121.2",
+ "cranelift-srcgen",
 ]
 
 [[package]]
@@ -3451,17 +3391,7 @@ name = "cranelift-bforest"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-entity 0.128.2",
-]
-
-[[package]]
-name = "cranelift-bitset"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebb6f5d0df5bd0d02c63ec48e8f2e38a176b123f59e084f22caf89a0d0593e7e"
-dependencies = [
- "serde",
- "serde_derive",
+ "cranelift-entity",
 ]
 
 [[package]]
@@ -3475,50 +3405,23 @@ dependencies = [
 
 [[package]]
 name = "cranelift-codegen"
-version = "0.121.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d1a10a8a2958b68ecd261e565eef285249e242a8447ac959978319eabbb4a55"
-dependencies = [
- "bumpalo",
- "cranelift-assembler-x64 0.121.2",
- "cranelift-bforest 0.121.2",
- "cranelift-bitset 0.121.2",
- "cranelift-codegen-meta 0.121.1",
- "cranelift-codegen-shared 0.121.2",
- "cranelift-control 0.121.2",
- "cranelift-entity 0.121.2",
- "cranelift-isle 0.121.1",
- "gimli 0.31.1",
- "hashbrown 0.15.5",
- "log",
- "pulley-interpreter 34.0.1",
- "regalloc2 0.12.2",
- "rustc-hash",
- "serde",
- "smallvec",
- "target-lexicon",
- "wasmtime-math",
-]
-
-[[package]]
-name = "cranelift-codegen"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "bumpalo",
- "cranelift-assembler-x64 0.128.2",
- "cranelift-bforest 0.128.2",
- "cranelift-bitset 0.128.2",
- "cranelift-codegen-meta 0.128.2",
- "cranelift-codegen-shared 0.128.2",
- "cranelift-control 0.128.2",
- "cranelift-entity 0.128.2",
- "cranelift-isle 0.128.2",
- "gimli 0.32.3",
+ "cranelift-assembler-x64",
+ "cranelift-bforest",
+ "cranelift-bitset",
+ "cranelift-codegen-meta",
+ "cranelift-codegen-shared",
+ "cranelift-control",
+ "cranelift-entity",
+ "cranelift-isle",
+ "gimli",
  "hashbrown 0.15.5",
  "log",
- "pulley-interpreter 41.0.2",
- "regalloc2 0.13.5",
+ "pulley-interpreter",
+ "regalloc2",
  "rustc-hash",
  "serde",
  "smallvec",
@@ -3528,47 +3431,20 @@ dependencies = [
 
 [[package]]
 name = "cranelift-codegen-meta"
-version = "0.121.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f319986d5ae1386cfec625c70f8c01e52dc1f910aa6aaee7740bf8842d4e19c7"
-dependencies = [
- "cranelift-assembler-x64-meta 0.121.2",
- "cranelift-codegen-shared 0.121.2",
- "cranelift-srcgen 0.121.2",
- "pulley-interpreter 34.0.1",
-]
-
-[[package]]
-name = "cranelift-codegen-meta"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-assembler-x64-meta 0.128.2",
- "cranelift-codegen-shared 0.128.2",
- "cranelift-srcgen 0.128.2",
+ "cranelift-assembler-x64-meta",
+ "cranelift-codegen-shared",
+ "cranelift-srcgen",
  "heck",
- "pulley-interpreter 41.0.2",
+ "pulley-interpreter",
 ]
-
-[[package]]
-name = "cranelift-codegen-shared"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2f36e74ba4033490587a47952f74390cb7d4f1fc1fa28ace50564e491f1e38f"
 
 [[package]]
 name = "cranelift-codegen-shared"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
-
-[[package]]
-name = "cranelift-control"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6671962c7d65b9a7ad038cd92da6784744d8a9ecf8ded8bb9a1f7046dbe2ccf"
-dependencies = [
- "arbitrary",
-]
 
 [[package]]
 name = "cranelift-control"
@@ -3580,35 +3456,12 @@ dependencies = [
 
 [[package]]
 name = "cranelift-entity"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee832f8329fa87c5df6c1d64a8506a58031e6f8a190d9b21b1900272a4dbb47d"
-dependencies = [
- "cranelift-bitset 0.121.2",
- "serde",
- "serde_derive",
-]
-
-[[package]]
-name = "cranelift-entity"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-bitset 0.128.2",
+ "cranelift-bitset",
  "serde",
  "serde_derive",
-]
-
-[[package]]
-name = "cranelift-frontend"
-version = "0.121.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4fce5fcf93c1fece95d0175b15fbaf0808b187430bc06c8ecde80db0ed58c5e"
-dependencies = [
- "cranelift-codegen 0.121.1",
- "log",
- "smallvec",
- "target-lexicon",
 ]
 
 [[package]]
@@ -3616,17 +3469,11 @@ name = "cranelift-frontend"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-codegen 0.128.2",
+ "cranelift-codegen",
  "log",
  "smallvec",
  "target-lexicon",
 ]
-
-[[package]]
-name = "cranelift-isle"
-version = "0.121.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13fc8d838a2bf28438dbaf6ccdbc34531b6a972054f43fd23be7f124121ce6e0"
 
 [[package]]
 name = "cranelift-isle"
@@ -3635,30 +3482,13 @@ source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#6299
 
 [[package]]
 name = "cranelift-native"
-version = "0.121.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0975ce66adcf2e0729d06b1d3efea0398d793d1f39c2e0a6f52a347537836693"
-dependencies = [
- "cranelift-codegen 0.121.1",
- "libc",
- "target-lexicon",
-]
-
-[[package]]
-name = "cranelift-native"
 version = "0.128.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-codegen 0.128.2",
+ "cranelift-codegen",
  "libc",
  "target-lexicon",
 ]
-
-[[package]]
-name = "cranelift-srcgen"
-version = "0.121.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c3d9071bc5ee5573e723d9d84a45b7025a29e8f2c5ad81b3b9d0293129541d9"
 
 [[package]]
 name = "cranelift-srcgen"
@@ -3799,7 +3629,7 @@ dependencies = [
  "md4",
  "ripemd",
  "sha-1",
- "sha2 0.10.9",
+ "sha2",
  "sha3",
  "streebog",
  "whirlpool",
@@ -3866,7 +3696,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3881,7 +3711,7 @@ dependencies = [
  "quote",
  "serde",
  "strsim",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3894,7 +3724,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3905,7 +3735,7 @@ checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
 dependencies = [
  "darling_core 0.20.11",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3916,7 +3746,7 @@ checksum = "d38308df82d1080de0afee5d069fa14b0326a88c14f15c5ccda35b4a6c414c81"
 dependencies = [
  "darling_core 0.21.3",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -3927,7 +3757,7 @@ checksum = "ac3984ec7bd6cfa798e62b4a642426a5be0e68f9401cfc2a01e3fa9ea2fcdb8d"
 dependencies = [
  "darling_core 0.23.0",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4077,7 +3907,7 @@ checksum = "ef941ded77d15ca19b40374869ac6000af1c9f2a4c0f3d4c70926287e6364a8f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4088,7 +3918,7 @@ checksum = "1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4109,7 +3939,7 @@ dependencies = [
  "darling 0.20.11",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4119,7 +3949,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab63b0e2bf4d5928aff72e83a7dace85d7bba5fe12dcc3c5a572d78caffd3f3c"
 dependencies = [
  "derive_builder_core",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4148,7 +3978,7 @@ checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4161,7 +3991,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustc_version 0.4.1",
- "syn 2.0.115",
+ "syn 2.0.116",
  "unicode-xid",
 ]
 
@@ -4191,19 +4021,10 @@ version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
- "block-buffer 0.10.4",
+ "block-buffer",
  "const-oid",
  "crypto-common",
  "subtle",
-]
-
-[[package]]
-name = "directories"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16f5094c54661b38d03bd7e50df373292118db60b585c08a411c6d840017fe7d"
-dependencies = [
- "dirs-sys",
 ]
 
 [[package]]
@@ -4274,7 +4095,7 @@ checksum = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4339,7 +4160,7 @@ checksum = "1ec431cd708430d5029356535259c5d645d60edd3d39c54e5eea9782d46caa7d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4366,7 +4187,7 @@ dependencies = [
  "enum-ordinalize",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4490,7 +4311,7 @@ checksum = "8ca9601fb2d62598ee17836250842873a413586e5d7ed88b356e38ddbb0ec631"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4539,7 +4360,7 @@ checksum = "44f23cf4b44bfce11a86ace86f8a73ffdec849c9fd00a386a53d278bd9e81fb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4591,7 +4412,7 @@ dependencies = [
  "scrypt",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
  "sha3",
  "thiserror 1.0.69",
  "uuid 0.8.2",
@@ -4649,7 +4470,7 @@ dependencies = [
  "darling 0.20.11",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -4844,113 +4665,74 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-build"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "anyhow",
  "cargo_metadata 0.19.2",
  "chrono",
  "clap",
  "convert_case 0.8.0",
- "fluentbase-sdk 0.4.11-dev",
- "fluentbase-sdk-derive-core 0.4.11-dev",
+ "fluentbase-sdk",
+ "fluentbase-sdk-derive-core",
  "proc-macro2",
  "quote",
- "rwasm 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rwasm",
  "serde",
  "serde_json",
- "sha2 0.10.9",
- "syn 2.0.115",
+ "sha2",
+ "syn 2.0.116",
  "toml 0.8.23",
  "tracing",
 ]
 
 [[package]]
 name = "fluentbase-codec"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-primitives",
  "byteorder",
  "bytes",
- "fluentbase-codec-derive 0.4.11-dev",
- "hashbrown 0.15.5",
- "serde",
-]
-
-[[package]]
-name = "fluentbase-codec"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "alloy-primitives",
- "byteorder",
- "bytes",
- "fluentbase-codec-derive 0.5.0",
+ "fluentbase-codec-derive",
  "hashbrown 0.16.1",
  "serde",
 ]
 
 [[package]]
 name = "fluentbase-codec-derive"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "convert_case 0.6.0",
  "crypto-hashes",
  "proc-macro2",
  "quote",
  "serde",
- "syn 2.0.115",
-]
-
-[[package]]
-name = "fluentbase-codec-derive"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "convert_case 0.6.0",
- "crypto-hashes",
- "proc-macro2",
- "quote",
- "serde",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
 name = "fluentbase-crypto"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "bytemuck",
  "cfg-if",
  "elliptic-curve",
- "fluentbase-runtime 0.4.11-dev",
- "fluentbase-types 0.4.11-dev",
- "tiny-keccak",
-]
-
-[[package]]
-name = "fluentbase-crypto"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "bytemuck",
- "cfg-if",
- "elliptic-curve",
- "fluentbase-runtime 0.5.0",
- "fluentbase-types 0.5.0",
+ "fluentbase-runtime",
+ "fluentbase-types",
  "tiny-keccak",
 ]
 
 [[package]]
 name = "fluentbase-evm"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "bincode 2.0.1",
  "bitvec",
- "fluentbase-sdk 0.5.0",
+ "fluentbase-sdk",
  "once_cell",
  "revm-bytecode 8.0.0",
  "revm-context",
@@ -4962,55 +4744,36 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-revm"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-primitives",
  "cfg-if",
  "fluentbase-evm",
- "fluentbase-runtime 0.5.0",
- "fluentbase-sdk 0.5.0",
+ "fluentbase-runtime",
+ "fluentbase-sdk",
  "fluentbase-universal-token",
  "once_cell",
  "revm",
- "rwasm 0.3.2 (git+https://github.com/fluentlabs-xyz/rwasm?branch=devel)",
+ "rwasm",
  "serde",
  "tracing",
 ]
 
 [[package]]
 name = "fluentbase-runtime"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "blake3",
  "bytemuck",
- "elliptic-curve",
- "fluentbase-types 0.4.11-dev",
+ "fluentbase-types",
  "k256",
  "num",
  "p256",
- "rwasm 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "sha2 0.10.9",
- "solana-poseidon",
- "sp1-curves",
- "tiny-keccak",
-]
-
-[[package]]
-name = "fluentbase-runtime"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "blake3",
- "bytemuck",
- "fluentbase-types 0.5.0",
- "k256",
- "num",
- "p256",
- "rwasm 0.3.2 (git+https://github.com/fluentlabs-xyz/rwasm?branch=devel)",
+ "rwasm",
  "schnellru",
- "sha2 0.10.9",
+ "sha2",
  "snowbridge-amcl",
  "sp1-curves",
  "tiny-keccak",
@@ -5018,106 +4781,53 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-sdk"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-rlp",
  "auto_impl",
  "bincode 2.0.1",
- "fluentbase-codec 0.4.11-dev",
- "fluentbase-crypto 0.4.11-dev",
- "fluentbase-sdk-derive 0.4.11-dev",
- "fluentbase-types 0.4.11-dev",
- "hashbrown 0.15.5",
- "rwasm 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "fluentbase-sdk"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "alloy-rlp",
- "auto_impl",
- "bincode 2.0.1",
- "fluentbase-codec 0.5.0",
- "fluentbase-crypto 0.5.0",
- "fluentbase-sdk-derive 0.5.0",
- "fluentbase-types 0.5.0",
+ "fluentbase-codec",
+ "fluentbase-crypto",
+ "fluentbase-sdk-derive",
+ "fluentbase-types",
  "hashbrown 0.16.1",
- "rwasm 0.3.2 (git+https://github.com/fluentlabs-xyz/rwasm?branch=devel)",
+ "rwasm",
  "spin 0.10.0",
 ]
 
 [[package]]
 name = "fluentbase-sdk-derive"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-sol-macro-input",
  "crypto-hashes",
- "fluentbase-sdk-derive-core 0.4.11-dev",
+ "fluentbase-sdk-derive-core",
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
-]
-
-[[package]]
-name = "fluentbase-sdk-derive"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "alloy-sol-macro-input",
- "crypto-hashes",
- "fluentbase-sdk-derive-core 0.5.0",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
 name = "fluentbase-sdk-derive-core"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-sol-macro-input",
  "anyhow",
  "convert_case 0.8.0",
  "crypto-hashes",
  "darling 0.20.11",
- "fluentbase-codec 0.4.11-dev",
+ "fluentbase-codec",
  "hex",
  "proc-macro-error",
  "proc-macro2",
  "quote",
  "serde",
  "serde_json",
- "syn 2.0.115",
- "syn-solidity",
- "thiserror 2.0.18",
- "tracing",
-]
-
-[[package]]
-name = "fluentbase-sdk-derive-core"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "alloy-sol-macro-input",
- "anyhow",
- "convert_case 0.8.0",
- "crypto-hashes",
- "darling 0.20.11",
- "fluentbase-codec 0.5.0",
- "hex",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.115",
+ "syn 2.0.116",
  "syn-solidity",
  "thiserror 2.0.18",
  "tracing",
@@ -5125,45 +4835,29 @@ dependencies = [
 
 [[package]]
 name = "fluentbase-types"
-version = "0.4.11-dev"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat%2Frevm-git-deps#ea311373b675560d48928a8f329439fa0dac6e5c"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
  "alloy-primitives",
  "bincode 2.0.1",
  "byteorder",
- "hashbrown 0.15.5",
- "paste",
- "revm-precompile 24.0.1",
- "revm-primitives 20.0.0",
- "rwasm 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "strum_macros 0.27.2",
-]
-
-[[package]]
-name = "fluentbase-types"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
-dependencies = [
- "alloy-primitives",
- "bincode 2.0.1",
- "byteorder",
- "fluentbase-codec 0.5.0",
- "fluentbase-codec-derive 0.5.0",
+ "fluentbase-codec",
+ "fluentbase-codec-derive",
  "hashbrown 0.16.1",
  "paste",
- "revm-precompile 32.0.0",
+ "revm-precompile",
  "revm-primitives 22.0.0",
- "rwasm 0.3.2 (git+https://github.com/fluentlabs-xyz/rwasm?branch=devel)",
+ "rwasm",
  "serde",
  "strum_macros 0.27.2",
 ]
 
 [[package]]
 name = "fluentbase-universal-token"
-version = "0.5.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#bb78dcbc7da26ac120cec489308a68772744e9ef"
+version = "0.5.1"
+source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#564520b719575936e28a724749c790ba5736fb57"
 dependencies = [
- "fluentbase-sdk 0.5.0",
+ "fluentbase-sdk",
 ]
 
 [[package]]
@@ -5400,7 +5094,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -5699,7 +5393,7 @@ dependencies = [
  "semver 1.0.27",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
  "solar-compiler",
  "svm-rs",
  "svm-rs-builds",
@@ -6055,7 +5749,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -6282,7 +5976,7 @@ checksum = "e835b70203e41293343137df5c0664546da5745f82ec9b84d40be8336958447b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -6319,28 +6013,6 @@ name = "futures-utils-wasm"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42012b0f064e01aa58b545fe3727f90f7dd4020f4a3ea735b50344965f5a57e9"
-
-[[package]]
-name = "fxhash"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
-dependencies = [
- "byteorder",
-]
-
-[[package]]
-name = "fxprof-processed-profile"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27d12c0aed7f1e24276a241aadc4cb8ea9f83000f34bc062b7cc2d51e3b0fabd"
-dependencies = [
- "bitflags 2.11.0",
- "debugid",
- "fxhash",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "fxprof-processed-profile"
@@ -6468,17 +6140,6 @@ dependencies = [
 
 [[package]]
 name = "gimli"
-version = "0.31.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
-dependencies = [
- "fallible-iterator",
- "indexmap 2.13.0",
- "stable_deref_trait",
-]
-
-[[package]]
-name = "gimli"
 version = "0.32.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
@@ -6518,16 +6179,6 @@ dependencies = [
  "log",
  "regex-automata",
  "regex-syntax",
-]
-
-[[package]]
-name = "gmp-mpfr-sys"
-version = "1.6.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60f8970a75c006bb2f8ae79c6768a116dd215fa8346a87aed99bf9d82ca43394"
-dependencies = [
- "libc",
- "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -7094,7 +6745,7 @@ checksum = "a0eb5a3343abf848c0984fe4604b2b105da9539376e24fc0a3b0007411ae4fd9"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -7216,7 +6867,7 @@ dependencies = [
  "indoc",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -7372,7 +7023,7 @@ checksum = "f7946b4325269738f270bb55b3c19ab5c5040525f83fd625259422a9d25d9be5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -7409,9 +7060,9 @@ dependencies = [
 
 [[package]]
 name = "js-sys"
-version = "0.3.83"
+version = "0.3.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "464a3709c7f55f1f721e5389aa6ea4e3bc6aba669353300af094b29ffbdde1d8"
+checksum = "8c942ebf8e95485ca0d52d97da7c5a2c387d0e7f0ba4c35e93bfcaee045955b3"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
@@ -7454,7 +7105,7 @@ dependencies = [
  "elliptic-curve",
  "once_cell",
  "serdect",
- "sha2 0.10.9",
+ "sha2",
  "signature",
 ]
 
@@ -7603,52 +7254,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libsecp256k1"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e79019718125edc905a079a70cfa5f3820bc76139fc91d6f9abc27ea2a887139"
-dependencies = [
- "arrayref",
- "base64 0.22.1",
- "digest 0.9.0",
- "libsecp256k1-core",
- "libsecp256k1-gen-ecmult",
- "libsecp256k1-gen-genmult",
- "rand 0.8.5",
- "serde",
- "sha2 0.9.9",
-]
-
-[[package]]
-name = "libsecp256k1-core"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5be9b9bb642d8522a44d533eab56c16c738301965504753b03ad1de3425d5451"
-dependencies = [
- "crunchy",
- "digest 0.9.0",
- "subtle",
-]
-
-[[package]]
-name = "libsecp256k1-gen-ecmult"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3038c808c55c87e8a172643a7d87187fc6c4174468159cb3090659d55bcb4809"
-dependencies = [
- "libsecp256k1-core",
-]
-
-[[package]]
-name = "libsecp256k1-gen-genmult"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3db8d6ba2cec9eacc40e6e8ccc98931840301f1006e95647ceb2dd5c3aa06f7c"
-dependencies = [
- "libsecp256k1-core",
-]
-
-[[package]]
 name = "libusb1-sys"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7670,17 +7275,6 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "light-poseidon"
-version = "0.2.0"
-source = "git+https://github.com/fluentlabs-xyz/light-poseidon?branch=feat%2Fsvm-0.2.0#636095c8a469fb5d28ebd166f3b2f86c5c8f2f3c"
-dependencies = [
- "ark-bn254",
- "ark-ff 0.5.0",
- "num-bigint",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -7779,7 +7373,7 @@ checksum = "1b27834086c65ec3f9387b096d66e99f221cf081c2b738042aa252bcd41204e3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -7895,7 +7489,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
  "tracing",
 ]
 
@@ -8011,7 +7605,7 @@ checksum = "db5b29714e950dbb20d5e6f74f9dcec4edbcc1067bb7f8ed198c097b8c1a818b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -8090,7 +7684,7 @@ dependencies = [
  "cfg-if",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -8113,12 +7707,6 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[package]]
-name = "multi-stash"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "685a9ac4b61f4e728e1d2c6a7844609c16527aeb5e6c865915c08e619c16410f"
 
 [[package]]
 name = "ndk-context"
@@ -8311,7 +7899,7 @@ checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -8409,7 +7997,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -8458,18 +8046,6 @@ checksum = "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272"
 dependencies = [
  "bitflags 2.11.0",
  "objc2",
-]
-
-[[package]]
-name = "object"
-version = "0.36.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62948e14d923ea95ea2c7c86c71013138b66525b86bdc08d2dcc262bdb497b87"
-dependencies = [
- "crc32fast",
- "hashbrown 0.15.5",
- "indexmap 2.13.0",
- "memchr",
 ]
 
 [[package]]
@@ -8616,7 +8192,7 @@ dependencies = [
  "ethereum_ssz_derive",
  "op-alloy-consensus",
  "serde",
- "sha2 0.10.9",
+ "sha2",
  "snap",
  "thiserror 2.0.18",
 ]
@@ -8624,18 +8200,12 @@ dependencies = [
 [[package]]
 name = "op-revm"
 version = "15.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "auto_impl",
  "revm",
  "serde",
 ]
-
-[[package]]
-name = "opaque-debug"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
 name = "opener"
@@ -8682,7 +8252,7 @@ dependencies = [
  "elliptic-curve",
  "primeorder",
  "serdect",
- "sha2 0.10.9",
+ "sha2",
 ]
 
 [[package]]
@@ -8929,7 +8499,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9047,7 +8617,7 @@ dependencies = [
  "pest_meta",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9057,7 +8627,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89815c69d36021a140146f26659a81d6c2afa33d216d736dd4be5381a7362220"
 dependencies = [
  "pest",
- "sha2 0.10.9",
+ "sha2",
 ]
 
 [[package]]
@@ -9161,7 +8731,7 @@ dependencies = [
  "phf_shared 0.11.3",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9174,7 +8744,7 @@ dependencies = [
  "phf_shared 0.13.1",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9232,7 +8802,7 @@ checksum = "6e918e4ff8c4549eb882f14b3a4bc8c8bc93de829416eacf579f1207a8fbf861"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9362,7 +8932,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9437,7 +9007,7 @@ dependencies = [
  "proc-macro-error-attr2",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9496,7 +9066,7 @@ checksum = "fb6dc647500e84a25a85b100e76c85b8ace114c209432dc174f20aac11d4ed6c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9539,7 +9109,7 @@ dependencies = [
  "itertools 0.12.1",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9552,7 +9122,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9565,7 +9135,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9616,16 +9186,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "psm"
-version = "0.1.30"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3852766467df634d74f0b2d7819bf8dc483a0eb2e3b0f50f756f9cfe8b0d18d8"
-dependencies = [
- "ar_archive_writer",
- "cc",
-]
-
-[[package]]
 name = "pulldown-cmark"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9645,46 +9205,23 @@ checksum = "007d8adb5ddab6f8e3f491ac63566a7d5002cc7ed73901f72057943fa71ae1ae"
 
 [[package]]
 name = "pulley-interpreter"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe0e8f39bc99694ce6fc8df7df7ed258d38d255a9268e2ff964f67f4a6588cdb"
-dependencies = [
- "cranelift-bitset 0.121.2",
- "log",
- "pulley-macros 34.0.1",
- "wasmtime-math",
-]
-
-[[package]]
-name = "pulley-interpreter"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-bitset 0.128.2",
+ "cranelift-bitset",
  "log",
- "pulley-macros 41.0.2",
+ "pulley-macros",
  "wasmtime-internal-math",
 ]
 
 [[package]]
 name = "pulley-macros"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9276d404009cc49f3b8befeb8ffc1d868c5ea732bd9d72ab3e64231187f908c5"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.115",
-]
-
-[[package]]
-name = "pulley-macros"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -9903,9 +9440,9 @@ dependencies = [
 
 [[package]]
 name = "rapidhash"
-version = "4.3.0"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84816e4c99c467e92cf984ee6328caa976dfecd33a673544489d79ca2caaefe5"
+checksum = "111325c42c4bafae99e777cd77b40dea9a2b30c69e9d8c74b6eccd7fba4337de"
 dependencies = [
  "rand 0.9.2",
  "rustversion",
@@ -10066,21 +9603,7 @@ checksum = "b7186006dcb21920990093f30e3dea63b7d6e977bf1256be20c3563a5db070da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
-]
-
-[[package]]
-name = "regalloc2"
-version = "0.12.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5216b1837de2149f8bc8e6d5f88a9326b63b8c836ed58ce4a0a29ec736a59734"
-dependencies = [
- "allocator-api2",
- "bumpalo",
- "hashbrown 0.15.5",
- "log",
- "rustc-hash",
- "smallvec",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -10214,7 +9737,7 @@ source = "git+https://github.com/paradigmxyz/reth?rev=b25f32a977b489f9b84254c781
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -10270,7 +9793,7 @@ dependencies = [
 [[package]]
 name = "revm"
 version = "34.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "revm-bytecode 8.0.0",
  "revm-context",
@@ -10280,7 +9803,7 @@ dependencies = [
  "revm-handler",
  "revm-inspector",
  "revm-interpreter",
- "revm-precompile 32.0.0",
+ "revm-precompile",
  "revm-primitives 22.0.0",
  "revm-state 9.0.0",
 ]
@@ -10300,19 +9823,19 @@ dependencies = [
 [[package]]
 name = "revm-bytecode"
 version = "8.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "bitvec",
  "phf 0.13.1",
  "revm-primitives 22.0.0",
- "rwasm 0.3.2 (git+https://github.com/fluentlabs-xyz/rwasm?branch=devel)",
+ "rwasm",
  "serde",
 ]
 
 [[package]]
 name = "revm-context"
 version = "13.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "bitvec",
  "cfg-if",
@@ -10328,7 +9851,7 @@ dependencies = [
 [[package]]
 name = "revm-context-interface"
 version = "14.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "alloy-eip2930",
  "alloy-eip7702",
@@ -10343,7 +9866,7 @@ dependencies = [
 [[package]]
 name = "revm-database"
 version = "10.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "alloy-eips",
  "revm-bytecode 8.0.0",
@@ -10356,7 +9879,7 @@ dependencies = [
 [[package]]
 name = "revm-database-interface"
 version = "9.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "auto_impl",
  "either",
@@ -10369,7 +9892,7 @@ dependencies = [
 [[package]]
 name = "revm-handler"
 version = "15.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "auto_impl",
  "derive-where",
@@ -10378,7 +9901,7 @@ dependencies = [
  "revm-context-interface",
  "revm-database-interface",
  "revm-interpreter",
- "revm-precompile 32.0.0",
+ "revm-precompile",
  "revm-primitives 22.0.0",
  "revm-state 9.0.0",
  "serde",
@@ -10387,7 +9910,7 @@ dependencies = [
 [[package]]
 name = "revm-inspector"
 version = "15.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "auto_impl",
  "either",
@@ -10424,7 +9947,7 @@ dependencies = [
 [[package]]
 name = "revm-interpreter"
 version = "32.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "revm-bytecode 8.0.0",
  "revm-context-interface",
@@ -10435,33 +9958,8 @@ dependencies = [
 
 [[package]]
 name = "revm-precompile"
-version = "24.0.1"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v82-patched-update-rwasm#b89ecfa147ce45d51eaa1fc049739068cf285781"
-dependencies = [
- "ark-bls12-381",
- "ark-bn254",
- "ark-ec",
- "ark-ff 0.5.0",
- "ark-serialize 0.5.0",
- "arrayref",
- "aurora-engine-modexp",
- "c-kzg",
- "cfg-if",
- "k256",
- "libsecp256k1",
- "once_cell",
- "p256",
- "revm-primitives 20.0.0",
- "ripemd",
- "rug",
- "secp256k1 0.31.1",
- "sha2 0.10.9",
-]
-
-[[package]]
-name = "revm-precompile"
 version = "32.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",
@@ -10478,17 +9976,7 @@ dependencies = [
  "revm-primitives 22.0.0",
  "ripemd",
  "secp256k1 0.31.1",
- "sha2 0.10.9",
-]
-
-[[package]]
-name = "revm-primitives"
-version = "20.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v82-patched-update-rwasm#b89ecfa147ce45d51eaa1fc049739068cf285781"
-dependencies = [
- "alloy-primitives",
- "num_enum",
- "serde",
+ "sha2",
 ]
 
 [[package]]
@@ -10506,7 +9994,7 @@ dependencies = [
 [[package]]
 name = "revm-primitives"
 version = "22.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "alloy-primitives",
  "num_enum",
@@ -10529,7 +10017,7 @@ dependencies = [
 [[package]]
 name = "revm-state"
 version = "9.0.0"
-source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#645584c0ccbfc3ef61e1e9690d2680b7a69fc614"
+source = "git+https://github.com/fluentlabs-xyz/revm-rwasm.git?branch=v103-patched#5f7b6d8a64d68771d602cd6a5e79691c6241a762"
 dependencies = [
  "alloy-eip7928",
  "bitflags 2.11.0",
@@ -10636,18 +10124,6 @@ checksum = "a7cc970b249fbe527d6e02e0a227762c9108b2f49d81094fe357ffc6d14d7f6f"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "rug"
-version = "1.28.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de190ec858987c79cad4da30e19e546139b3339331282832af004d0ea7829639"
-dependencies = [
- "az",
- "gmp-mpfr-sys",
- "libc",
- "libm",
 ]
 
 [[package]]
@@ -10880,38 +10356,12 @@ dependencies = [
 [[package]]
 name = "rwasm"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b36169175e8ed473a54baf2a23ff6cf3391c12abf12c339a18d18e4990ee3c8"
+source = "git+https://github.com/fluentlabs-xyz/rwasm?branch=devel#f5c8bb2809f4b2de2db2f88021c6a7e8b52e8d8d"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
  "bitvec",
  "bytes",
- "downcast-rs",
- "futures",
- "hashbrown 0.15.5",
- "libm",
- "num-derive",
- "num-traits",
- "paste",
- "smallvec",
- "spin 0.10.0",
- "tiny-keccak",
- "wasmi",
- "wasmparser-nostd",
- "wasmtime-rwasm",
-]
-
-[[package]]
-name = "rwasm"
-version = "0.3.2"
-source = "git+https://github.com/fluentlabs-xyz/rwasm?branch=devel#b3e797db8dfcb15eac97a43645627b780b82ac6d"
-dependencies = [
- "anyhow",
- "bincode 2.0.1",
- "bitvec",
- "bytes",
- "directories",
  "downcast-rs",
  "hashbrown 0.15.5",
  "libm",
@@ -10996,7 +10446,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11042,7 +10492,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11077,7 +10527,7 @@ dependencies = [
  "hmac",
  "pbkdf2 0.11.0",
  "salsa20",
- "sha2 0.10.9",
+ "sha2",
 ]
 
 [[package]]
@@ -11258,7 +10708,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11269,7 +10719,7 @@ checksum = "18d26a20a969b9e3fdf2fc2d9f21eda6c40e2de84c9408bb5d3b05d499aae711"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11364,7 +10814,7 @@ dependencies = [
  "darling 0.21.3",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11426,19 +10876,6 @@ name = "sha1_smol"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfa15b3dddfee50a0fff136974b3e1bde555604ba463834a7eb7deb6417705d"
-
-[[package]]
-name = "sha2"
-version = "0.9.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d58a1e1bf39749807d89cf2d98ac2dfa0ff1cb3faa38fbb64dd88ac8013d800"
-dependencies = [
- "block-buffer 0.9.0",
- "cfg-if",
- "cpufeatures",
- "digest 0.9.0",
- "opaque-debug",
-]
 
 [[package]]
 name = "sha2"
@@ -11680,21 +11117,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "solana-define-syscall"
-version = "2.1.18"
-source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#ca0b8c4a46e162fa27f869543aa7e3e7eeeaec04"
-
-[[package]]
-name = "solana-poseidon"
-version = "2.1.18"
-source = "git+https://github.com/fluentlabs-xyz/agave?branch=feat%2Fsvm#ca0b8c4a46e162fa27f869543aa7e3e7eeeaec04"
-dependencies = [
- "ark-bn254",
- "light-poseidon",
- "solana-define-syscall",
-]
-
-[[package]]
 name = "solar-ast"
 version = "0.1.8"
 source = "git+https://github.com/paradigmxyz/solar?rev=530f129#530f129b1b2d7138df973dd71d2fc1e592b593d7"
@@ -11783,7 +11205,7 @@ source = "git+https://github.com/paradigmxyz/solar?rev=530f129#530f129b1b2d7138d
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -11874,7 +11296,7 @@ dependencies = [
  "semver 1.0.27",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
  "thiserror 2.0.18",
  "tokio",
  "toml_edit 0.23.10+spec-1.0.0",
@@ -11932,7 +11354,7 @@ dependencies = [
  "p3-poseidon2",
  "p3-symmetric",
  "serde",
- "sha2 0.10.9",
+ "sha2",
 ]
 
 [[package]]
@@ -11985,12 +11407,6 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
-
-[[package]]
-name = "spin"
-version = "0.9.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "spin"
@@ -12175,7 +11591,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustversion",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12187,7 +11603,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12286,7 +11702,7 @@ dependencies = [
  "semver 1.0.27",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
  "tempfile",
  "thiserror 2.0.18",
  "url",
@@ -12318,9 +11734,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.115"
+version = "2.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e614ed320ac28113fa64972c4262d5dbc89deacdfd00c34a3e4cea073243c12"
+checksum = "3df424c70518695237746f84cede799c9c58fcb37450d7b23716568cc8bc69cb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -12336,7 +11752,7 @@ dependencies = [
  "paste",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12356,7 +11772,7 @@ checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12420,9 +11836,9 @@ dependencies = [
 
 [[package]]
 name = "target-lexicon"
-version = "0.13.4"
+version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1dd07eb858a2067e2f3c7155d54e929265c264e6f37efe3ee7a8d1b5a1dd0ba"
+checksum = "adb6935a6f5c20170eeceb1a3835a49e12e19d792f6dd344ccc76a985ca5a6ca"
 
 [[package]]
 name = "tempfile"
@@ -12455,7 +11871,7 @@ dependencies = [
  "reth-primitives-traits",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2",
 ]
 
 [[package]]
@@ -12558,7 +11974,7 @@ checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12569,7 +11985,7 @@ checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12742,7 +12158,7 @@ checksum = "af407857209536a95c8e56f8231ef2c2e2aff839b22e07a1ffcbc617e9db9fa5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -12897,9 +12313,9 @@ dependencies = [
 
 [[package]]
 name = "toml_parser"
-version = "1.0.8+spec-1.1.0"
+version = "1.0.9+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0742ff5ff03ea7e67c8ae6c93cac239e0d9784833362da3f9a9c1da8dfefcbdc"
+checksum = "702d4415e08923e7e1ef96cd5727c0dfed80b4d2fa25db9647fe5eb6f7c5a4c4"
 dependencies = [
  "winnow",
 ]
@@ -13045,7 +12461,7 @@ checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -13137,17 +12553,6 @@ checksum = "c5f7c95348f20c1c913d72157b3c6dee6ea3e30b3d19502c5a7f6d3f160dacbf"
 dependencies = [
  "cc",
  "windows-targets 0.52.6",
-]
-
-[[package]]
-name = "trait-variant"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70977707304198400eb4835a78f6a9f928bf41bba420deb8fdb175cd965d77a7"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.115",
 ]
 
 [[package]]
@@ -13325,9 +12730,9 @@ checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.23"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "537dd038a89878be9b64dd4bd1b260315c1bb94f4d784956b81e27a088d9a09e"
+checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "unicode-joining-type"
@@ -13673,9 +13078,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.106"
+version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d759f433fa64a2d763d1340820e46e111a7a5ab75f993d1852d70b03dbb80fd"
+checksum = "64024a30ec1e37399cf85a7ffefebdb72205ca1c972291c51512360d90bd8566"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -13686,11 +13091,12 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.56"
+version = "0.4.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "836d9622d604feee9e5de25ac10e3ea5f2d65b41eac0d9ce72eb5deae707ce7c"
+checksum = "70a6e77fd0ae8029c9ea0063f87c46fde723e7d887703d74ad2616d792e51e6f"
 dependencies = [
  "cfg-if",
+ "futures-util",
  "js-sys",
  "once_cell",
  "wasm-bindgen",
@@ -13699,9 +13105,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.106"
+version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48cb0d2638f8baedbc542ed444afc0644a29166f1595371af4fecf8ce1e7eeb3"
+checksum = "008b239d9c740232e71bd39e8ef6429d27097518b6b30bdf9086833bd5b6d608"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -13709,22 +13115,22 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.106"
+version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cefb59d5cd5f92d9dcf80e4683949f15ca4b511f4ac0a6e14d4e1ac60c6ecd40"
+checksum = "5256bae2d58f54820e6490f9839c49780dff84c65aeab9e772f15d5f0e913a55"
 dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.106"
+version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbc538057e648b67f72a982e708d485b2efa771e1ac05fec311f9f63e5800db4"
+checksum = "1f01b580c9ac74c8d8f0c0e4afb04eeef2acf145458e52c03845ee9cd23e3d12"
 dependencies = [
  "unicode-ident",
 ]
@@ -13748,16 +13154,6 @@ dependencies = [
  "wasm-encoder 0.243.0",
  "wasmparser 0.243.0",
  "wat",
-]
-
-[[package]]
-name = "wasm-encoder"
-version = "0.233.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9679ae3cf7cfa2ca3a327f7fab97f27f3294d402fd1a76ca8ab514e17973e4d3"
-dependencies = [
- "leb128fmt",
- "wasmparser 0.233.0",
 ]
 
 [[package]]
@@ -13826,68 +13222,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmi"
-version = "0.47.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee6af0b25ed89e2a797c714590a216ce05ce936a087083b35b462ce2b570eca7"
-dependencies = [
- "arrayvec",
- "multi-stash",
- "smallvec",
- "spin 0.9.8",
- "wasmi_collections",
- "wasmi_core",
- "wasmi_ir",
- "wasmparser 0.228.0",
-]
-
-[[package]]
-name = "wasmi_collections"
-version = "0.47.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f040e44c15d6f7920a431d989efcd4fe18041710222ca0971d8f1768c8ec2d46"
-
-[[package]]
-name = "wasmi_core"
-version = "0.47.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "784d6fa8a3aadeb08ab7a03d4f25fb6edbc523c516e57ae463652a271c58fa5a"
-dependencies = [
- "libm",
-]
-
-[[package]]
-name = "wasmi_ir"
-version = "0.47.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90e927724e6402ed91d45d440c7ae062f5ddef48c5a9dbcd946cb81ec42b6845"
-dependencies = [
- "wasmi_core",
-]
-
-[[package]]
-name = "wasmparser"
-version = "0.228.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4abf1132c1fdf747d56bbc1bb52152400c70f336870f968b85e89ea422198ae3"
-dependencies = [
- "bitflags 2.11.0",
-]
-
-[[package]]
-name = "wasmparser"
-version = "0.233.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b51cb03afce7964bbfce46602d6cb358726f36430b6ba084ac6020d8ce5bc102"
-dependencies = [
- "bitflags 2.11.0",
- "hashbrown 0.15.5",
- "indexmap 2.13.0",
- "semver 1.0.27",
- "serde",
-]
-
-[[package]]
 name = "wasmparser"
 version = "0.238.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -13947,17 +13281,6 @@ dependencies = [
 
 [[package]]
 name = "wasmprinter"
-version = "0.233.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abf8e5b732895c99b21aa615f1b73352e51bbe2b2cb6c87eae7f990d07c1ac18"
-dependencies = [
- "anyhow",
- "termcolor",
- "wasmparser 0.233.0",
-]
-
-[[package]]
-name = "wasmprinter"
 version = "0.243.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb2b6035559e146114c29a909a3232928ee488d6507a1504d8934e8607b36d7b"
@@ -13972,7 +13295,7 @@ name = "wasmtime"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "addr2line 0.25.1",
+ "addr2line",
  "anyhow",
  "async-trait",
  "bitflags 2.11.0",
@@ -13981,8 +13304,8 @@ dependencies = [
  "cfg-if",
  "encoding_rs",
  "futures",
- "fxprof-processed-profile 0.8.1",
- "gimli 0.32.3",
+ "fxprof-processed-profile",
+ "gimli",
  "hashbrown 0.15.5",
  "indexmap 2.13.0",
  "ittapi",
@@ -13990,10 +13313,10 @@ dependencies = [
  "log",
  "mach2",
  "memfd",
- "object 0.37.3",
+ "object",
  "once_cell",
  "postcard",
- "pulley-interpreter 41.0.2",
+ "pulley-interpreter",
  "rayon",
  "rustix",
  "rwasm-fuel-policy",
@@ -14007,7 +13330,7 @@ dependencies = [
  "wasm-compose",
  "wasm-encoder 0.243.0",
  "wasmparser 0.243.0",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "wasmtime-internal-cache",
  "wasmtime-internal-component-macro",
  "wasmtime-internal-component-util",
@@ -14025,121 +13348,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasmtime-asm-macros"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c45ecc343d3ad4629d5882e94f3b0f0fac22a043c07e64373381168ae00c259"
-dependencies = [
- "cfg-if",
-]
-
-[[package]]
-name = "wasmtime-cache"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eb1976337108c8b9f80b05e9b909bf603f85c4ea97e31c112876a36d3cdcb98"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "directories-next",
- "log",
- "postcard",
- "rustix",
- "serde",
- "serde_derive",
- "sha2 0.10.9",
- "toml 0.8.23",
- "windows-sys 0.59.0",
- "zstd",
-]
-
-[[package]]
-name = "wasmtime-component-macro"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3491c0f2511be561a92ac9b086351abc3a0f48c5f5f7d14f3975e246c13838be"
-dependencies = [
- "anyhow",
- "proc-macro2",
- "quote",
- "syn 2.0.115",
- "wasmtime-component-util",
- "wasmtime-wit-bindgen",
- "wit-parser 0.233.0",
-]
-
-[[package]]
-name = "wasmtime-component-util"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26bc084e249f74e61c79077d8937c34fb0af223752b9b1725e3d7ed94b006f23"
-
-[[package]]
-name = "wasmtime-cranelift"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0010bd93362c634837e6bb13e213c2d83673b28dc12208b64ddd821fa55f7d33"
-dependencies = [
- "anyhow",
- "cfg-if",
- "cranelift-codegen 0.121.1",
- "cranelift-control 0.121.2",
- "cranelift-entity 0.121.2",
- "cranelift-frontend 0.121.1",
- "cranelift-native 0.121.1",
- "gimli 0.31.1",
- "itertools 0.14.0",
- "log",
- "object 0.36.7",
- "smallvec",
- "target-lexicon",
- "thiserror 2.0.18",
- "wasmparser 0.233.0",
- "wasmtime-environ 34.0.1",
- "wasmtime-math",
- "wasmtime-versioned-export-macros",
-]
-
-[[package]]
-name = "wasmtime-environ"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36a035dc308ff6be3d790dafdc2e41a128415e20ad864580da49470073e21dc1"
-dependencies = [
- "anyhow",
- "cpp_demangle",
- "cranelift-bitset 0.121.2",
- "cranelift-entity 0.121.2",
- "gimli 0.31.1",
- "indexmap 2.13.0",
- "log",
- "object 0.36.7",
- "postcard",
- "rustc-demangle",
- "semver 1.0.27",
- "serde",
- "serde_derive",
- "smallvec",
- "target-lexicon",
- "wasm-encoder 0.233.0",
- "wasmparser 0.233.0",
- "wasmprinter 0.233.0",
- "wasmtime-component-util",
-]
-
-[[package]]
 name = "wasmtime-environ"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "anyhow",
  "cpp_demangle",
- "cranelift-bitset 0.128.2",
- "cranelift-entity 0.128.2",
- "gimli 0.32.3",
+ "cranelift-bitset",
+ "cranelift-entity",
+ "gimli",
  "indexmap 2.13.0",
  "log",
- "object 0.37.3",
+ "object",
  "postcard",
  "rustc-demangle",
  "rwasm-fuel-policy",
@@ -14150,24 +13370,8 @@ dependencies = [
  "target-lexicon",
  "wasm-encoder 0.243.0",
  "wasmparser 0.243.0",
- "wasmprinter 0.243.0",
+ "wasmprinter",
  "wasmtime-internal-component-util",
-]
-
-[[package]]
-name = "wasmtime-fiber"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdc3c1e4e70cdd3a4572dff79062caa48988f7f1ccf6850d98a4e4c41bf3cfc8"
-dependencies = [
- "anyhow",
- "cc",
- "cfg-if",
- "libc",
- "rustix",
- "wasmtime-asm-macros",
- "wasmtime-versioned-export-macros",
- "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -14182,9 +13386,9 @@ dependencies = [
  "rustix",
  "serde",
  "serde_derive",
- "sha2 0.10.9",
+ "sha2",
  "toml 0.9.12+spec-1.1.0",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "windows-sys 0.61.2",
  "zstd",
 ]
@@ -14197,7 +13401,7 @@ dependencies = [
  "anyhow",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "wasmtime-internal-component-util",
  "wasmtime-internal-wit-bindgen",
  "wit-parser 0.243.0",
@@ -14214,22 +13418,22 @@ version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "cfg-if",
- "cranelift-codegen 0.128.2",
- "cranelift-control 0.128.2",
- "cranelift-entity 0.128.2",
- "cranelift-frontend 0.128.2",
- "cranelift-native 0.128.2",
- "gimli 0.32.3",
+ "cranelift-codegen",
+ "cranelift-control",
+ "cranelift-entity",
+ "cranelift-frontend",
+ "cranelift-native",
+ "gimli",
  "itertools 0.14.0",
  "log",
- "object 0.37.3",
- "pulley-interpreter 41.0.2",
+ "object",
+ "pulley-interpreter",
  "rwasm-fuel-policy",
  "smallvec",
  "target-lexicon",
  "thiserror 2.0.18",
  "wasmparser 0.243.0",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "wasmtime-internal-math",
  "wasmtime-internal-unwinder",
  "wasmtime-internal-versioned-export-macros",
@@ -14244,7 +13448,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "rustix",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "wasmtime-internal-versioned-export-macros",
  "windows-sys 0.61.2",
 ]
@@ -14255,7 +13459,7 @@ version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "cc",
- "object 0.37.3",
+ "object",
  "rustix",
  "wasmtime-internal-versioned-export-macros",
 ]
@@ -14290,10 +13494,10 @@ version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "cfg-if",
- "cranelift-codegen 0.128.2",
+ "cranelift-codegen",
  "log",
- "object 0.37.3",
- "wasmtime-environ 41.0.2",
+ "object",
+ "wasmtime-environ",
 ]
 
 [[package]]
@@ -14303,7 +13507,7 @@ source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#6299
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -14311,15 +13515,15 @@ name = "wasmtime-internal-winch"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
- "cranelift-codegen 0.128.2",
- "gimli 0.32.3",
+ "cranelift-codegen",
+ "gimli",
  "log",
- "object 0.37.3",
+ "object",
  "target-lexicon",
  "wasmparser 0.243.0",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "wasmtime-internal-cranelift",
- "winch-codegen 41.0.2",
+ "winch-codegen",
 ]
 
 [[package]]
@@ -14332,168 +13536,6 @@ dependencies = [
  "heck",
  "indexmap 2.13.0",
  "wit-parser 0.243.0",
-]
-
-[[package]]
-name = "wasmtime-jit-debug"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5d83fa2dea686f76b5437b66045aae6351d359ee11cc4124f9842de63837b81"
-dependencies = [
- "cc",
- "object 0.36.7",
- "rustix",
- "wasmtime-versioned-export-macros",
-]
-
-[[package]]
-name = "wasmtime-jit-icache-coherence"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44c71d64e8ebe132cd45e9d299a4d0daf261d66bd05cf50a204a1bf8cf96ff1f"
-dependencies = [
- "anyhow",
- "cfg-if",
- "libc",
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "wasmtime-math"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "222bfa4769c6931c985711eb49a92748ea0acc4ca85fcd24e945a2f1bacda0c1"
-dependencies = [
- "libm",
-]
-
-[[package]]
-name = "wasmtime-rwasm"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e2a7abdccb3ea676c977e0bb4757de6a765c98d3c2baf703be9b8fd2a0ec170"
-dependencies = [
- "addr2line 0.24.2",
- "anyhow",
- "async-trait",
- "bitflags 2.11.0",
- "bumpalo",
- "cc",
- "cfg-if",
- "encoding_rs",
- "fxprof-processed-profile 0.6.0",
- "gimli 0.31.1",
- "hashbrown 0.15.5",
- "indexmap 2.13.0",
- "ittapi",
- "libc",
- "log",
- "mach2",
- "memfd",
- "object 0.36.7",
- "once_cell",
- "postcard",
- "psm",
- "pulley-interpreter 34.0.1",
- "rayon",
- "rustix",
- "semver 1.0.27",
- "serde",
- "serde_derive",
- "serde_json",
- "smallvec",
- "target-lexicon",
- "trait-variant",
- "wasm-encoder 0.233.0",
- "wasmparser 0.233.0",
- "wasmtime-asm-macros",
- "wasmtime-cache",
- "wasmtime-component-macro",
- "wasmtime-component-util",
- "wasmtime-environ 34.0.1",
- "wasmtime-fiber",
- "wasmtime-jit-debug",
- "wasmtime-jit-icache-coherence",
- "wasmtime-math",
- "wasmtime-rwasm-cranelift",
- "wasmtime-slab",
- "wasmtime-versioned-export-macros",
- "wasmtime-winch",
- "wat",
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "wasmtime-rwasm-cranelift"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "477548a15bd19bf151b292b9c97060e42f17aa24b3d9fbc3da36a0b400c3405e"
-dependencies = [
- "anyhow",
- "cfg-if",
- "cranelift-codegen 0.121.1",
- "cranelift-control 0.121.2",
- "cranelift-entity 0.121.2",
- "cranelift-frontend 0.121.1",
- "cranelift-native 0.121.1",
- "gimli 0.31.1",
- "itertools 0.14.0",
- "log",
- "object 0.36.7",
- "pulley-interpreter 34.0.1",
- "smallvec",
- "target-lexicon",
- "thiserror 2.0.18",
- "wasmparser 0.233.0",
- "wasmtime-environ 34.0.1",
- "wasmtime-math",
- "wasmtime-versioned-export-macros",
-]
-
-[[package]]
-name = "wasmtime-slab"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ac42c7fb0639f7c3e0c1ed0c984050245c55410f3fae334dd5b102e0edfab14"
-
-[[package]]
-name = "wasmtime-versioned-export-macros"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e052e1d9c30b8f31aff64380caaaff492a9890a412658bcc8866fe626b8e91f"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.115",
-]
-
-[[package]]
-name = "wasmtime-winch"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2d71e002033124221f6633a462c26067280519fdd7527ba2751f585db779cc6"
-dependencies = [
- "anyhow",
- "cranelift-codegen 0.121.1",
- "gimli 0.31.1",
- "object 0.36.7",
- "target-lexicon",
- "wasmparser 0.233.0",
- "wasmtime-cranelift",
- "wasmtime-environ 34.0.1",
- "winch-codegen 34.0.1",
-]
-
-[[package]]
-name = "wasmtime-wit-bindgen"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f967f5efaaac7694e6bd0d67542a5a036830860e4adf95684260181e85a5d299"
-dependencies = [
- "anyhow",
- "heck",
- "indexmap 2.13.0",
- "wit-parser 0.233.0",
 ]
 
 [[package]]
@@ -14589,9 +13631,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.83"
+version = "0.3.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b32828d774c412041098d182a8b38b16ea816958e07cf40eec2bc080ae137ac"
+checksum = "312e32e551d92129218ea9a2452120f4aabc03529ef03e4d0d82fb2780608598"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -14731,39 +13773,19 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "winch-codegen"
-version = "34.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d2bf456780101aff8950642fdf984f182816d7f555d5375699200242be78762"
-dependencies = [
- "anyhow",
- "cranelift-assembler-x64 0.121.2",
- "cranelift-codegen 0.121.1",
- "gimli 0.31.1",
- "regalloc2 0.12.2",
- "smallvec",
- "target-lexicon",
- "thiserror 2.0.18",
- "wasmparser 0.233.0",
- "wasmtime-cranelift",
- "wasmtime-environ 34.0.1",
- "wasmtime-math",
-]
-
-[[package]]
-name = "winch-codegen"
 version = "41.0.2"
 source = "git+https://github.com/fluentlabs-xyz/wasmtime?branch=v41-patched#62997e1964a820009ece0e19d4e3a918b47a4107"
 dependencies = [
  "anyhow",
- "cranelift-assembler-x64 0.128.2",
- "cranelift-codegen 0.128.2",
- "gimli 0.32.3",
- "regalloc2 0.13.5",
+ "cranelift-assembler-x64",
+ "cranelift-codegen",
+ "gimli",
+ "regalloc2",
  "smallvec",
  "target-lexicon",
  "thiserror 2.0.18",
  "wasmparser 0.243.0",
- "wasmtime-environ 41.0.2",
+ "wasmtime-environ",
  "wasmtime-internal-cranelift",
  "wasmtime-internal-math",
 ]
@@ -14840,7 +13862,7 @@ checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -14851,7 +13873,7 @@ checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -15184,7 +14206,7 @@ dependencies = [
  "heck",
  "indexmap 2.13.0",
  "prettyplease",
- "syn 2.0.115",
+ "syn 2.0.116",
  "wasm-metadata",
  "wit-bindgen-core",
  "wit-component",
@@ -15200,7 +14222,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "wit-bindgen-core",
  "wit-bindgen-rust",
 ]
@@ -15222,24 +14244,6 @@ dependencies = [
  "wasm-metadata",
  "wasmparser 0.244.0",
  "wit-parser 0.244.0",
-]
-
-[[package]]
-name = "wit-parser"
-version = "0.233.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f22f1cd55247a2e616870b619766e9522df36b7abafbb29bbeb34b7a9da7e9f0"
-dependencies = [
- "anyhow",
- "id-arena",
- "indexmap 2.13.0",
- "log",
- "semver 1.0.27",
- "serde",
- "serde_derive",
- "serde_json",
- "unicode-xid",
- "wasmparser 0.233.0",
 ]
 
 [[package]]
@@ -15374,7 +14378,7 @@ checksum = "b659052874eb698efe5b9e8cf382204678a0086ebf46982b79d6ca3182927e5d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "synstructure",
 ]
 
@@ -15395,7 +14399,7 @@ checksum = "4122cd3169e94605190e77839c9a40d40ed048d305bfdc146e7df40ab0f3e517"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -15415,7 +14419,7 @@ checksum = "d71e5d6e06ab090c67b5e44993ec16b72dcbaabc526db883a360057678b48502"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
  "synstructure",
 ]
 
@@ -15436,7 +14440,7 @@ checksum = "85a5b4158499876c763cb03bc4e49185d3cccbabb15b33c627f7884f43db852e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]
@@ -15470,7 +14474,7 @@ checksum = "eadce39539ca5cb3985590102671f2567e659fca9666581ad3411d59207951f3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.115",
+ "syn 2.0.116",
 ]
 
 [[package]]

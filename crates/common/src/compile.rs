@@ -289,7 +289,7 @@ impl ProjectCompiler {
                 output: Some(project.artifacts_path().to_path_buf()),
                 wasm_opt: false,
                 locked: false,
-                rust_version: Some("1.88.0-x86_64-unknown-linux-gnu".to_string()),
+                rust_version: Some("1.92.0-x86_64-unknown-linux-gnu".to_string()),
                 ..Default::default()
             };
 
