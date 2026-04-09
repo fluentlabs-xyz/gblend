@@ -1,5 +1,6 @@
 pub mod api;
 pub mod otterscan;
+pub mod overrides;
 pub mod sign;
 pub use api::EthApi;
 

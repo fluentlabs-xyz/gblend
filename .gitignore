@@ -1,26 +1,42 @@
-.DS_STORE
-/target*
+
+# OS
+.DS_Store
+
+# Rust
+/target/
+
+# Solidity / Foundry
+/out/
+/broadcast/
+/snapshots/
+/examples/
+
+# Ignore generated Solidity files at repo root
 /*.sol
-CLAUDE.md
 
-# Foundry artifacts
-out/
-snapshots/
-
-# IDEs and extensions
-.idea
-.vscode
-.claude
-.zed
-
-# NPM
-.env
-node_modules
-npm/dist
-npm/bin
-_
+# Node / JS / TS
+/node_modules/
+/dist/
+/bin/
+/npm/dist/
+/npm/bin/
 *.tgz
-.vercel
-.vite
-.wrangler
 *.zip
+
+# Environment files
+.env
+
+# Tooling / Frameworks
+.vercel/
+.vite/
+.wrangler/
+.wake/
+.claude/
+
+# IDEs / Editors
+.idea/
+.vscode/
+.zed/
+
+# Misc
+CLAUDE.md

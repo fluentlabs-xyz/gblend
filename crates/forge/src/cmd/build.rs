@@ -105,6 +105,7 @@ impl BuildArgs {
             .print_names(self.names)
             .print_sizes(self.sizes)
             .ignore_eip_3860(self.ignore_eip_3860)
+            .no_docker(config.no_docker)
             .bail(!format_json);
 
         let mut output = compiler.compile(&project)?;

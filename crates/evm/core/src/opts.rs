@@ -4,6 +4,7 @@ use crate::{
     fork::CreateFork,
     utils::{apply_chain_and_block_specific_env_changes, block_env_from_header},
 };
+use alloy_genesis::Genesis;
 use alloy_chains::NamedChain;
 use alloy_consensus::BlockHeader;
 use alloy_network::{AnyNetwork, BlockResponse, Network};
@@ -16,7 +17,7 @@ use foundry_config::{Chain, Config, GasLimit};
 use foundry_evm_networks::NetworkConfigs;
 use revm::{context::CfgEnv, primitives::hardfork::SpecId};
 use serde::{Deserialize, Serialize};
-use std::fmt::Write;
+use std::{fmt::Write, sync::Arc};
 use url::Url;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -86,6 +87,10 @@ pub struct EvmOpts {
 
     /// The CREATE2 deployer's address.
     pub create2_deployer: Address,
+
+    /// Set genesis
+    #[serde(skip)]
+    pub genesis: Option<Arc<Genesis>>,
 }
 
 impl Default for EvmOpts {
@@ -111,6 +116,7 @@ impl Default for EvmOpts {
             enable_tx_gas_limit: false,
             networks: NetworkConfigs::default(),
             create2_deployer: DEFAULT_CREATE2_DEPLOYER,
+            genesis: None,
         }
     }
 }
@@ -392,6 +398,11 @@ impl EvmOpts {
         }
 
         None
+    }
+    /// Add custom genesis
+    pub fn with_genesis(mut self, genesis: Genesis) -> Self {
+        self.genesis = Some(Arc::new(genesis));
+        self
     }
 }
 

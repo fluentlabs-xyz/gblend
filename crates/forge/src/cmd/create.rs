@@ -15,16 +15,21 @@ use foundry_cli::{
     opts::{BuildOpts, EthereumOpts, EtherscanOpts, TransactionOpts},
     utils::{LoadConfig, find_contract_artifacts, read_constructor_args_file},
 };
+
 use foundry_common::{
     FoundryTransactionBuilder,
     compile::{self},
     fmt::parse_tokens,
     provider::ProviderBuilder,
+    rust_contracts::RustContractsRegistry,
     shell,
     tempo::TEMPO_BROWSER_GAS_BUFFER,
 };
 use foundry_compilers::{
-    ArtifactId, artifacts::BytecodeObject, info::ContractInfo, utils::canonicalize,
+    ArtifactId,
+    artifacts::{BytecodeObject, CompactBytecode},
+    info::ContractInfo,
+    utils::canonicalize,
 };
 use foundry_config::{
     Config,
@@ -37,9 +42,24 @@ use foundry_config::{
 use foundry_wallets::{
     BrowserWalletOpts, TempoAccessKeyConfig, WalletSigner, wallet_browser::signer::BrowserSigner,
 };
+use rand::{Rng, distributions::Alphanumeric};
 use serde_json::json;
 use std::{borrow::Borrow, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 use tempo_alloy::{TempoNetwork, contracts::precompiles::DEFAULT_FEE_TOKEN};
+use std::{
+    borrow::{Borrow, Cow},
+    fs,
+    marker::PhantomData,
+    path::PathBuf,
+    sync::Arc,
+    time::Duration,
+};
+use wasm_encoder::{CustomSection, Module, RawSection};
+use wasmparser::Parser as WasmpParser;
+
+fn generate_build_id() -> String {
+    rand::thread_rng().sample_iter(&Alphanumeric).take(8).map(char::from).collect()
+}
 
 merge_impl_figment_convert!(CreateArgs, build, eth);
 
@@ -156,16 +176,70 @@ impl CreateArgs {
         // Find Project & Compile
         let project = config.project()?;
 
+        // Create Rust contracts registry
+        let rust_registry =
+            RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
+
+        // Determine target path
         let target_path = if let Some(ref mut path) = self.contract.path {
+            // User provided explicit path
             canonicalize(project.root().join(path))?
+        } else if let Some(info) = rust_registry.get(&self.contract.name) {
+            // Found Rust contract by name (supports any format: erc20, erc20.wasm, ERC20, etc.)
+            info.path.clone()
         } else {
+            // Fallback to Solidity contract search
             project.find_contract_path(&self.contract.name)?
         };
 
+        sh_println!("target_path: {:?}", target_path)?;
+
         let output = compile::compile_target(&target_path, &project, shell::is_json())?;
+        let mut is_rust_contract = false;
 
-        let (abi, bin, id) = find_contract_artifacts(output, &target_path, &self.contract.name)?;
+        // Load artifacts (either Rust or Solidity)
+        let (abi, bin, id) = if let Some(info) = rust_registry.get(&self.contract.name) {
+            // This is a Rust contract
+            let foundry_json_path = info.foundry_artifact_path(project.artifacts_path());
 
+            if !foundry_json_path.exists() {
+                eyre::bail!(
+                    "Artifact not found at {:?}\nPackage: {}\nContract input: {}\nDid you run 'gblend build'?",
+                    foundry_json_path,
+                    info.package_name,
+                    self.contract.name
+                );
+            }
+            is_rust_contract = true;
+
+            sh_println!("Loading Rust artifact: {:?}", foundry_json_path)?;
+
+            let artifact: serde_json::Value =
+                serde_json::from_str(&fs::read_to_string(&foundry_json_path)?)?;
+
+            // Extract ABI
+            let abi: JsonAbi = serde_json::from_value(artifact["abi"].clone())?;
+
+            // Extract Bytecode
+            let bin: CompactBytecode = serde_json::from_value(artifact["bytecode"].clone())?;
+
+            // Create ArtifactId using package name from Cargo.toml
+            let id = ArtifactId {
+                path: info.artifact_dir(project.artifacts_path()),
+                name: info.package_name.clone(), // Use package name from Cargo.toml
+                source: target_path.clone(),
+                version: semver::Version::new(0, 1, 0),
+                profile: "release".to_string(),
+                build_id: generate_build_id(),
+            };
+
+            (abi, bin, id)
+        } else {
+            // This is a Solidity contract
+            find_contract_artifacts(output, &target_path, &self.contract.name)?
+        };
+
+        // Verify bytecode doesn't require dynamic linking
         let bin = match bin.object {
             BytecodeObject::Bytecode(_) => bin.object,
             _ => {
@@ -239,6 +313,7 @@ impl CreateArgs {
                 dry_run,
                 None,
                 None,
+                is_rust_contract,
             )
             .await
         } else if let Some(ak) = access_key {
@@ -282,6 +357,7 @@ impl CreateArgs {
                 dry_run,
                 None,
                 None,
+                is_rust_contract,
             )
             .await
         }
@@ -341,10 +417,13 @@ impl CreateArgs {
         let config = verify.load_config()?;
         verify.etherscan.key =
             config.get_etherscan_config_with_chain(self.chain_id())?.map(|c| c.key);
-
-        let context = verify.resolve_context().await?;
-
-        verify.verification_provider()?.preflight_verify_check(verify, context).await?;
+        if self.verifier.wasm {
+            // TODO(d1r1): add actual checks - for now just return Ok(())
+            return Ok(());
+        } else {
+            let context = verify.resolve_context().await?;
+            verify.verification_provider()?.preflight_verify_check(verify, context).await?;
+        }
         Ok(())
     }
 
@@ -362,6 +441,7 @@ impl CreateArgs {
         dry_run: bool,
         tempo_keychain: Option<(WalletSigner, TempoAccessKeyConfig)>,
         browser_signer: Option<BrowserSigner<N>>,
+        is_rust_contract: bool,
     ) -> Result<()>
     where
         N::TransactionRequest: FoundryTransactionBuilder<N> + serde::Serialize,
@@ -379,14 +459,15 @@ impl CreateArgs {
             ContractFactory::<N, _>::new(abi.clone(), bin.clone(), provider.clone(), timeout);
 
         let is_args_empty = args.is_empty();
-        let mut deployer =
-            factory.deploy_tokens(args.clone()).context("failed to deploy contract").map_err(|e| {
+
+        let mut deployer = factory.deploy_tokens(args.clone(), is_rust_contract).context("failed to deploy contract").map_err(|e| {
                 if is_args_empty {
                     e.wrap_err("no arguments provided for contract constructor; consider --constructor-args or --constructor-args-path")
                 } else {
                     e
                 }
             })?;
+
         let is_legacy = self.tx.legacy || chain.is_legacy();
 
         deployer.tx.set_from(deployer_address);
@@ -562,9 +643,9 @@ impl CreateArgs {
         let tx_hash = receipt.transaction_hash();
         if shell::is_json() {
             let output = json!({
-                "deployer": deployer_address.to_string(),
-                "deployedTo": address.to_string(),
-                "transactionHash": tx_hash
+            "deployer": deployer_address.to_string(),
+            "deployedTo": address.to_string(),
+            "transactionHash": tx_hash
             });
             sh_println!("{}", serde_json::to_string_pretty(&output)?)?;
         } else {
@@ -757,6 +838,7 @@ impl<N: Network, P: Provider<N> + Clone> DeploymentTxFactory<N, P> {
     pub fn deploy_tokens(
         self,
         params: Vec<DynSolValue>,
+        is_rust_contract: bool,
     ) -> Result<Deployer<N, P>, ContractDeploymentError>
     where
         N::TransactionRequest: FoundryTransactionBuilder<N>,
@@ -770,8 +852,12 @@ impl<N: Network, P: Provider<N> + Clone> DeploymentTxFactory<N, P> {
                     .abi_encode_input(&params)
                     .map_err(ContractDeploymentError::DetokenizationError)?
                     .into();
-                // Concatenate the bytecode and abi-encoded constructor call.
-                self.bytecode.iter().copied().chain(input).collect()
+                if is_rust_contract {
+                    add_constructor_params_section(&self.bytecode, input)
+                } else {
+                    // Concatenate the bytecode and abi-encoded constructor call.
+                    self.bytecode.iter().copied().chain(input).collect()
+                }
             }
         };
 
@@ -780,6 +866,28 @@ impl<N: Network, P: Provider<N> + Clone> DeploymentTxFactory<N, P> {
         tx.set_input(data);
         Ok(Deployer { client: self.client.clone(), tx, confs: 1, timeout: self.timeout })
     }
+}
+
+fn add_constructor_params_section(
+    input_wasm: impl AsRef<[u8]>,
+    constructor_args: impl AsRef<[u8]>,
+) -> Bytes {
+    let mut module = Module::new();
+
+    WasmpParser::new(0)
+        .parse_all(input_wasm.as_ref())
+        .flatten()
+        .filter_map(|payload| payload.as_section())
+        .for_each(|(id, range)| {
+            module.section(&RawSection { id, data: &input_wasm.as_ref()[range] });
+        });
+
+    module.section(&CustomSection {
+        name: Cow::Borrowed("input"),
+        data: Cow::Borrowed(constructor_args.as_ref()),
+    });
+
+    Bytes::from(module.finish())
 }
 
 #[derive(thiserror::Error, Debug)]
