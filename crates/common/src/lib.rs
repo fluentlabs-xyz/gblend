@@ -5,7 +5,6 @@
 #![cfg_attr(not(test), warn(unused_crate_dependencies))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-#[expect(unused_extern_crates)] // Used by `ConsoleFmt`.
 extern crate self as foundry_common;
 
 #[macro_use]
@@ -39,6 +38,9 @@ mod utils;
 pub mod version;
 
 pub use compile::Analysis;
+
+pub mod rust_contracts;
+
 pub use constants::*;
 pub use contracts::*;
 pub use io::{Shell, shell, stdin};

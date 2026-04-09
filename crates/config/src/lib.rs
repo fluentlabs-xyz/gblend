@@ -571,6 +571,12 @@ pub struct Config {
     #[doc(hidden)]
     #[serde(skip)]
     pub _non_exhaustive: (),
+
+    /// Whether the contract is wasm
+    pub wasm: bool,
+
+    /// Do not use docker for rust (wasm) contracts
+    pub no_docker: bool,
 }
 
 /// Diagnostic level (minimum) at which the process should finish with a non-zero exit.
@@ -716,7 +722,7 @@ impl Config {
     pub const FILE_NAME: &'static str = "foundry.toml";
 
     /// The name of the directory foundry reserves for itself under the user's home directory: `~`
-    pub const FOUNDRY_DIR_NAME: &'static str = ".foundry";
+    pub const FOUNDRY_DIR_NAME: &'static str = ".gblend";
 
     /// Default address for tx.origin
     ///
@@ -2647,6 +2653,8 @@ impl Default for Config {
             compilation_restrictions: Default::default(),
             script_execution_protection: true,
             _non_exhaustive: (),
+            wasm: false,
+            no_docker: false,
         }
     }
 }

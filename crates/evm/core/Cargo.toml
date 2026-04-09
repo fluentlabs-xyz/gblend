@@ -66,6 +66,9 @@ thiserror.workspace = true
 tokio = { workspace = true, features = ["time", "macros"] }
 tracing.workspace = true
 url.workspace = true
+fluentbase-revm.workspace = true
+#fluentbase-genesis.workspace = true
+flate2.workspace = true
 
 [dev-dependencies]
 foundry-test-utils.workspace = true

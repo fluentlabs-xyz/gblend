@@ -62,6 +62,10 @@ alloy-genesis.workspace = true
 alloy-trie.workspace = true
 op-alloy-consensus = { workspace = true, features = ["serde"] }
 
+# fluentbase
+fluentbase-evm.workspace = true
+fluentbase-types.workspace = true
+
 # revm
 revm = { workspace = true, features = [
     "std",

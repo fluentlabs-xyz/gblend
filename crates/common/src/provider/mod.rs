@@ -1,11 +1,15 @@
 //! Provider-related instantiation and usage utilities.
 
 pub mod curl_transport;
+pub mod fluent_layer;
 pub mod runtime_transport;
 
 use crate::{
     ALCHEMY_FREE_TIER_CUPS, REQUEST_TIMEOUT,
-    provider::{curl_transport::CurlTransport, runtime_transport::RuntimeTransportBuilder},
+    provider::{
+        curl_transport::CurlTransport, fluent_layer::FluentMethodRewriteLayer,
+        runtime_transport::RuntimeTransportBuilder,
+    },
 };
 use alloy_chains::NamedChain;
 use alloy_provider::{
@@ -301,7 +305,10 @@ impl ProviderBuilder {
         // If curl_mode is enabled, use CurlTransport instead of RuntimeTransport
         if curl_mode {
             let transport = CurlTransport::new(url).with_headers(headers).with_jwt(jwt);
-            let client = ClientBuilder::default().layer(retry_layer).transport(transport, is_local);
+            let client = ClientBuilder::default()
+                .layer(retry_layer)
+                .layer(FluentMethodRewriteLayer)
+                .transport(transport, is_local);
 
             let provider = AlloyProviderBuilder::<_, _, AnyNetwork>::default()
                 .connect_provider(RootProvider::new(client));
@@ -316,7 +323,10 @@ impl ProviderBuilder {
             .accept_invalid_certs(accept_invalid_certs)
             .no_proxy(no_proxy)
             .build();
-        let client = ClientBuilder::default().layer(retry_layer).transport(transport, is_local);
+        let client = ClientBuilder::default()
+            .layer(retry_layer)
+            .layer(FluentMethodRewriteLayer)
+            .transport(transport, is_local);
 
         if !is_local {
             client.set_poll_interval(
@@ -360,7 +370,10 @@ impl ProviderBuilder {
         // If curl_mode is enabled, use CurlTransport instead of RuntimeTransport
         if curl_mode {
             let transport = CurlTransport::new(url).with_headers(headers).with_jwt(jwt);
-            let client = ClientBuilder::default().layer(retry_layer).transport(transport, is_local);
+            let client = ClientBuilder::default()
+                .layer(retry_layer)
+                .layer(FluentMethodRewriteLayer)
+                .transport(transport, is_local);
 
             let provider = AlloyProviderBuilder::<_, _, AnyNetwork>::default()
                 .with_recommended_fillers()
@@ -378,7 +391,10 @@ impl ProviderBuilder {
             .no_proxy(no_proxy)
             .build();
 
-        let client = ClientBuilder::default().layer(retry_layer).transport(transport, is_local);
+        let client = ClientBuilder::default()
+            .layer(retry_layer)
+            .layer(FluentMethodRewriteLayer)
+            .transport(transport, is_local);
 
         if !is_local {
             client.set_poll_interval(

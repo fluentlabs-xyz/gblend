@@ -31,7 +31,6 @@ help: ## Display this help.
 .PHONY: build
 build: ## Build the project.
 	cargo build --features "$(FEATURES)" --profile "$(PROFILE)"
-
 .PHONY: build-docker
 build-docker: ## Build the docker image.
 	docker build . -t "$(DOCKER_IMAGE_NAME)" \
@@ -39,6 +38,69 @@ build-docker: ## Build the docker image.
 	--build-arg "RUST_FEATURES=$(FEATURES)" \
 	--build-arg "TAG_NAME=dev" \
 	--build-arg "VERGEN_GIT_SHA=$(shell git rev-parse HEAD)"
+
+# The following commands use `cross` to build a cross-compile.
+#
+# These commands require that:
+#
+# - `cross` is installed (`cargo install cross`).
+# - Docker is running.
+# - The current user is in the `docker` group.
+#
+# The resulting binaries will be created in the `target/` directory.
+build-%:
+	cross build --target $* --features "$(FEATURES)" --profile "$(PROFILE)"
+
+.PHONY: build-gblend-package
+build-gblend-package: ## Build only gblend package
+	cd gblend && cargo build --release
+
+.PHONY: test-gblend
+test-gblend: ## Test gblend package
+	cd gblend && cargo test
+
+.PHONY: publish-gblend-dry-run
+publish-gblend-dry-run: ## Test publishing gblend without actually publishing
+	cd gblend && cargo publish --dry-run
+
+.PHONY: build-gblend
+build-gblend: ## Build gblend binary
+	cargo build --bin gblend
+
+.PHONY: clean-gblend
+clean-gblend: ## Remove gblend executables.
+	rm -f $(BIN_DIR)/gblend-{anvil,cast,chisel,forge}
+
+.PHONY: docker-build-push
+docker-build-push: docker-build-prepare ## Build and push a cross-arch Docker image tagged with DOCKER_IMAGE_NAME.
+	FEATURES="jemalloc aws-kms gcp-kms cli asm-keccak" $(MAKE) build-x86_64-unknown-linux-gnu
+	mkdir -p $(BIN_DIR)/amd64
+	for bin in anvil cast chisel forge; do \
+		cp $(CARGO_TARGET_DIR)/x86_64-unknown-linux-gnu/$(PROFILE)/$$bin $(BIN_DIR)/amd64/; \
+	done
+
+	FEATURES="aws-kms gcp-kms cli asm-keccak" $(MAKE) build-aarch64-unknown-linux-gnu
+	mkdir -p $(BIN_DIR)/arm64
+	for bin in anvil cast chisel forge; do \
+		cp $(CARGO_TARGET_DIR)/aarch64-unknown-linux-gnu/$(PROFILE)/$$bin $(BIN_DIR)/arm64/; \
+	done
+
+	docker buildx build --file ./Dockerfile.cross . \
+		--platform linux/amd64,linux/arm64 \
+		$(foreach tag,$(shell echo $(DOCKER_IMAGE_NAME) | tr ',' ' '),--tag $(tag)) \
+		--provenance=false \
+		--push
+
+.PHONY: docker-build-prepare
+docker-build-prepare: ## Prepare the Docker build environment.
+	docker run --privileged --rm tonistiigi/binfmt:qemu-v7.0.0-28 --install amd64,arm64
+	@if ! docker buildx inspect cross-builder &> /dev/null; then \
+		echo "Creating a new buildx builder instance"; \
+		docker buildx create --use --driver docker-container --name cross-builder; \
+	else \
+		echo "Using existing buildx builder instance"; \
+		docker buildx use cross-builder; \
+	fi
 
 ##@ Test
 

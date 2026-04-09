@@ -10,7 +10,7 @@ use crate::{
 };
 use alloy_consensus::Typed2718;
 use alloy_evm::Evm;
-use alloy_genesis::GenesisAccount;
+use alloy_genesis::{Genesis, GenesisAccount};
 use alloy_network::{AnyRpcBlock, AnyTxEnvelope, TransactionResponse};
 use alloy_primitives::{Address, B256, TxKind, U256, keccak256, uint};
 use alloy_rpc_types::{BlockNumberOrTag, Transaction, TransactionRequest};
@@ -31,6 +31,7 @@ use revm::{
     primitives::{HashMap as Map, KECCAK_EMPTY, Log, hardfork::SpecId},
     state::{Account, AccountInfo, EvmState, EvmStorageSlot},
 };
+
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     fmt::Debug,
@@ -483,11 +484,14 @@ impl Backend {
     /// Prefer using [`spawn`](Self::spawn) instead.
     pub fn new(forks: MultiFork, fork: Option<CreateFork>) -> eyre::Result<Self> {
         trace!(target: "backend", forking_mode=?fork.is_some(), "creating executor backend");
+
         // Note: this will take of registering the `fork`
         let inner = BackendInner {
             persistent_accounts: HashSet::from(DEFAULT_PERSISTENT_ACCOUNTS),
             ..Default::default()
         };
+
+        let initial_journaled_state = inner.new_journaled_state();
 
         let mut backend = Self {
             forks,
@@ -496,6 +500,7 @@ impl Backend {
             active_fork_ids: None,
             inner,
         };
+        backend.commit(initial_journaled_state.state);
 
         if let Some(fork) = fork {
             let (fork_id, fork, _) = backend.forks.create_fork(fork)?;
@@ -507,6 +512,24 @@ impl Backend {
             );
             backend.inner.launched_with_fork = Some((fork_id, fork_ids.0, fork_ids.1));
             backend.active_fork_ids = Some(fork_ids);
+
+            // Seed the fork's cache with *code-bearing* genesis accounts only.
+            // Without this, fork `basic_ref`/`basic` for `PRECOMPILE_EVM_RUNTIME`
+            // would hit the remote RPC and return the chain's strict runtime,
+            // defeating the permissive override embedded in the local genesis.
+            //
+            // Balance-only preallocations are skipped deliberately: overriding
+            // live testnet balances/nonces for developer wallets would shift
+            // CREATE-derived addresses between the script's dry run and broadcast
+            // simulation, surfacing as `CreateCollision` during phase 2.
+            let genesis_accounts_with_code: Map<Address, Account> = backend
+                .inner
+                .new_journaled_state()
+                .state
+                .into_iter()
+                .filter(|(_, account)| account.info.code.is_some())
+                .collect();
+            backend.commit(genesis_accounts_with_code);
         }
 
         trace!(target: "backend", forking_mode=? backend.active_fork_ids.is_some(), "created executor backend");
@@ -1660,9 +1683,17 @@ pub struct BackendInner {
     pub spec_id: SpecId,
     /// All accounts that are allowed to execute cheatcodes
     pub cheatcode_access_accounts: HashSet<Address>,
+
+    /// Genesis
+    pub genesis: Genesis,
 }
 
 impl BackendInner {
+    // pub fn with_genesis(&mut self, genesis: Genesis) -> Self {
+    //     self.genesis = genesis;
+    //     self
+    // }
+
     pub fn ensure_fork_id(&self, id: LocalForkId) -> eyre::Result<&ForkId> {
         self.issued_local_fork_ids
             .get(&id)
@@ -1828,15 +1859,67 @@ impl BackendInner {
             journal_inner.set_spec_id(self.spec_id);
             journal_inner
         };
+
         journal
             .warm_addresses
             .set_precompile_addresses(self.precompiles().addresses().copied().collect());
+
+        for (address, account) in self.genesis.alloc.clone() {
+            let state_acc = journal.state.entry(address).or_default();
+            state_acc.info.balance = account.balance;
+            state_acc.info.nonce = account.nonce.unwrap_or_default();
+
+            if let Some(code) = &account.code {
+                let bytecode = Bytecode::new_raw(code.0.clone().into());
+                state_acc.info.code_hash = bytecode.hash_slow();
+                state_acc.info.code = Some(bytecode);
+            } else {
+                state_acc.info.code_hash = KECCAK_EMPTY;
+                state_acc.info.code = None;
+            }
+
+            if let Some(storage) = &account.storage {
+                state_acc.storage = storage
+                    .iter()
+                    .map(|(key, value)| {
+                        let slot = U256::from_be_bytes(key.0);
+                        let value = U256::from_be_bytes(value.0);
+
+                        (slot, EvmStorageSlot::new_changed(U256::ZERO, value, 0))
+                    })
+                    .collect();
+            }
+            journal.touch(address);
+        }
+
         journal
     }
 }
 
 impl Default for BackendInner {
     fn default() -> Self {
+        // Permissive variant of the strict `genesis-mainnet-v1.2.0.json.gz`: the Fluent EVM
+        // runtime at `PRECOMPILE_EVM_RUNTIME` has its EIP-170 (24 KB deployed-code) check
+        // removed so `forge script` / `forge test` can deploy contracts whose size is larger
+        // than what the chain accepts. Foundry's `check_contract_sizes` (crates/script/src/lib.rs)
+        // emits a pre-broadcast warning for any oversized CREATE in the collected tx set, so
+        // actual on-chain rejection is still surfaced to the user before they broadcast.
+        //
+        // The strict variant remains checked in alongside it for reference / future reverts;
+        // to regenerate the permissive build, patch `contracts/evm/lib.rs` in a fluentbase
+        // clone to drop the `output.len() > EVM_MAX_CODE_SIZE` branch in `deploy_entry` and
+        // run `cargo build --release -p fluentbase-genesis`.
+        let json_file_compressed =
+            include_bytes!("../../../genesis/genesis-mainnet-v1.2.0-permissive.json.gz");
+
+        use flate2::read::GzDecoder;
+        use std::io::Read;
+        let mut decoder = GzDecoder::new(&json_file_compressed[..]);
+        let mut json_string = String::new();
+        decoder.read_to_string(&mut json_string).expect("failed to decompress a genesis gz file");
+        let genesis = serde_json::from_str::<Genesis>(&json_string)
+            .expect("failed to parse a genesis JSON file");
+
         Self {
             launched_with_fork: None,
             issued_local_fork_ids: Default::default(),
@@ -1855,6 +1938,7 @@ impl Default for BackendInner {
                 TEST_CONTRACT_ADDRESS,
                 CALLER,
             ]),
+            genesis,
         }
     }
 }

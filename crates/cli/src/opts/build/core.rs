@@ -160,6 +160,10 @@ pub struct BuildOpts {
     #[command(flatten)]
     #[serde(flatten)]
     pub project_paths: ProjectPathOpts,
+
+    #[arg(long, help_heading = "Disable reproducible build for rust contracts")]
+    #[serde(skip)]
+    pub no_docker: bool,
 }
 
 impl BuildOpts {
@@ -295,6 +299,10 @@ impl Provider for BuildOpts {
 
         if let Some(ref revert) = self.revert_strings {
             dict.insert("revert_strings".to_string(), revert.to_string().into());
+        }
+
+        if self.no_docker {
+            dict.insert("no_docker".to_string(), true.into());
         }
 
         Ok(Map::from([(Config::selected_profile(), dict)]))

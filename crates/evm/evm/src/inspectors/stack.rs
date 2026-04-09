@@ -20,8 +20,9 @@ use foundry_evm_networks::NetworkConfigs;
 use foundry_evm_traces::{SparsedTraceArena, TraceMode};
 use revm::{
     Inspector,
+    bytecode::Bytecode,
     context::{
-        BlockEnv,
+        BlockEnv, JournalTr,
         result::{ExecutionResult, Output},
     },
     context_interface::CreateScheme,
@@ -625,6 +626,23 @@ impl InspectorStackRefMut<'_> {
         call: &CreateInputs,
         outcome: &mut CreateOutcome,
     ) -> CreateOutcome {
+        // Fluent rwasm stores deployed EVM bytecode in OwnableAccount metadata,
+        // leaving CreateOutcome.output empty. Populate it so traces/inspectors
+        // see the correct deployed code size.
+        if outcome.result.result.is_ok() && outcome.result.output.is_empty() {
+            if let Some(addr) = outcome.address {
+                if let Ok(acc) = ecx.journaled_state.load_account_with_code(addr) {
+                    if let Some(Bytecode::OwnableAccount(ref oa)) = acc.data.info.code {
+                        if let Some(meta) =
+                            fluentbase_evm::EthereumMetadata::read_from_bytes(&oa.metadata)
+                        {
+                            outcome.result.output = meta.code_copy();
+                        }
+                    }
+                }
+            }
+        }
+
         let result = outcome.result.result;
         call_inspectors!(
             #[ret]
