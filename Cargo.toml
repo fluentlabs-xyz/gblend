@@ -463,8 +463,6 @@ idna_adapter = "=1.1.0"
 rexpect = {git = "https://github.com/rust-cli/rexpect", rev = "2ed0b1898d7edaf6a85bedbae71a01cc578958fc"}
 
 # --- GBlend / Fluentbase patches (enabled) ---
-alloy-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
-alloy-op-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
 op-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
 revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
 revm-bytecode = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
@@ -477,6 +475,8 @@ revm-interpreter = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", br
 revm-primitives = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
 revm-state = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
 
+alloy-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
+alloy-op-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
 
 # Local dev overrides (optional)
 # revm = { path = "../revm-rwasm/crates/revm" }
