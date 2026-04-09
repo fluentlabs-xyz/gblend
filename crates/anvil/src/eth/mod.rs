@@ -6,6 +6,7 @@ pub use api::EthApi;
 pub mod backend;
 
 pub mod error;
+pub mod overrides;
 
 pub mod fees;
 pub(crate) mod macros;

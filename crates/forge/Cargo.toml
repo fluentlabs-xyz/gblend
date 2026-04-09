@@ -1,37 +1,42 @@
 [package]
-name = "forge"
 description = "Fast and flexible Ethereum testing framework"
+name = "forge"
 
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
 authors.workspace = true
-license.workspace = true
+edition.workspace = true
 homepage.workspace = true
+license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
 
 [lints]
 workspace = true
 
 [[bin]]
-name = "forge"
+name = "gblend"
 path = "bin/main.rs"
 
 [[test]]
+harness = false
 name = "ui"
 path = "tests/ui.rs"
-harness = false
 
 [dependencies]
+
+# wasm
+wasm-encoder = {version = "0.238.1"}
+wasmparser = {version = "0.238.1"}
 # lib
-foundry-block-explorers = { workspace = true, features = ["foundry-compilers"] }
+foundry-block-explorers = {workspace = true, features = ["foundry-compilers"]}
 foundry-common.workspace = true
 foundry-compilers.workspace = true
 foundry-config.workspace = true
-foundry-evm.workspace = true
 foundry-evm-networks.workspace = true
+foundry-evm.workspace = true
 foundry-linking.workspace = true
 
+chrono.workspace = true
 comfy-table.workspace = true
 eyre.workspace = true
 proptest.workspace = true
@@ -39,25 +44,24 @@ rayon.workspace = true
 serde.workspace = true
 tracing.workspace = true
 yansi.workspace = true
-chrono.workspace = true
 
 # bin
 forge-doc.workspace = true
 forge-fmt.workspace = true
 forge-lint.workspace = true
-forge-verify.workspace = true
 forge-script.workspace = true
 forge-sol-macro-gen.workspace = true
+forge-verify.workspace = true
 foundry-cli.workspace = true
 foundry-debugger.workspace = true
-foundry-wallets = { workspace = true, optional = true }
+foundry-wallets = {workspace = true, optional = true}
 
 alloy-chains.workspace = true
 alloy-dyn-abi.workspace = true
 alloy-json-abi.workspace = true
 alloy-network.workspace = true
-alloy-primitives = { workspace = true, features = ["serde"] }
-alloy-provider = { workspace = true, features = ["reqwest", "ws", "ipc"] }
+alloy-primitives = {workspace = true, features = ["serde"]}
+alloy-provider = {workspace = true, features = ["reqwest", "ws", "ipc"]}
 alloy-rpc-types.workspace = true
 alloy-serde.workspace = true
 alloy-signer.workspace = true
@@ -65,50 +69,53 @@ alloy-transport.workspace = true
 
 revm.workspace = true
 
-clap = { version = "4", features = ["derive", "env", "unicode", "wrap_help"] }
+clap = {version = "4", features = ["derive", "env", "unicode", "wrap_help"]}
 clap_complete.workspace = true
+clearscreen = "4.0"
 dunce.workspace = true
+evm-disassembler.workspace = true
 indicatif.workspace = true
-inferno = { version = "0.12", default-features = false }
+inferno = {version = "0.12", default-features = false}
 itertools.workspace = true
 parking_lot.workspace = true
-regex = { workspace = true, default-features = false }
+path-slash.workspace = true
+regex = {workspace = true, default-features = false}
+reqwest = {workspace = true, features = ["json"]}
 semver.workspace = true
 serde_json.workspace = true
-similar = { version = "2", features = ["inline"] }
+similar = {version = "2", features = ["inline"]}
 solar.workspace = true
-strum = { workspace = true, features = ["derive"] }
+strum = {workspace = true, features = ["derive"]}
 thiserror.workspace = true
-tokio = { workspace = true, features = ["time"] }
+tokio = {workspace = true, features = ["time"]}
 toml_edit.workspace = true
+url.workspace = true
 watchexec = "8.0"
 watchexec-events = "6.0"
 watchexec-signals = "5.0"
-clearscreen = "4.0"
-evm-disassembler.workspace = true
-path-slash.workspace = true
-reqwest = { workspace = true, features = ["json"] }
-url.workspace = true
 
 # doc server
-axum = { workspace = true, features = ["ws"] }
-tower-http = { workspace = true, features = ["fs"] }
+axum = {workspace = true, features = ["ws"]}
 opener = "0.8"
+tower-http = {workspace = true, features = ["fs"]}
 
 # soldeer
+quick-junit = "0.5.2"
 soldeer-commands.workspace = true
 soldeer-core.workspace = true
-quick-junit = "0.5.2"
+
+rand = "0.8.5"
+ureq = "0.12.1"
 
 [dev-dependencies]
 alloy-hardforks.workspace = true
 anvil.workspace = true
 forge-script-sequence.workspace = true
 foundry-test-utils.workspace = true
-reqwest = { workspace = true, features = ["json"] }
+reqwest = {workspace = true, features = ["json"]}
 
-mockall = "0.14"
 globset = "0.4"
+mockall = "0.14"
 similar-asserts.workspace = true
 svm.workspace = true
 tempfile.workspace = true
@@ -116,12 +123,12 @@ tempfile.workspace = true
 alloy-signer-local.workspace = true
 
 [features]
-default = ["jemalloc"]
 asm-keccak = ["alloy-primitives/asm-keccak"]
+aws-kms = ["dep:foundry-wallets", "foundry-wallets/aws-kms"]
+default = ["jemalloc"]
+gcp-kms = ["dep:foundry-wallets", "foundry-wallets/gcp-kms"]
+isolate-by-default = ["foundry-config/isolate-by-default"]
 jemalloc = ["foundry-cli/jemalloc"]
 mimalloc = ["foundry-cli/mimalloc"]
 tracy-allocator = ["foundry-cli/tracy-allocator"]
-aws-kms = ["dep:foundry-wallets", "foundry-wallets/aws-kms"]
-gcp-kms = ["dep:foundry-wallets", "foundry-wallets/gcp-kms"]
 turnkey = ["dep:foundry-wallets", "foundry-wallets/turnkey"]
-isolate-by-default = ["foundry-config/isolate-by-default"]

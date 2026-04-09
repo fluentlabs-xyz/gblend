@@ -510,10 +510,9 @@ where
         );
         EitherEvm::Op(OpEvmFactory::default().create_evm_with_inspector(db, evm_env, inspector))
     } else {
-        EitherEvm::Eth(EthEvmFactory::default().create_evm_with_inspector(
-            db,
-            env.evm_env.clone(),
-            inspector,
-        ))
+        let eth =
+            EthEvmFactory::default().create_evm_with_inspector(db, env.evm_env.clone(), inspector);
+
+        EitherEvm::Eth(eth)
     }
 }

@@ -1,11 +1,12 @@
 //! Support for compiling [foundry_compilers::Project]
-
 use crate::{
     TestFunctionExt, preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter,
 };
 use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN};
-use eyre::Result;
+use eyre::{Result, WrapErr};
+use fluentbase_build::{Artifact as FluentArtifact, BuildArgs, DEFAULT_DOCKER_TAG, execute_build};
 use foundry_block_explorers::contract::Metadata;
+use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{
     Artifact, Project, ProjectBuilder, ProjectCompileOutput, ProjectPathsConfig, SolcConfig,
     artifacts::{BytecodeObject, Contract, Source, remappings::Remapping},
@@ -62,6 +63,9 @@ pub struct ProjectCompiler {
 
     /// Whether to compile with dynamic linking tests and scripts.
     dynamic_test_linking: bool,
+
+    /// Whether to use docker for the reproducible build
+    no_docker: bool,
 }
 
 impl Default for ProjectCompiler {
@@ -84,6 +88,8 @@ impl ProjectCompiler {
             ignore_eip_3860: false,
             files: Vec::new(),
             dynamic_test_linking: false,
+            // docker enabled by default
+            no_docker: false,
         }
     }
 
@@ -137,6 +143,15 @@ impl ProjectCompiler {
         self
     }
 
+    /// Sets no-docker flag
+    #[inline]
+    pub fn no_docker(mut self, yes: bool) -> Self {
+        self.no_docker = yes;
+        self
+    }
+
+    // TODO(d1r1): move rust compilation to the foundry-compilers crate.
+    //
     /// Compiles the project.
     #[instrument(target = "forge::compile", skip_all)]
     pub fn compile<C: Compiler<CompilerContract = Contract>>(
@@ -148,13 +163,15 @@ impl ProjectCompiler {
     {
         self.project_root = project.root().to_path_buf();
 
+        let rust_contracts = self.build_rust_contracts(project)?;
+
         // TODO: Avoid using std::process::exit(0).
         // Replacing this with a return (e.g., Ok(ProjectCompileOutput::default())) would be more
         // idiomatic, but it currently requires a `Default` bound on `C::Language`, which
         // breaks compatibility with downstream crates like `foundry-cli`. This would need a
         // broader refactor across the call chain. Leaving it as-is for now until a larger
         // refactor is feasible.
-        if !project.paths.has_input_files() && self.files.is_empty() {
+        if !project.paths.has_input_files() && self.files.is_empty() && rust_contracts == 0 {
             sh_println!("Nothing to compile")?;
             std::process::exit(0);
         }
@@ -162,6 +179,7 @@ impl ProjectCompiler {
         // Taking is fine since we don't need these in `compile_with`.
         let files = std::mem::take(&mut self.files);
         let preprocess = self.dynamic_test_linking;
+
         self.compile_with(|| {
             let sources = if !files.is_empty() {
                 Source::read_all(files)?
@@ -218,6 +236,83 @@ impl ProjectCompiler {
         }
 
         Ok(output)
+    }
+
+    /// Finds and compiles Rust contracts, returning the number of compiled contracts.
+    fn build_rust_contracts<C: Compiler<CompilerContract = Contract>>(
+        &mut self,
+        project: &Project<C>,
+    ) -> Result<usize> {
+        // Find all Rust projects (crates) in source directories
+        let rust_registry =
+            RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
+
+        if rust_registry.is_empty() {
+            sh_println!("No Rust contracts found")?;
+            return Ok(0);
+        }
+
+        sh_println!("Compiling {} Rust contract(s)...", rust_registry.len())?;
+        let contracts_count = rust_registry.len();
+        let timer = Instant::now();
+
+        // Determine which artifacts to generate
+        let generate_artifacts = vec![
+            FluentArtifact::Solidity,
+            FluentArtifact::Abi,
+            FluentArtifact::Foundry,
+            FluentArtifact::Rwasm,
+            FluentArtifact::Metadata,
+        ];
+
+        // Iterate through each found Rust project and compile it
+        for (package_name, info) in rust_registry.iter() {
+            // Get the directory name for logging
+            let project_dir_name =
+                info.path.file_name().and_then(|n| n.to_str()).unwrap_or(package_name);
+
+            // Artifact name is always: {package_name}.wasm
+            let artifact_name = info.artifact_name();
+
+            sh_println!("  - Compiling {} (package: {})...", project_dir_name, package_name)?;
+
+            // Configure the build
+            let build_args = BuildArgs {
+                contract_name: Some(artifact_name),
+                generate: generate_artifacts.clone(),
+                docker: !self.no_docker,
+                docker_tag: info
+                    .sdk_version
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_DOCKER_TAG.to_string()),
+                mount_dir: Some(project.root().to_path_buf()),
+                output: Some(project.artifacts_path().to_path_buf()),
+                wasm_opt: false,
+                locked: false,
+                rust_version: Some("1.92.0-x86_64-unknown-linux-gnu".to_string()),
+                ..Default::default()
+            };
+
+            sh_println!("  - Build args: {build_args:?}")?;
+
+            // Execute Rust contract build
+            execute_build(&build_args, Some(info.path.clone()))
+                .map_err(|e| eyre::eyre!("Build failed: {}", e))
+                .wrap_err_with(|| {
+                    format!(
+                        "Failed to build Rust contract '{}' at {}",
+                        package_name,
+                        info.path.display()
+                    )
+                })?;
+
+            // Remove the directory from file tracking after processing
+            self.files.retain(|file| !file.starts_with(&info.path));
+        }
+
+        sh_println!("Finished compiling Rust contracts in {:.2?}", timer.elapsed())?;
+
+        Ok(contracts_count)
     }
 
     /// If configured, this will print sizes or names
@@ -321,10 +416,10 @@ impl ProjectCompiler {
 }
 
 // https://eips.ethereum.org/EIPS/eip-170
-const CONTRACT_RUNTIME_SIZE_LIMIT: usize = 24576;
+const CONTRACT_RUNTIME_SIZE_LIMIT: usize = 1_048_576;
 
 // https://eips.ethereum.org/EIPS/eip-3860
-const CONTRACT_INITCODE_SIZE_LIMIT: usize = 49152;
+const CONTRACT_INITCODE_SIZE_LIMIT: usize = 1_048_576;
 
 /// Contracts with info about their size
 pub struct SizeReport {
@@ -378,21 +473,21 @@ impl Display for SizeReport {
 impl SizeReport {
     fn format_json_output(&self) -> String {
         let contracts = self
-            .contracts
-            .iter()
-            .filter(|(_, c)| !c.is_dev_contract && (c.runtime_size > 0 || c.init_size > 0))
-            .map(|(name, contract)| {
-                (
-                    name.clone(),
-                    serde_json::json!({
+                .contracts
+                .iter()
+                .filter(|(_, c)| !c.is_dev_contract && (c.runtime_size > 0 || c.init_size > 0))
+                .map(|(name, contract)| {
+                    (
+                        name.clone(),
+                        serde_json::json!({
                         "runtime_size": contract.runtime_size,
                         "init_size": contract.init_size,
                         "runtime_margin": CONTRACT_RUNTIME_SIZE_LIMIT as isize - contract.runtime_size as isize,
                         "init_margin": CONTRACT_INITCODE_SIZE_LIMIT as isize - contract.init_size as isize,
                     }),
-                )
-            })
-            .collect::<serde_json::Map<_, _>>();
+                    )
+                })
+                .collect::<serde_json::Map<_, _>>();
 
         serde_json::to_string(&contracts).unwrap()
     }

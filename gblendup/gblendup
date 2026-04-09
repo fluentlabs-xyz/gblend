@@ -1,0 +1,610 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# NOTE: if you make modifications to this script, please increment the version number.
+# WARNING: the SemVer pattern: major.minor.patch must be followed as we use it to determine if the script is up to date.
+GBLENDUP_INSTALLER_VERSION="1.0.0"
+
+BASE_DIR=${XDG_CONFIG_HOME:-$HOME}
+GBLEND_DIR=${GBLEND_DIR:-"$BASE_DIR/.gblend"}
+GBLEND_VERSIONS_DIR="$GBLEND_DIR/versions"
+GBLEND_BIN_DIR="$GBLEND_DIR/bin"
+GBLEND_MAN_DIR="$GBLEND_DIR/share/man/man1"
+GBLEND_BIN_URL="https://raw.githubusercontent.com/fluentlabs-xyz/gblend/gblend/gblendup/gblendup"
+GBLEND_BIN_PATH="$GBLEND_BIN_DIR/gblendup"
+GBLENDUP_JOBS=""
+GBLENDUP_IGNORE_VERIFICATION=false
+
+BINS=(gblend)
+HASH_NAMES=()
+HASH_VALUES=()
+
+export RUSTFLAGS="${RUSTFLAGS:--C target-cpu=native}"
+
+main() {
+  need_cmd git
+  need_cmd curl
+
+  while [[ -n $1 ]]; do
+    case $1 in
+      --)               shift; break;;
+
+      -v|--version)     shift; version;;
+      -U|--update)      shift; update;;
+      -r|--repo)        shift; GBLENDUP_REPO=$1;;
+      -b|--branch)      shift; GBLENDUP_BRANCH=$1;;
+      -i|--install)     shift; GBLENDUP_VERSION=$1;;
+      -l|--list)        shift; list;;
+      -u|--use)         shift; GBLENDUP_VERSION=$1; use;;
+      -p|--path)        shift; GBLENDUP_LOCAL_REPO=$1;;
+      -P|--pr)          shift; GBLENDUP_PR=$1;;
+      -C|--commit)      shift; GBLENDUP_COMMIT=$1;;
+      -j|--jobs)        shift; GBLENDUP_JOBS=$1;;
+      -f|--force)       GBLENDUP_IGNORE_VERIFICATION=true;;
+      --arch)           shift; GBLENDUP_ARCH=$1;;
+      --platform)       shift; GBLENDUP_PLATFORM=$1;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        warn "unknown option: $1"
+        usage
+        exit 1
+    esac; shift
+  done
+
+  CARGO_BUILD_ARGS=(--release)
+
+  if [ -n "$GBLENDUP_JOBS" ]; then
+    CARGO_BUILD_ARGS+=(--jobs "$GBLENDUP_JOBS")
+  fi
+
+  # Print the banner after successfully parsing args
+  banner
+
+  # Check if the gblendup installer is up to date, warn the user if not
+  check_installer_up_to_date
+
+  if [ -n "$GBLENDUP_PR" ]; then
+    if [ -z "$GBLENDUP_BRANCH" ]; then
+      GBLENDUP_BRANCH="refs/pull/$GBLENDUP_PR/head"
+    else
+      err "can't use --pr and --branch at the same time"
+    fi
+  fi
+
+  check_bins_in_use
+
+  # Installs gblend from a local repository if --path parameter is provided
+  if [[ -n "$GBLENDUP_LOCAL_REPO" ]]; then
+    need_cmd cargo
+
+    # Ignore branches/versions as we do not want to modify local git state
+    if [ -n "$GBLENDUP_REPO" ] || [ -n "$GBLENDUP_BRANCH" ] || [ -n "$GBLENDUP_VERSION" ]; then
+      warn "--branch, --install, --use, and --repo arguments are ignored during local install"
+    fi
+
+    # Enter local repo and build
+    say "installing from $GBLENDUP_LOCAL_REPO"
+    cd "$GBLENDUP_LOCAL_REPO"
+    ensure cargo build --bins "${CARGO_BUILD_ARGS[@]}"
+
+    for bin in "${BINS[@]}"; do
+      # Remove prior installations if they exist
+      rm -f "$GBLEND_BIN_DIR/$bin"
+      # Symlink from local repo binaries to bin dir
+      ensure ln -s "$PWD/target/release/$bin" "$GBLEND_BIN_DIR/$bin"
+    done
+
+    say "done"
+    exit 0
+  fi
+
+  GBLENDUP_REPO=${GBLENDUP_REPO:-fluentlabs-xyz/gblend}
+
+  # Install by downloading binaries
+  if [[ "$GBLENDUP_REPO" == "fluentlabs-xyz/gblend" && -z "$GBLENDUP_BRANCH" && -z "$GBLENDUP_COMMIT" ]]; then
+    GBLENDUP_VERSION=${GBLENDUP_VERSION:-latest}
+    GBLENDUP_TAG=$GBLENDUP_VERSION
+
+    # Normalize versions (handle channels, versions without v prefix)
+    if [[ "$GBLENDUP_VERSION" =~ ^nightly ]]; then
+      GBLENDUP_VERSION="nightly"
+    elif [[ "$GBLENDUP_VERSION" == "latest" ]]; then
+      # Resolve latest tag from GitHub API
+      GBLENDUP_VERSION=$(resolve_latest_version)
+      GBLENDUP_TAG=$GBLENDUP_VERSION
+    elif [[ "$GBLENDUP_VERSION" == [[:digit:]]* ]]; then
+      # Add v prefix
+      GBLENDUP_VERSION="v${GBLENDUP_VERSION}"
+      GBLENDUP_TAG="${GBLENDUP_VERSION}"
+    fi
+
+    say "installing gblend (version ${GBLENDUP_VERSION}, tag ${GBLENDUP_TAG})"
+
+    uname_s=$(uname -s)
+    PLATFORM=$(tolower "${GBLENDUP_PLATFORM:-$uname_s}")
+    EXT="tar.gz"
+    case $PLATFORM in
+      linux) ;;
+      darwin|mac*)
+        PLATFORM="darwin"
+        ;;
+      mingw*|win*)
+        EXT="zip"
+        PLATFORM="win32"
+        ;;
+      *)
+        err "unsupported platform: $PLATFORM"
+        ;;
+    esac
+
+    uname_m=$(uname -m)
+    ARCHITECTURE=$(tolower "${GBLENDUP_ARCH:-$uname_m}")
+    if [ "${ARCHITECTURE}" = "x86_64" ]; then
+      # Redirect stderr to /dev/null to avoid printing errors if non Rosetta.
+      if [ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" = "1" ]; then
+        ARCHITECTURE="arm64" # Rosetta.
+      else
+        ARCHITECTURE="amd64" # Intel.
+      fi
+    elif [ "${ARCHITECTURE}" = "arm64" ] ||[ "${ARCHITECTURE}" = "aarch64" ] ; then
+      ARCHITECTURE="arm64" # Arm.
+    else
+      ARCHITECTURE="amd64" # Amd.
+    fi
+
+    # Compute the URL of the release tarball in the GBlend repository.
+    RELEASE_URL="https://github.com/${GBLENDUP_REPO}/releases/download/${GBLENDUP_TAG}/"
+    BIN_ARCHIVE_URL="${RELEASE_URL}gblend_${GBLENDUP_VERSION}_${PLATFORM}_${ARCHITECTURE}.$EXT"
+    MAN_TARBALL_URL="${RELEASE_URL}gblend_man_${GBLENDUP_VERSION}.tar.gz"
+
+    ensure mkdir -p "$GBLEND_VERSIONS_DIR"
+
+    # For now, skip SHA verification since attestation infrastructure is not yet implemented
+    # This will be enhanced in future versions when CI includes attestation generation
+    if [ "$GBLENDUP_IGNORE_VERIFICATION" = false ]; then
+      say "checking if gblend for $GBLENDUP_TAG version is already installed"
+
+      version_dir="$GBLEND_VERSIONS_DIR/$GBLENDUP_TAG"
+      all_match=true
+      for bin in "${BINS[@]}"; do
+        path="$version_dir/$bin"
+        if [ ! -x "$path" ]; then
+          all_match=false
+          break
+        fi
+      done
+
+      if $all_match; then
+        say "version $GBLENDUP_TAG already installed, activating..."
+        GBLENDUP_VERSION=$GBLENDUP_TAG
+        use
+        say "done!"
+        exit 0
+      fi
+
+      # If we reach here, we need to download the binaries.
+      say "binaries not found, downloading new binaries"
+    fi
+
+    # Download and extract the binaries archive
+    say "downloading gblend for $GBLENDUP_TAG version"
+    if [ "$PLATFORM" = "win32" ]; then
+      tmp="$(mktemp -d 2>/dev/null || echo ".")/gblend.zip"
+      ensure download "$BIN_ARCHIVE_URL" "$tmp"
+      ensure unzip "$tmp" -d "$GBLEND_VERSIONS_DIR/$GBLENDUP_TAG"
+      rm -f "$tmp"
+    else
+      tmp="$(mktemp -d 2>/dev/null || echo ".")/gblend.tar.gz"
+      ensure download "$BIN_ARCHIVE_URL" "$tmp"
+      # Make sure it's a valid tar archive.
+      ensure tar tf $tmp 1> /dev/null
+      ensure mkdir -p "$GBLEND_VERSIONS_DIR/$GBLENDUP_TAG"
+      ensure tar -C "$GBLEND_VERSIONS_DIR/$GBLENDUP_TAG" -xvf $tmp
+      rm -f "$tmp"
+    fi
+
+    # Optionally download the manuals
+    if check_cmd tar; then
+      say "downloading manpages"
+      mkdir -p "$GBLEND_MAN_DIR"
+      download "$MAN_TARBALL_URL" | tar -xzC "$GBLEND_MAN_DIR" 2>/dev/null || say 'manpages not available for this version'
+    else
+      say 'skipping manpage download: missing "tar"'
+    fi
+
+    if [ "$GBLENDUP_IGNORE_VERIFICATION" = true ]; then
+      say "skipped SHA verification for downloaded binaries due to --force flag"
+    else
+      say "SHA verification will be implemented in future versions"
+    fi
+
+    # Use newly installed version.
+    GBLENDUP_VERSION=$GBLENDUP_TAG
+    use
+
+    say "done!"
+
+  # Install by cloning the repo with the provided branch/tag
+  else
+    need_cmd cargo
+    GBLENDUP_BRANCH=${GBLENDUP_BRANCH:-gblend}
+    REPO_PATH="$GBLEND_DIR/$GBLENDUP_REPO"
+    AUTHOR="$(echo "$GBLENDUP_REPO" | cut -d'/' -f1 -)"
+
+    # If repo path does not exist, grab the author from the repo, make a directory in .gblend, cd to it and clone.
+    if [ ! -d "$REPO_PATH" ]; then
+      ensure mkdir -p "$GBLEND_DIR/$AUTHOR"
+      cd "$GBLEND_DIR/$AUTHOR"
+      ensure git clone "https://github.com/$GBLENDUP_REPO"
+    fi
+
+    # Force checkout, discarding any local changes
+    cd "$REPO_PATH"
+    ensure git fetch origin "${GBLENDUP_BRANCH}:remotes/origin/${GBLENDUP_BRANCH}"
+    ensure git checkout "origin/${GBLENDUP_BRANCH}"
+
+    # Create custom version based on the install method, e.g.:
+    # - fluentlabs-xyz-commit-c22c4cc96b0535cd989ee94b79da1b19d236b8db
+    # - fluentlabs-xyz-pr-1
+    # - fluentlabs-xyz-branch-gblend
+    if [ -n "$GBLENDUP_COMMIT" ]; then
+      # If set, checkout specific commit from branch
+      ensure git checkout "$GBLENDUP_COMMIT"
+      GBLENDUP_VERSION=$AUTHOR-commit-$GBLENDUP_COMMIT
+    elif [ -n "$GBLENDUP_PR" ]; then
+     GBLENDUP_VERSION=$AUTHOR-pr-$GBLENDUP_PR
+    else
+      if [ -n "$GBLENDUP_BRANCH" ]; then
+        NORMALIZED_BRANCH="$(echo "$GBLENDUP_BRANCH" | tr / -)"
+        GBLENDUP_VERSION=$AUTHOR-branch-$NORMALIZED_BRANCH
+      fi
+    fi
+    say "installing version $GBLENDUP_VERSION"
+
+    # Build the repo.
+    ensure cargo build --bins "${CARGO_BUILD_ARGS[@]}"
+    # Create gblend custom version directory.
+    ensure mkdir -p "$GBLEND_VERSIONS_DIR/$GBLENDUP_VERSION"
+    for bin in "${BINS[@]}"; do
+      for try_path in target/release/$bin target/release/$bin.exe; do
+        if [ -f "$try_path" ]; then
+          mv -f "$try_path" "$GBLEND_VERSIONS_DIR/$GBLENDUP_VERSION"
+        fi
+      done
+    done
+
+    # Use newly built version.
+    use
+
+    # If help2man is installed, use it to add GBlend man pages.
+    if check_cmd help2man; then
+      for bin in "${BINS[@]}"; do
+        help2man -N "$GBLEND_BIN_DIR/$bin" > "$GBLEND_MAN_DIR/$bin.1"
+      done
+    fi
+
+    say "done"
+  fi
+}
+
+usage() {
+  cat 1>&2 <<EOF
+The installer for GBlend.
+
+Update or revert to a specific GBlend version with ease.
+
+By default, the latest stable version is installed from built binaries.
+
+USAGE:
+    gblendup <OPTIONS>
+
+OPTIONS:
+    -h, --help      Print help information
+    -v, --version   Print the version of gblendup
+    -U, --update    Update gblendup to the latest version
+    -i, --install   Install a specific version from built binaries
+    -l, --list      List versions installed from built binaries
+    -u, --use       Use a specific installed version from built binaries
+    -b, --branch    Build and install a specific branch
+    -P, --pr        Build and install a specific Pull Request
+    -C, --commit    Build and install a specific commit
+    -r, --repo      Build and install from a remote GitHub repo (uses default branch if no other options are set)
+    -p, --path      Build and install a local repository
+    -j, --jobs      Number of CPUs to use for building GBlend (default: all CPUs)
+    -f, --force     Skip SHA verification for downloaded binaries (use with caution)
+    --arch          Install a specific architecture (supports amd64 and arm64)
+    --platform      Install a specific platform (supports win32, linux, and darwin)
+
+EXAMPLES:
+    gblendup                    # Install latest version
+    gblendup --install v0.1.0   # Install specific version
+    gblendup --branch gblend     # Build from gblend branch
+    gblendup --pr 42            # Build from PR #42
+EOF
+}
+
+version() {
+  say "$GBLENDUP_INSTALLER_VERSION"
+  exit 0
+}
+
+update() {
+  say "updating gblendup..."
+
+  current_version="$GBLENDUP_INSTALLER_VERSION"
+
+  # Download the new version.
+  tmp_file="$(mktemp)"
+  ensure download "$GBLEND_BIN_URL" "$tmp_file"
+
+  # Extract new version from downloaded file.
+  new_version=$(grep -Eo 'GBLENDUP_INSTALLER_VERSION="[0-9]+\.[0-9]+\.[0-9]+"' "$tmp_file" | cut -d'"' -f2)
+
+  # If the new version could not be determined, exit gracefully.
+  # This prevents from upgrading to an empty or invalid version.
+  if [ -z "$new_version" ]; then
+    warn "could not determine new gblendup version. Exiting."
+    rm -f "$tmp_file"
+    exit 0
+  fi
+
+  # If the new version is not greater than the current version, skip the update.
+  # This is to prevent downgrades or unnecessary updates.
+  if ! version_gt "$new_version" "$current_version"; then
+    say "gblendup is already up to date (installed: $current_version, remote: $new_version)."
+    rm -f "$tmp_file"
+    exit 0
+  fi
+
+  # Overwrite existing gblendup
+  ensure mv "$tmp_file" "$GBLEND_BIN_PATH"
+  ensure chmod +x "$GBLEND_BIN_PATH"
+
+  say "successfully updated gblendup: $current_version → $new_version"
+  exit 0
+}
+
+list() {
+  if [ -d "$GBLEND_VERSIONS_DIR" ]; then
+    for VERSION in $GBLEND_VERSIONS_DIR/*; do
+      say "${VERSION##*/}"
+      for bin in "${BINS[@]}"; do
+        bin_path="$VERSION/$bin"
+        if [ -x "$bin_path" ]; then
+          say "- $(ensure "$bin_path" --version)"
+        fi
+      done
+      printf "\n"
+    done
+  else
+    for bin in "${BINS[@]}"; do
+      bin_path="$GBLEND_BIN_DIR/$bin"
+      if [ -x "$bin_path" ]; then
+        say "- $(ensure "$bin_path" --version)"
+      fi
+    done
+  fi
+  exit 0
+}
+
+use() {
+  [ -z "$GBLENDUP_VERSION" ] && err "no version provided"
+  GBLEND_VERSION_DIR="$GBLEND_VERSIONS_DIR/$GBLENDUP_VERSION"
+  if [ -d "$GBLEND_VERSION_DIR" ]; then
+
+    check_bins_in_use
+    ensure mkdir -p "$GBLEND_BIN_DIR"
+
+    for bin in "${BINS[@]}"; do
+      bin_path="$GBLEND_BIN_DIR/$bin"
+      cp "$GBLEND_VERSION_DIR/$bin" "$bin_path"
+      # Print usage msg
+      say "use - $(ensure "$bin_path" --version)"
+
+      # Check if the default path of the binary is not in GBLEND_BIN_DIR
+      which_path="$(command -v "$bin" || true)"
+      if [ -n "$which_path" ] && [ "$which_path" != "$bin_path" ]; then
+        warn ""
+        cat 1>&2 <<EOF
+There are multiple binaries with the name '$bin' present in your 'PATH'.
+This may be the result of installing '$bin' using another method,
+like Cargo or other package managers.
+You may need to run 'rm $which_path' or move '$GBLEND_BIN_DIR'
+in your 'PATH' to allow the newly installed version to take precedence!
+
+EOF
+      fi
+    done
+    exit 0
+  else
+    err "version $GBLENDUP_VERSION not installed"
+  fi
+}
+
+resolve_latest_version() {
+  if check_cmd curl; then
+    latest_tag=$(curl -fsSL "https://api.github.com/repos/fluentlabs-xyz/gblend/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+  else
+    latest_tag=$(wget -qO- "https://api.github.com/repos/fluentlabs-xyz/gblend/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+  fi
+
+  if [ -z "$latest_tag" ]; then
+    err "could not determine latest version from GitHub API"
+  fi
+
+  echo "$latest_tag"
+}
+
+say() {
+  printf "gblendup: %s\n" "$1"
+}
+
+warn() {
+  say "warning: ${1}" >&2
+}
+
+err() {
+  say "$1" >&2
+  exit 1
+}
+
+tolower() {
+  echo "$1" | awk '{print tolower($0)}'
+}
+
+compute_sha256() {
+  if check_cmd sha256sum; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
+need_cmd() {
+  if ! check_cmd "$1"; then
+    err "need '$1' (command not found)"
+  fi
+}
+
+check_cmd() {
+  command -v "$1" &>/dev/null
+}
+
+check_installer_up_to_date() {
+  say "checking if gblendup is up to date..."
+
+  if [ "${GBLENDUP_SKIP_UPDATE_CHECK:-}" = "true" ]; then
+      say "update check skipped (GBLENDUP_SKIP_UPDATE_CHECK=true)"
+      return 0
+  fi
+
+  if check_cmd curl; then
+    remote_version=$(curl -fsSL "$GBLEND_BIN_URL" | grep -Eo 'GBLENDUP_INSTALLER_VERSION="[0-9]+\.[0-9]+\.[0-9]+"' | cut -d'"' -f2)
+  else
+    remote_version=$(wget -qO- "$GBLEND_BIN_URL" | grep -Eo 'GBLENDUP_INSTALLER_VERSION="[0-9]+\.[0-9]+\.[0-9]+"' | cut -d'"' -f2)
+  fi
+
+  if [ -z "$remote_version" ]; then
+    warn "Could not determine remote gblendup version. Skipping version check."
+    return 0
+  fi
+
+  if version_gt "$remote_version" "$GBLENDUP_INSTALLER_VERSION"; then
+    printf '
+Your installation of gblendup is out of date.
+
+Installed: %s → Latest: %s
+
+To update, run:
+
+  gblendup --update
+
+Updating is recommended as it gives you access to the latest features and bug fixes.
+
+' "$GBLENDUP_INSTALLER_VERSION" "$remote_version" >&2
+  else
+    say "gblendup is up to date."
+  fi
+}
+
+# Compares two version strings in the format "major.minor.patch".
+# Returns 0 if $1 is greater than $2, 1 if $1 is less than $2, and 1 if they are equal.
+#
+# Assumes that the version strings are well-formed and contain three numeric components separated by dots.
+#
+# Example: version_gt "1.2.3" "1.2.4"
+#          returns 1 (1.2.3 < 1.2.4)
+#          version_gt "1.2.3" "1.2.3"
+#          returns 1 (1.2.3 == 1.2.3)
+#          version_gt "1.2.4" "1.2.3"
+#          returns 0 (1.2.4 > 1.2.3)
+version_gt() {
+  [ "$1" = "$2" ] && return 1
+
+  IFS=. read -r major1 minor1 patch1 <<EOF
+$1
+EOF
+  IFS=. read -r major2 minor2 patch2 <<EOF
+$2
+EOF
+
+  [ "$major1" -gt "$major2" ] && return 0
+  [ "$major1" -lt "$major2" ] && return 1
+  [ "$minor1" -gt "$minor2" ] && return 0
+  [ "$minor1" -lt "$minor2" ] && return 1
+  [ "$patch1" -gt "$patch2" ] && return 0
+  [ "$patch1" -lt "$patch2" ] && return 1
+
+  return 1
+}
+
+check_bins_in_use() {
+  if check_cmd pgrep; then
+    for bin in "${BINS[@]}"; do
+      if pgrep -x "$bin" >/dev/null; then
+        err "Error: '$bin' is currently running. Please stop the process and try again."
+      fi
+    done
+  else
+    warn "Make sure no gblend process is running during the install process!"
+  fi
+}
+
+# Run a command that should never fail. If the command fails execution
+# will immediately terminate with an error showing the failing command.
+ensure() {
+  if ! "$@"; then err "command failed: $*"; fi
+}
+
+# Downloads $1 into $2 or stdout
+download() {
+  if [ -n "$2" ]; then
+    # output into $2
+    if check_cmd curl; then
+      curl -#o "$2" -L "$1"
+    else
+      wget --show-progress -qO "$2" "$1"
+    fi
+  else
+    # output to stdout
+    if check_cmd curl; then
+      curl -#L "$1"
+    else
+      wget --show-progress -qO- "$1"
+    fi
+  fi
+}
+
+# Banner prompt for GBlend
+banner() {
+  printf '
+
+.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx
+
+  ██████╗ ██████╗ ██╗     ███████╗███╗   ██╗██████╗
+  ██╔════╝ ██╔══██╗██║     ██╔════╝████╗  ██║██╔══██╗
+  ██║  ███╗██████╔╝██║     █████╗  ██╔██╗ ██║██║  ██║
+  ██║   ██║██╔══██╗██║     ██╔══╝  ██║╚██╗██║██║  ██║
+  ╚██████╔╝██████╔╝███████╗███████╗██║ ╚████║██████╔╝
+   ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═══╝╚═════╝
+
+        The Foundry fork for Fluent blockchain development
+
+.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx
+
+Repo       : https://github.com/fluentlabs-xyz/gblend
+Docs       : https://docs.fluentlabs.xyz/
+Chat       : https://discord.gg/fluentlabs
+Support    : https://github.com/fluentlabs-xyz/gblend/issues
+Contribute : https://github.com/fluentlabs-xyz/gblend/blob/gblend/CONTRIBUTING.md
+
+.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx.xOx
+
+'
+}
+
+
+main "$@"

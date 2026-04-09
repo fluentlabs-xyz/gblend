@@ -1,6 +1,7 @@
 //! In-memory blockchain backend.
 use self::state::trie_storage;
 use super::executor::new_evm_with_inspector;
+use crate::eth::overrides::{OverrideBlockHashes, apply_state_overrides};
 use crate::{
     ForkChoice, NodeConfig, PrecompileFactory,
     config::PruneStateHistoryConfig,
@@ -46,7 +47,6 @@ use alloy_eips::{
 use alloy_evm::{
     Database, Evm, FromRecoveredTx,
     eth::EthEvmContext,
-    overrides::{OverrideBlockHashes, apply_state_overrides},
     precompiles::{DynPrecompile, Precompile, PrecompilesMap},
 };
 use alloy_network::{

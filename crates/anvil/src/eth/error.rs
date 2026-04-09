@@ -1,8 +1,8 @@
 //! Aggregated error type for this module
 
+use crate::eth::overrides::StateOverrideError;
 use crate::eth::pool::transactions::PoolTransaction;
 use alloy_consensus::crypto::RecoveryError;
-use alloy_evm::overrides::StateOverrideError;
 use alloy_primitives::{B256, Bytes, SignatureError};
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_signer::Error as SignerError;

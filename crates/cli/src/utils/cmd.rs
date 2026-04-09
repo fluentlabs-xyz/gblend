@@ -1,3 +1,5 @@
+use crate::opts::GenesisOpts;
+
 use alloy_json_abi::JsonAbi;
 use eyre::{Result, WrapErr};
 use foundry_common::{TestFunctionExt, fs, fs::json_files, selectors::SelectorKind, shell};
@@ -18,6 +20,9 @@ use std::{
     path::{Path, PathBuf},
 };
 use yansi::Paint;
+// gblend-only / optional: keep only if used below
+use alloy_genesis::Genesis;
+use std::sync::Arc;
 
 /// Given a `Project`'s output, finds the contract by path and name and returns its
 /// ABI, creation bytecode, and `ArtifactId`.
@@ -132,6 +137,8 @@ pub fn has_different_gas_calc(chain_id: u64) -> bool {
                     | NamedChain::MoonbeamDev
                     | NamedChain::Moonriver
                     | NamedChain::Metis
+                    | NamedChain::FluentDevnet
+                    | NamedChain::FluentTestnet
             );
     }
     false
@@ -186,6 +193,7 @@ pub trait LoadConfig {
         let figment = self.figment();
 
         let mut evm_opts = figment.extract::<EvmOpts>().map_err(ExtractConfigError::new)?;
+        let genesis_opts = figment.extract::<GenesisOpts>().map_err(ExtractConfigError::new)?;
         let config = Config::from_provider(figment)?.sanitized();
 
         // update the fork url if it was an alias
@@ -194,7 +202,28 @@ pub trait LoadConfig {
             evm_opts.fork_url = Some(fork_url?.into_owned());
         }
 
+        // If no fork is used, we should use genesis configuration
+        if evm_opts.fork_url.is_none() {
+            // TODO(d1r1): add custom genesis processing (not working for now)
+            // maybe it would be better to setup fork?
+            evm_opts.genesis = if let Some(genesis_path) = &genesis_opts.genesis {
+                // Load genesis from the specified file path
+                Some(Arc::new(Self::load_genesis_from_file(genesis_path)?))
+            } else {
+                None
+            };
+
+            trace!(target: "forge::config", "Genesis configuration applied to EvmOpts");
+        }
+
         Ok((config, evm_opts))
+    }
+
+    fn load_genesis_from_file(path: &Path) -> Result<Genesis> {
+        let genesis_content = std::fs::read_to_string(path)
+            .wrap_err_with(|| format!("Failed to read genesis file at {}", path.display()))?;
+
+        serde_json::from_str(&genesis_content).wrap_err("Failed to parse genesis JSON from file")
     }
 }
 
