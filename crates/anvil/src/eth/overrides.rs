@@ -131,3 +131,80 @@ where
     account_info.code_hash = account_info.code.as_ref().unwrap().hash_slow();
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloy_primitives::{B256, U256, address, b256, bytes};
+    use revm::database::{CacheDB, EmptyDB};
+
+    #[test]
+    fn test_state_override_storage() {
+        let account = address!("0x1234567890123456789012345678901234567890");
+        let slot1 = b256!("0x0000000000000000000000000000000000000000000000000000000000000001");
+        let slot2 = b256!("0x0000000000000000000000000000000000000000000000000000000000000002");
+        let value1 = b256!("0x0000000000000000000000000000000000000000000000000000000000000064");
+        let value2 = b256!("0x00000000000000000000000000000000000000000000000000000000000000c8");
+
+        let mut db = CacheDB::new(EmptyDB::default());
+
+        let mut storage = HashMap::<B256, B256>::default();
+        storage.insert(slot1, value1);
+        storage.insert(slot2, value2);
+
+        let acc_override = AccountOverride::default().with_state_diff(storage);
+        apply_account_override(account, acc_override, &mut db).unwrap();
+
+        let storage1 = db.storage(account, U256::from(1)).unwrap();
+        let storage2 = db.storage(account, U256::from(2)).unwrap();
+
+        assert_eq!(storage1, U256::from(100));
+        assert_eq!(storage2, U256::from(200));
+    }
+
+    #[test]
+    fn test_state_override_wraps_legacy_code_into_ownable_account() {
+        let code = bytes!("0x6001600055");
+        let account = address!("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599");
+
+        let mut db = CacheDB::new(EmptyDB::default());
+
+        let mut state_overrides = StateOverride::default();
+        state_overrides.insert(account, AccountOverride::default().with_code(code.clone()));
+        apply_state_overrides(state_overrides, &mut db).unwrap();
+
+        let account_info = db.basic(account).unwrap().unwrap();
+        let bytecode = account_info.code.expect("code must be present");
+
+        let Bytecode::OwnableAccount(ownable) = bytecode else {
+            panic!("expected ownable account bytecode");
+        };
+
+        assert_eq!(ownable.owner_address, PRECOMPILE_EVM_RUNTIME);
+        let metadata = EthereumMetadata::read_from_bytes(ownable.metadata())
+            .expect("metadata should decode as ethereum metadata");
+        let EthereumMetadata::Analyzed(analyzed) = metadata else {
+            panic!("expected analyzed ethereum metadata");
+        };
+        assert_eq!(analyzed.as_slice(), code.as_ref());
+    }
+
+    #[test]
+    fn test_state_override_rejects_ownable_bytecode_override() {
+        // Valid OwnableAccount bytecode with version 0.
+        let ownable_raw = bytes!("0xef4400deadbeef00000000000000000000000000000000");
+        let account = address!("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599");
+
+        let mut db = CacheDB::new(EmptyDB::default());
+        let mut state_overrides = StateOverride::default();
+        state_overrides.insert(account, AccountOverride::default().with_code(ownable_raw));
+
+        let err = apply_state_overrides(state_overrides, &mut db).unwrap_err();
+        assert!(matches!(
+            err,
+            StateOverrideError::InvalidBytecode(BytecodeDecodeError::OwnableAccount(
+                OwnableAccountDecodeError::UnsupportedVersion
+            ))
+        ));
+    }
+}
