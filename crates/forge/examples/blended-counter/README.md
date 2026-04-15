@@ -88,7 +88,7 @@ Use the provided Forge-style script to deploy both contracts:
 ```bash
 gblend script script/Deploy.s.sol \
   --private-key $PK \
-  --rpc-url https://rpc.devnet.fluent.xyz \
+  --rpc-url https://rpc.testnet.fluent.xyz \
   --broadcast
 ```
 
@@ -108,19 +108,19 @@ Contracts can be verified separately on Blockscout.
 
 ```bash
 gblend verify-contract <POWER_CALCULATOR_ADDRESS> power-calculator.wasm \
-  --rpc-url https://rpc.devnet.fluent.xyz \
+  --rpc-url https://rpc.testnet.fluent.xyz \
   --wasm \
   --verifier blockscout \
-  --verifier-url https://devnet.fluentscan.xyz/api/
+  --verifier-url https://testnet.fluentscan.xyz/api/
 ```
 
 ### Solidity Contract
 
 ```bash
 gblend verify-contract <BLENDED_COUNTER_ADDRESS> BlendedCounter \
-  --rpc-url https://rpc.devnet.fluent.xyz \
+  --rpc-url https://rpc.testnet.fluent.xyz \
   --verifier blockscout \
-  --verifier-url https://devnet.fluentscan.xyz/api/
+  --verifier-url https://testnet.fluentscan.xyz/api/
 ```
 
 Verification for WASM contracts may take several minutes.
@@ -133,13 +133,13 @@ You can also deploy a single compiled WASM contract directly:
 
 ```bash
 gblend create power-calculator.wasm \
-  --rpc-url https://rpc.devnet.fluent.xyz \
+  --rpc-url https://rpc.testnet.fluent.xyz \
   --private-key $PK \
   --broadcast \
   --verify \
   --wasm \
   --verifier blockscout \
-  --verifier-url https://devnet.fluentscan.xyz/api/
+  --verifier-url https://testnet.fluentscan.xyz/api/
 ```
 
 ---

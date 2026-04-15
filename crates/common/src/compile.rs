@@ -1,24 +1,24 @@
 //! Support for compiling [foundry_compilers::Project]
 use crate::{
-    TestFunctionExt, preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter,
+    preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter, TestFunctionExt,
 };
-use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN};
+use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN, Cell, Color, Table};
 use eyre::{Result, WrapErr};
-use fluentbase_build::{Artifact as FluentArtifact, BuildArgs, DEFAULT_DOCKER_TAG, execute_build};
+use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, DEFAULT_DOCKER_TAG};
 use foundry_block_explorers::contract::Metadata;
 use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{
-    Artifact, Project, ProjectBuilder, ProjectCompileOutput, ProjectPathsConfig, SolcConfig,
-    artifacts::{BytecodeObject, Contract, Source, remappings::Remapping},
-    compilers::{
-        Compiler,
+    artifacts::{remappings::Remapping, BytecodeObject, Contract, Source}, compilers::{
         solc::{Solc, SolcCompiler},
-    },
-    info::ContractInfo as CompilerContractInfo,
-    multi::{MultiCompiler, MultiCompilerSettings},
-    project::Preprocessor,
-    report::{BasicStdoutReporter, NoReporter, Report},
+        Compiler,
+    }, info::ContractInfo as CompilerContractInfo, multi::{MultiCompiler, MultiCompilerSettings}, project::Preprocessor, report::{BasicStdoutReporter, NoReporter, Report},
     solc::SolcSettings,
+    Artifact,
+    Project,
+    ProjectBuilder,
+    ProjectCompileOutput,
+    ProjectPathsConfig,
+    SolcConfig,
 };
 use num_format::{Locale, ToFormattedString};
 use std::{
@@ -274,17 +274,25 @@ impl ProjectCompiler {
             // Artifact name is always: {package_name}.wasm
             let artifact_name = info.artifact_name();
 
-            sh_println!("  - Compiling {} (package: {})...", project_dir_name, package_name)?;
+            sh_println!(
+                "  - Compiling {} (package: {}, project-dir: {})...",
+                project_dir_name,
+                package_name,
+                info.path.display()
+            )?;
+
+            let mut sdk_version_or_docker_tag =
+                info.sdk_version.clone().unwrap_or_else(|| DEFAULT_DOCKER_TAG.to_string());
+            if !sdk_version_or_docker_tag.starts_with("v") {
+                sdk_version_or_docker_tag = format!("v{}", sdk_version_or_docker_tag);
+            }
 
             // Configure the build
             let build_args = BuildArgs {
                 contract_name: Some(artifact_name),
                 generate: generate_artifacts.clone(),
                 docker: !self.no_docker,
-                docker_tag: info
-                    .sdk_version
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_DOCKER_TAG.to_string()),
+                docker_tag: sdk_version_or_docker_tag,
                 mount_dir: Some(project.root().to_path_buf()),
                 output: Some(project.artifacts_path().to_path_buf()),
                 wasm_opt: false,

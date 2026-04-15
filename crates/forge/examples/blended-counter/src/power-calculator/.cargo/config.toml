@@ -1,0 +1,8 @@
+[build]
+
+[target.wasm32-unknown-unknown]
+rustflags = [
+    "-C", "link-arg=-zstack-size=131072", # stack size
+    "-C", "target-feature=+bulk-memory", # use bulk-memory extension (for cheaper memory copies)
+    "-C", "target-feature=+tail-call", # use tail-calls
+]

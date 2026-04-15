@@ -7,16 +7,21 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-fluentbase-sdk = { git = "https://github.com/fluentlabs-xyz/fluentbase", tag = "v0.4.11-dev", default-features=false }
-
+fluentbase-sdk = { version = "1.2.0-rc.2", default-features = false }
 
 [features]
-default = []
+default = ["std"]
 std = ["fluentbase-sdk/std"]
 wasm = []
 
-[profile.release]
+[profile.dev]
 opt-level = "z"
+lto = true
+panic = "abort"
+codegen-units = 1
+
+[profile.release]
+opt-level = 3
 lto = true
 panic = "abort"
 codegen-units = 1
