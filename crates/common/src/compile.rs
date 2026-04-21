@@ -294,7 +294,7 @@ impl ProjectCompiler {
                 docker: !self.no_docker,
                 docker_tag: sdk_version_or_docker_tag,
                 mount_dir: Some(project.root().to_path_buf()),
-                output: Some(project.artifacts_path().to_path_buf()),
+                output_path: Some(project.artifacts_path().to_path_buf().to_str().unwrap().to_string()),
                 wasm_opt: false,
                 locked: false,
                 rust_version: Some("1.92.0-x86_64-unknown-linux-gnu".to_string()),
