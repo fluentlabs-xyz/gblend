@@ -25,6 +25,19 @@ use std::{
 };
 use tokio::time::{Duration, Interval};
 
+// TODO(d1r1): find a better way to fix Blockscout response decoding error
+/// Returns `true` if the chain's "Etherscan-style" explorer URL (auto-discovered from
+/// `alloy-chains`) actually points at a Blockscout instance whose responses are not
+/// bit-compatible with the upstream Etherscan API.
+///
+/// For these chains we skip the Etherscan trace identifier entirely; otherwise every
+/// unverified address in a trace produces a noisy deserialization error from
+/// `foundry-block-explorers`.
+fn is_blockscout_only_chain(chain: Chain) -> bool {
+    // Fluent: devnet (20993), testnet (20994), mainnet (25363).
+    matches!(chain.id(), 20993 | 20994 | 25363)
+}
+
 /// A trace identifier that tries to identify addresses using Etherscan.
 pub struct ExternalIdentifier {
     fetchers: Vec<Arc<dyn ExternalFetcherT>>,
@@ -60,8 +73,17 @@ impl ExternalIdentifier {
             fetchers.push(Arc::new(SourcifyFetcher::new(chain)));
         }
         if let Some(config) = config {
-            debug!(target: "evm::traces::external", chain=?config.chain, url=?config.api_url, "using etherscan identifier");
-            fetchers.push(Arc::new(EtherscanFetcher::new(config.into_client()?)));
+            // Fluent chains expose a Blockscout instance behind the Etherscan-style URL in
+            // alloy-chains. Its `getsourcecode` response for unverified contracts does not
+            // match what foundry-block-explorers expects (returns `[{Address: "..."}]` with
+            // status=1 instead of the `"Contract source code not verified"` sentinel), so the
+            // fetcher would log a deserialization error for every traced address. Skip it.
+            if config.chain.is_some_and(is_blockscout_only_chain) {
+                debug!(target: "evm::traces::external", chain=?config.chain, url=?config.api_url, "skipping etherscan identifier (Blockscout-only chain)");
+            } else {
+                debug!(target: "evm::traces::external", chain=?config.chain, url=?config.api_url, "using etherscan identifier");
+                fetchers.push(Arc::new(EtherscanFetcher::new(config.into_client()?)));
+            }
         }
         if fetchers.is_empty() {
             debug!(target: "evm::traces::external", "no fetchers enabled");

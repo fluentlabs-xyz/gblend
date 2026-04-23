@@ -3422,3 +3422,31 @@ forgetest_async!(can_execute_script_with_createx_and_via_ir, |prj, cmd| {
         ])
         .assert_success();
 });
+
+// Tests that deploying a contract inside a script produces non-empty bytecode
+// and the contract is callable after deployment (verifies genesis EVM runtime is loaded).
+forgetest_init!(can_deploy_contract_in_script_with_code, |prj, cmd| {
+    let script = prj.add_source(
+        "DeployCheck",
+        r#"
+import "forge-std/Script.sol";
+
+contract SimpleCounter {
+    uint256 public count;
+    function increment() external { count++; }
+}
+
+contract DeployCheckScript is Script {
+    function run() external {
+        SimpleCounter c = new SimpleCounter();
+        uint256 codeLen = address(c).code.length;
+        require(codeLen > 0, "deployed code is empty");
+        c.increment();
+        require(c.count() == 1, "contract not callable after deploy");
+    }
+}
+   "#,
+    );
+
+    cmd.arg("script").arg(script).args(["--tc", "DeployCheckScript", "-vvvvv"]).assert_success();
+});

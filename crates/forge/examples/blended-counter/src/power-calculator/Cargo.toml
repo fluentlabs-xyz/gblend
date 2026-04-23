@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-fluentbase-sdk = { version = "1.2.0-rc.2", default-features = false }
+fluentbase-sdk = { version = "1.2.0", default-features = false }
 
 [features]
 default = ["std"]

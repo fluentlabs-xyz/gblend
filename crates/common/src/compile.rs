@@ -8,17 +8,17 @@ use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, DEF
 use foundry_block_explorers::contract::Metadata;
 use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{
-    artifacts::{remappings::Remapping, BytecodeObject, Contract, Source}, compilers::{
+    artifacts::{remappings::Remapping, BytecodeObject, Contract, Source},
+    compilers::{
         solc::{Solc, SolcCompiler},
         Compiler,
-    }, info::ContractInfo as CompilerContractInfo, multi::{MultiCompiler, MultiCompilerSettings}, project::Preprocessor, report::{BasicStdoutReporter, NoReporter, Report},
+    },
+    info::ContractInfo as CompilerContractInfo,
+    multi::{MultiCompiler, MultiCompilerSettings},
+    project::Preprocessor,
+    report::{BasicStdoutReporter, NoReporter, Report},
     solc::SolcSettings,
-    Artifact,
-    Project,
-    ProjectBuilder,
-    ProjectCompileOutput,
-    ProjectPathsConfig,
-    SolcConfig,
+    Artifact, Project, ProjectBuilder, ProjectCompileOutput, ProjectPathsConfig, SolcConfig,
 };
 use num_format::{Locale, ToFormattedString};
 use std::{
@@ -248,7 +248,6 @@ impl ProjectCompiler {
             RustContractsRegistry::new(&project.paths.sources, Some(project.root()))?;
 
         if rust_registry.is_empty() {
-            sh_println!("No Rust contracts found")?;
             return Ok(0);
         }
 
@@ -294,7 +293,10 @@ impl ProjectCompiler {
                 docker: !self.no_docker,
                 docker_tag: sdk_version_or_docker_tag,
                 mount_dir: Some(project.root().to_path_buf()),
-                output_path: Some(project.artifacts_path().to_path_buf().to_str().unwrap().to_string()),
+                output_path: Some(format!(
+                    "{}/{{contract_name}}",
+                    project.artifacts_path().display()
+                )),
                 wasm_opt: false,
                 locked: false,
                 rust_version: Some("1.92.0-x86_64-unknown-linux-gnu".to_string()),

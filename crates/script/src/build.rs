@@ -1,21 +1,21 @@
 use crate::{
-    ScriptArgs, ScriptConfig, broadcast::BundledState, execute::LinkedState,
-    multi_sequence::MultiChainSequence, sequence::ScriptSequenceKind,
+    broadcast::BundledState, execute::LinkedState, multi_sequence::MultiChainSequence,
+    sequence::ScriptSequenceKind, ScriptArgs, ScriptConfig,
 };
-use alloy_primitives::{B256, Bytes};
+use alloy_primitives::{Bytes, B256};
 use alloy_provider::Provider;
 use eyre::{OptionExt, Result};
 use forge_script_sequence::ScriptSequence;
 use foundry_cheatcodes::Wallets;
 use foundry_common::{
-    ContractData, ContractsByArtifact, compile::ProjectCompiler, provider::try_get_http_provider,
+    compile::ProjectCompiler, provider::try_get_http_provider, ContractData, ContractsByArtifact,
 };
 use foundry_compilers::{
-    ArtifactId, ProjectCompileOutput,
     artifacts::{BytecodeObject, Libraries},
-    compilers::{Language, multi::MultiCompilerLanguage},
+    compilers::{multi::MultiCompilerLanguage, Language},
     info::ContractInfo,
     utils::source_files_iter,
+    ArtifactId, ProjectCompileOutput,
 };
 use foundry_evm::traces::debug::ContractSources;
 use foundry_linking::Linker;
@@ -43,8 +43,21 @@ impl BuildData {
         let create2_deployer = script_config.evm_opts.create2_deployer;
         let can_use_create2 = if let Some(fork_url) = &script_config.evm_opts.fork_url {
             let provider = try_get_http_provider(fork_url)?;
-            let deployer_code = provider.get_code_at(create2_deployer).await?;
-
+            // Prefer `eth_getRawCode` so we see storage-level bytes for Fluent's
+            // OwnableAccount-wrapped contracts (the standard `eth_getCode` returns the
+            // EVM-extracted view, which is empty for non-EVM-runtime owners). Stock
+            // Ethereum-style RPCs do not implement this method — fall back to
+            // `eth_getCode` when the server replies with JSON-RPC -32601.
+            let deployer_code: Bytes = match provider
+                .raw_request::<_, Bytes>("eth_getRawCode".into(), (create2_deployer,))
+                .await
+            {
+                Ok(code) => code,
+                Err(err) if err.as_error_resp().is_some_and(|p| p.code == -32601) => {
+                    provider.get_code_at(create2_deployer).await?
+                }
+                Err(err) => return Err(err.into()),
+            };
             !deployer_code.is_empty()
         } else {
             // If --fork-url is not provided, we are just simulating the script.

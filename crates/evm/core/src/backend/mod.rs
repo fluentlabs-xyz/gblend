@@ -1880,7 +1880,7 @@ impl BackendInner {
 
 impl Default for BackendInner {
     fn default() -> Self {
-        let json_file_compressed = include_bytes!("../../../genesis/fluent-v0.5.2.json.gz");
+        let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
 
         use flate2::read::GzDecoder;
         use std::io::Read;
