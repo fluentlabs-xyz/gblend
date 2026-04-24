@@ -512,6 +512,24 @@ impl Backend {
             );
             backend.inner.launched_with_fork = Some((fork_id, fork_ids.0, fork_ids.1));
             backend.active_fork_ids = Some(fork_ids);
+
+            // Seed the fork's cache with *code-bearing* genesis accounts only.
+            // Without this, fork `basic_ref`/`basic` for `PRECOMPILE_EVM_RUNTIME`
+            // would hit the remote RPC and return the chain's strict runtime,
+            // defeating the permissive override embedded in the local genesis.
+            //
+            // Balance-only preallocations are skipped deliberately: overriding
+            // live testnet balances/nonces for developer wallets would shift
+            // CREATE-derived addresses between the script's dry run and broadcast
+            // simulation, surfacing as `CreateCollision` during phase 2.
+            let genesis_accounts_with_code: Map<Address, Account> = backend
+                .inner
+                .new_journaled_state()
+                .state
+                .into_iter()
+                .filter(|(_, account)| account.info.code.is_some())
+                .collect();
+            backend.commit(genesis_accounts_with_code);
         }
 
         trace!(target: "backend", forking_mode=? backend.active_fork_ids.is_some(), "created executor backend");
@@ -1880,7 +1898,19 @@ impl BackendInner {
 
 impl Default for BackendInner {
     fn default() -> Self {
-        let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
+        // Permissive variant of the strict `genesis-mainnet-v1.2.0.json.gz`: the Fluent EVM
+        // runtime at `PRECOMPILE_EVM_RUNTIME` has its EIP-170 (24 KB deployed-code) check
+        // removed so `forge script` / `forge test` can deploy contracts whose size is larger
+        // than what the chain accepts. Foundry's `check_contract_sizes` (crates/script/src/lib.rs)
+        // emits a pre-broadcast warning for any oversized CREATE in the collected tx set, so
+        // actual on-chain rejection is still surfaced to the user before they broadcast.
+        //
+        // The strict variant remains checked in alongside it for reference / future reverts;
+        // to regenerate the permissive build, patch `contracts/evm/lib.rs` in a fluentbase
+        // clone to drop the `output.len() > EVM_MAX_CODE_SIZE` branch in `deploy_entry` and
+        // run `cargo build --release -p fluentbase-genesis`.
+        let json_file_compressed =
+            include_bytes!("../../../genesis/genesis-mainnet-v1.2.0-permissive.json.gz");
 
         use flate2::read::GzDecoder;
         use std::io::Read;
