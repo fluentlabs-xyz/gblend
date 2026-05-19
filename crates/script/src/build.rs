@@ -1,22 +1,22 @@
 use crate::{
-    broadcast::BundledState, execute::LinkedState, multi_sequence::MultiChainSequence,
-    sequence::ScriptSequenceKind, ScriptArgs, ScriptConfig,
+    ScriptArgs, ScriptConfig, broadcast::BundledState, execute::LinkedState,
+    multi_sequence::MultiChainSequence, sequence::ScriptSequenceKind,
 };
 use alloy_network::AnyNetwork;
-use alloy_primitives::{Bytes, B256};
+use alloy_primitives::{B256, Bytes};
 use alloy_provider::Provider;
 use eyre::{OptionExt, Result};
 use forge_script_sequence::ScriptSequence;
 use foundry_cheatcodes::Wallets;
 use foundry_common::{
-    compile::ProjectCompiler, provider::ProviderBuilder, ContractData, ContractsByArtifact,
+    ContractData, ContractsByArtifact, compile::ProjectCompiler, provider::ProviderBuilder,
 };
 use foundry_compilers::{
+    ArtifactId, ProjectCompileOutput,
     artifacts::{BytecodeObject, Libraries},
-    compilers::{multi::MultiCompilerLanguage, Language},
+    compilers::{Language, multi::MultiCompilerLanguage},
     info::ContractInfo,
     utils::source_files_iter,
-    ArtifactId, ProjectCompileOutput,
 };
 use foundry_evm::{core::evm::FoundryEvmNetwork, traces::debug::ContractSources};
 use foundry_linking::Linker;

@@ -1,6 +1,7 @@
 //! Support for compiling [foundry_compilers::Project]
+
 use crate::{
-    preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter, TestFunctionExt,
+    TestFunctionExt, preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter,
 };
 use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN, Cell, Color, Table};
 use eyre::{Result, WrapErr};
@@ -8,17 +9,17 @@ use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, DEF
 use foundry_block_explorers::contract::Metadata;
 use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{
-    artifacts::{remappings::Remapping, BytecodeObject, Contract, Source},
+    Artifact, Project, ProjectBuilder, ProjectCompileOutput, ProjectPathsConfig, SolcConfig,
+    artifacts::{BytecodeObject, Contract, Source, remappings::Remapping},
     compilers::{
-        solc::{Solc, SolcCompiler},
         Compiler,
+        solc::{Solc, SolcCompiler},
     },
     info::ContractInfo as CompilerContractInfo,
     multi::{MultiCompiler, MultiCompilerSettings},
     project::Preprocessor,
     report::{BasicStdoutReporter, NoReporter, Report},
     solc::SolcSettings,
-    Artifact, Project, ProjectBuilder, ProjectCompileOutput, ProjectPathsConfig, SolcConfig,
 };
 use num_format::{Locale, ToFormattedString};
 use std::{

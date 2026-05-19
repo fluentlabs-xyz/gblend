@@ -26,7 +26,7 @@ use revm::{
     Inspector,
     bytecode::Bytecode,
     context::{
-        Block, Cfg, ContextTr, JournalTr, Transaction, JournalTr,
+        Block, Cfg, ContextTr, JournalTr, Transaction,
         result::{EVMError, ExecutionResult, Output},
     },
     context_interface::CreateScheme,

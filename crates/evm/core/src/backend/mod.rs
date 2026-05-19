@@ -1817,10 +1817,6 @@ impl<FEN: FoundryEvmNetwork> Debug for BackendInner<FEN> {
 }
 
 impl<FEN: FoundryEvmNetwork> BackendInner<FEN> {
-    // pub fn with_genesis(&mut self, genesis: Genesis) -> Self {
-    //     self.genesis = genesis;
-    //     self
-    // }
     pub fn ensure_fork_id(&self, id: LocalForkId) -> eyre::Result<&ForkId> {
         self.issued_local_fork_ids
             .get(&id)
@@ -1997,7 +1993,6 @@ impl<FEN: FoundryEvmNetwork> BackendInner<FEN> {
             journal_inner.set_spec_id(self.spec_id.into());
             journal_inner
         };
-
         journal
             .warm_addresses
             .set_precompile_addresses(self.precompiles().addresses().copied().collect());
