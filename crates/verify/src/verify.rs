@@ -24,6 +24,8 @@ use foundry_config::{
 use itertools::Itertools;
 use semver::BuildMetadata;
 use std::{fs, path::PathBuf};
+use url::Url;
+use crate::utils::is_host_only;
 
 /// The programming language used for smart contract development.
 ///

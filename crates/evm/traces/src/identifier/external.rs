@@ -81,10 +81,10 @@ impl ExternalIdentifier {
                     // match what foundry-block-explorers expects (returns `[{Address: "..."}]` with
                     // status=1 instead of the `"Contract source code not verified"` sentinel), so the
                     // fetcher would log a deserialization error for every traced address. Skip it.
-                    if config.chain.is_some_and(is_blockscout_only_chain) {
-                        debug!(target: "evm::traces::external", chain=?config.chain, url=?config.api_url, "skipping etherscan identifier (Blockscout-only chain)");
+                    if chain.is_some_and(is_blockscout_only_chain) {
+                        debug!(target: "evm::traces::external", chain=?chain, url=?client.etherscan_api_url(), "skipping etherscan identifier (Blockscout-only chain)");
                     } else {
-                        debug!(target: "evm::traces::external", chain=?config.chain, url=?config.api_url, "using etherscan identifier");
+                        debug!(target: "evm::traces::external", chain=?chain, url=?client.etherscan_api_url(), "using etherscan identifier");
                         fetchers.push(Arc::new(EtherscanFetcher::new(client)));
                     }
                 }

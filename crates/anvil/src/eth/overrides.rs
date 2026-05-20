@@ -1,12 +1,12 @@
 pub(crate) use alloy_evm::overrides::{OverrideBlockHashes, StateOverrideError};
-use alloy_primitives::{Address, keccak256, map::HashMap};
+use alloy_primitives::{keccak256, map::HashMap, Address};
 use alloy_rpc_types_eth::state::{AccountOverride, StateOverride};
 use fluentbase_evm::{AnalyzedBytecode, EthereumMetadata};
 use fluentbase_types::PRECOMPILE_EVM_RUNTIME;
 use revm::{
-    Database, DatabaseCommit,
-    bytecode::{BytecodeDecodeError, ownable_account::OwnableAccountDecodeError},
-    state::{Account, AccountInfo, AccountStatus, Bytecode, EvmStorageSlot},
+    bytecode::{ownable_account::OwnableAccountDecodeError, BytecodeDecodeError}, state::{Account, AccountInfo, AccountStatus, Bytecode, EvmStorageSlot},
+    Database,
+    DatabaseCommit,
 };
 
 /// Applies the given state overrides (a set of [`AccountOverride`]) to the database.
@@ -103,24 +103,21 @@ where
     DB: Database + DatabaseCommit,
 {
     account_info.code = match evm_bytecode {
-        Bytecode::Eip7702(eip7702_bytecode) => Some(Bytecode::Eip7702(eip7702_bytecode)),
-        // For EVM bytecode we should wrap it into a bytecode that is owned by EVM
-        // runtime
-        Bytecode::LegacyAnalyzed(bytecode) => {
-            let evm_code_hash = keccak256(bytecode.original_byte_slice());
+        // For EVM bytecode we should wrap it into a bytecode that is owned by EVM runtime
+        Bytecode::BytecodeInner(_) => {
+            let evm_code_hash = keccak256(evm_bytecode.original_byte_slice());
             let evm_metadata = EthereumMetadata::Analyzed(AnalyzedBytecode::new(
-                bytecode.original_bytes(),
+                evm_bytecode.original_bytes(),
                 evm_code_hash,
             ));
-            let bytecode = revm::bytecode::ownable_account::OwnableAccountBytecode::new(
+            let bytecode = Bytecode::new_ownable_account(
                 PRECOMPILE_EVM_RUNTIME,
                 evm_metadata.write_to_bytes(),
             );
-            let bytecode = Bytecode::OwnableAccount(bytecode);
             Some(bytecode)
         }
         // rWasm is a trusted code, letting pass invalid bytecode without validation can cause
-        // memory out of bounds or UB, ownable accounts can only be controlled by deployer, this can
+        // memory out of bounds or UB, deployer can only control ownable accounts, this can
         // be allowed once fully covered with tests and doesn't cause any side effects
         Bytecode::Rwasm(_) | Bytecode::OwnableAccount(_) => {
             return Err(StateOverrideError::InvalidBytecode(BytecodeDecodeError::OwnableAccount(
@@ -135,7 +132,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_primitives::{B256, U256, address, b256, bytes};
+    use alloy_primitives::{address, b256, bytes, B256, U256};
     use revm::database::{CacheDB, EmptyDB};
 
     #[test]

@@ -4,7 +4,7 @@ use alloy_consensus::{SignableTransaction, Signed};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt, Specifier};
 use alloy_json_abi::{Constructor, JsonAbi};
 use alloy_network::{Ethereum, EthereumWallet, Network, ReceiptResponse, TransactionBuilder};
-use alloy_primitives::{Address, Bytes, U256, hex};
+use alloy_primitives::{hex, Address, Bytes, U256};
 use alloy_provider::{PendingTransactionError, Provider, ProviderBuilder as AlloyProviderBuilder};
 use alloy_signer::{Signature, Signer};
 use alloy_transport::TransportError;
@@ -13,39 +13,38 @@ use eyre::{Context, ContextCompat, Result};
 use forge_verify::{RetryArgs, VerifierArgs, VerifyArgs};
 use foundry_cli::{
     opts::{BuildOpts, EthereumOpts, EtherscanOpts, TransactionOpts},
-    utils::{LoadConfig, find_contract_artifacts, read_constructor_args_file},
+    utils::{find_contract_artifacts, read_constructor_args_file, LoadConfig},
 };
 
 use foundry_common::{
-    FoundryTransactionBuilder,
     compile::{self},
     fmt::parse_tokens,
     provider::ProviderBuilder,
     rust_contracts::RustContractsRegistry,
     shell,
     tempo::TEMPO_BROWSER_GAS_BUFFER,
+    FoundryTransactionBuilder,
 };
 use foundry_compilers::{
-    ArtifactId,
     artifacts::{BytecodeObject, CompactBytecode},
     info::ContractInfo,
     utils::canonicalize,
+    ArtifactId,
 };
 use foundry_config::{
-    Config,
     figment::{
-        self, Metadata, Profile,
-        value::{Dict, Map},
+        self, value::{Dict, Map}, Metadata,
+        Profile,
     },
     merge_impl_figment_convert,
+    Config,
 };
 use foundry_wallets::{
-    BrowserWalletOpts, TempoAccessKeyConfig, WalletSigner, wallet_browser::signer::BrowserSigner,
+    wallet_browser::signer::BrowserSigner, BrowserWalletOpts, TempoAccessKeyConfig, WalletSigner,
 };
-use rand::{Rng, distributions::Alphanumeric};
+use rand::distr::Alphanumeric;
+use rand::Rng;
 use serde_json::json;
-use std::{borrow::Borrow, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
-use tempo_alloy::{TempoNetwork, contracts::precompiles::DEFAULT_FEE_TOKEN};
 use std::{
     borrow::{Borrow, Cow},
     fs,
@@ -54,11 +53,12 @@ use std::{
     sync::Arc,
     time::Duration,
 };
+use tempo_alloy::{contracts::precompiles::DEFAULT_FEE_TOKEN, TempoNetwork};
 use wasm_encoder::{CustomSection, Module, RawSection};
 use wasmparser::Parser as WasmpParser;
 
 fn generate_build_id() -> String {
-    rand::thread_rng().sample_iter(&Alphanumeric).take(8).map(char::from).collect()
+    rand::rng().sample_iter(&Alphanumeric).take(8).map(char::from).collect()
 }
 
 merge_impl_figment_convert!(CreateArgs, build, eth);
@@ -297,6 +297,7 @@ impl CreateArgs {
                 dry_run,
                 None,
                 Some(browser),
+                is_rust_contract,
             )
             .await
         } else if self.unlocked {
@@ -334,6 +335,7 @@ impl CreateArgs {
                 dry_run,
                 Some((signer, ak)),
                 None,
+                is_rust_contract,
             )
             .await
         } else {

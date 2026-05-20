@@ -734,7 +734,7 @@ impl<FEN: FoundryEvmNetwork> InspectorStackRefMut<'_, FEN> {
         // see the correct deployed code size.
         if outcome.result.result.is_ok() && outcome.result.output.is_empty() {
             if let Some(addr) = outcome.address {
-                if let Ok(acc) = ecx.journaled_state.load_account_with_code(addr) {
+                if let Ok(acc) = ecx.journal_mut().load_account_with_code(addr) {
                     if let Some(Bytecode::OwnableAccount(ref oa)) = acc.data.info.code {
                         if let Some(meta) =
                             fluentbase_evm::EthereumMetadata::read_from_bytes(&oa.metadata)

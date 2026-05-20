@@ -553,7 +553,7 @@ impl<FEN: FoundryEvmNetwork> Backend<FEN> {
             // live testnet balances/nonces for developer wallets would shift
             // CREATE-derived addresses between the script's dry run and broadcast
             // simulation, surfacing as `CreateCollision` during phase 2.
-            let genesis_accounts_with_code: Map<Address, Account> = backend
+            let genesis_accounts_with_code: AddressMap<Account> = backend
                 .inner
                 .new_journaled_state()
                 .state
@@ -1794,6 +1794,7 @@ impl<FEN: FoundryEvmNetwork> Clone for BackendInner<FEN> {
             persistent_accounts: self.persistent_accounts.clone(),
             spec_id: self.spec_id,
             cheatcode_access_accounts: self.cheatcode_access_accounts.clone(),
+            genesis: self.genesis.clone(),
         }
     }
 }

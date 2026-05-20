@@ -43,7 +43,9 @@ regex = { workspace = true, default-features = false }
 yansi.workspace = true
 itertools.workspace = true
 url.workspace = true
-flate2 = "1.1.2"
+flate2.workspace = true
+base64.workspace = true
+tar.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros"] }

@@ -1,7 +1,6 @@
 //! In-memory blockchain backend.
 use self::state::trie_storage;
 
-use super::executor::new_evm_with_inspector;
 use crate::eth::overrides::{OverrideBlockHashes, apply_state_overrides};
 use crate::{
     ForkChoice, NodeConfig, PrecompileFactory,

@@ -507,6 +507,7 @@ heck = "0.5"
 uuid = "1.19.0"
 flate2 = "1.1"
 ethereum_ssz = "0.10"
+tar = "0.4.46"
 
 # Tempo
 mpp = { git = "https://github.com/tempoxyz/mpp-rs", rev = "554d20112eb014bd223d54de7f152ca59b2aa4fd", default-features = false, features = [
@@ -624,18 +625,18 @@ solar-ast = { package = "solar-ast", git = "https://github.com/paradigmxyz/solar
 solar-sema = { package = "solar-sema", git = "https://github.com/paradigmxyz/solar", rev = "530f129" }
 
 # --- gblend / fluentbase patches (enabled) ---
-#op-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-bytecode = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-context = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-context-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-database = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-database-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-inspector = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-interpreter = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-primitives = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-revm-state = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v103-patched"}
-alloy-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
+#op-revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-bytecode = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-context = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-context-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-database = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-database-interface = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-inspector = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-interpreter = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-primitives = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+revm-state = {git = "https://github.com/fluentlabs-xyz/revm-rwasm.git", branch = "v107-patched"}
+#alloy-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
 #alloy-op-evm = {git = "https://github.com/fluentlabs-xyz/alloy-rwasm", branch = "v26-patched"}
 
 [workspace.metadata.cargo-shear]
