@@ -1,12 +1,13 @@
 //! The `forge verify-bytecode` command.
 
+use crate::utils::is_host_only;
 use crate::{
-    RetryArgs,
     etherscan::EtherscanVerificationProvider,
     provider::{VerificationContext, VerificationProvider, VerificationProviderType},
     utils::wrap_verifier_url_error,
+    RetryArgs,
 };
-use alloy_primitives::{Address, TxHash, map::HashSet};
+use alloy_primitives::{map::HashSet, Address, TxHash};
 use alloy_provider::Provider;
 use clap::{Parser, ValueEnum, ValueHint};
 use eyre::Result;
@@ -15,17 +16,16 @@ use foundry_cli::{
     utils::{self, LoadConfig},
 };
 use foundry_common::{
-    ContractsByArtifact, compile::ProjectCompiler, rust_contracts::RustContractsRegistry,
+    compile::ProjectCompiler, rust_contracts::RustContractsRegistry, ContractsByArtifact,
 };
 use foundry_compilers::{artifacts::EvmVersion, compilers::solc::Solc, info::ContractInfo};
 use foundry_config::{
-    Chain, Config, SolcReq, figment, impl_figment_convert, impl_figment_convert_cast,
+    figment, impl_figment_convert, impl_figment_convert_cast, Chain, Config, SolcReq,
 };
 use itertools::Itertools;
 use semver::BuildMetadata;
 use std::{fs, path::PathBuf};
 use url::Url;
-use crate::utils::is_host_only;
 
 /// The programming language used for smart contract development.
 ///
@@ -385,11 +385,22 @@ impl VerifyArgs {
             eyre::eyre!("Rust contract '{}' not found in project", contract_info.name)
         })?;
 
+        let relative_manifest_path = project
+            .sources_path()
+            .strip_prefix(project.root())?
+            .join("Cargo.toml")
+            .to_str()
+            .unwrap_or("Cargo.toml")
+            .to_string();
+
         let artifact_dir = project.artifacts_path().join(contract_info.clone().name);
         let abi: serde_json::Value =
             serde_json::from_str(&fs::read_to_string(artifact_dir.join("abi.json"))?)?;
         let metadata: serde_json::Value =
             serde_json::from_str(&fs::read_to_string(artifact_dir.join("metadata.json"))?)?;
+
+        let stack_size = metadata["build_config"]["stack_size"].as_u64().unwrap_or(131072);
+
         // Extract compile settings from metadata
         let compile_settings = crate::fluent::CompileSettings {
             sdk_version: metadata["environment"]["fluentbase_sdk"]["git_tag"]
@@ -403,6 +414,16 @@ impl VerifyArgs {
             no_default_features: metadata["build_config"]["no_default_features"]
                 .as_bool()
                 .unwrap_or(true),
+            rust_flags: vec![
+                format!("-Clink-arg=-zstack-size={stack_size}"),
+                "-Cpanic=abort".to_string(),
+                "-Ctarget-feature=+bulk-memory".to_string(),
+            ],
+            rust_toolchain: metadata["environment"]["rust_toolchain"]
+                .as_str()
+                .unwrap_or("1.92.0")
+                .to_string(),
+            manifest_path: relative_manifest_path,
         };
 
         // Create verification request using new API

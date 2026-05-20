@@ -1,6 +1,6 @@
-use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
-use eyre::{Result, WrapErr, eyre};
-use flate2::{Compression, write::GzEncoder};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use eyre::{eyre, Result, WrapErr};
+use flate2::{write::GzEncoder, Compression};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::{fs, io::Write, path::Path, time::Duration};
@@ -19,11 +19,25 @@ pub struct CompileSettings {
     pub sdk_version: String,
     pub features: Vec<String>,
     pub no_default_features: bool,
+    pub rust_flags: Vec<String>,
+    pub rust_toolchain: String,
+    pub manifest_path: String,
 }
 
 impl Default for CompileSettings {
     fn default() -> Self {
-        Self { sdk_version: "v0.3.6-dev".to_string(), features: vec![], no_default_features: false }
+        Self {
+            sdk_version: "v1.2.1".to_string(),
+            features: vec![],
+            no_default_features: false,
+            rust_flags: vec![
+                "-Clink-arg=-zstack-size=131072".to_string(),
+                "-Cpanic=abort".to_string(),
+                "-Ctarget-feature=+bulk-memory".to_string(),
+            ],
+            rust_toolchain: "1.93.1".to_string(),
+            manifest_path: "".to_string(),
+        }
     }
 }
 
