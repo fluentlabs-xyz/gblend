@@ -28,6 +28,7 @@ pub enum NetworkVariant {
     Ethereum,
     Optimism,
     Tempo,
+    Fluent,
 }
 
 impl NetworkVariant {
@@ -36,6 +37,7 @@ impl NetworkVariant {
             Self::Ethereum => "ethereum",
             Self::Optimism => "optimism",
             Self::Tempo => "tempo",
+            Self::Fluent => "fluent",
         }
     }
 }
@@ -53,6 +55,11 @@ impl From<ChainId> for NetworkVariant {
             Self::Tempo
         } else if chain.is_optimism() {
             Self::Optimism
+        } else if matches!(
+            chain.named(),
+            Some(NamedChain::FluentTestnet | NamedChain::FluentDevnet)
+        ) {
+            Self::Fluent
         } else {
             Self::Ethereum
         }
@@ -114,12 +121,20 @@ impl NetworkConfigs {
         Self { network: Some(NetworkVariant::Tempo), tempo: true, ..Default::default() }
     }
 
+    pub fn with_fluent() -> Self {
+        Self { network: Some(NetworkVariant::Fluent), ..Default::default() }
+    }
+
     pub fn is_optimism(&self) -> bool {
         matches!(self.resolved_network(), Some(NetworkVariant::Optimism))
     }
 
     pub fn is_tempo(&self) -> bool {
         matches!(self.resolved_network(), Some(NetworkVariant::Tempo))
+    }
+
+    pub fn is_fluent(&self) -> bool {
+        matches!(self.resolved_network(), Some(NetworkVariant::Fluent))
     }
 
     pub const fn is_celo(&self) -> bool {
@@ -179,6 +194,11 @@ impl NetworkConfigs {
                 Self::with_tempo()
             } else if chain.is_optimism() {
                 Self::with_optimism()
+            } else if matches!(
+                chain.named(),
+                Some(NamedChain::FluentTestnet | NamedChain::FluentDevnet)
+            ) {
+                Self::with_fluent()
             } else {
                 self
             }

@@ -36,10 +36,12 @@ use tempo_evm::evm::TempoEvmFactory;
 use tempo_revm::TempoHaltReason;
 
 pub mod eth;
+pub mod fluent;
 pub mod op;
 pub mod tempo;
 
 pub use eth::*;
+pub use fluent::*;
 pub use op::*;
 pub use tempo::*;
 
@@ -80,6 +82,13 @@ pub struct OpEvmNetwork;
 impl FoundryEvmNetwork for OpEvmNetwork {
     type Network = Optimism;
     type EvmFactory = OpEvmFactory;
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct FluentEvmNetwork;
+impl FoundryEvmNetwork for FluentEvmNetwork {
+    type Network = Ethereum;
+    type EvmFactory = FluentEvmFactory;
 }
 
 /// Convenience type aliases for accessing associated types through [`FoundryEvmNetwork`].

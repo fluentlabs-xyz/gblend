@@ -36,7 +36,7 @@ use foundry_config::{
 use foundry_evm::{
     core::{
         FoundryBlock, FoundryTransaction,
-        evm::{EthEvmNetwork, FoundryEvmNetwork, OpEvmNetwork, TempoEvmNetwork},
+        evm::{EthEvmNetwork, FluentEvmNetwork, FoundryEvmNetwork, OpEvmNetwork, TempoEvmNetwork},
     },
     executors::TracingExecutor,
     opts::EvmOpts,
@@ -230,6 +230,8 @@ impl CallArgs {
 
             if evm_opts.networks.is_optimism() {
                 self.run_with_network::<OpEvmNetwork>().await
+            } else if evm_opts.networks.is_fluent() {
+                self.run_with_network::<FluentEvmNetwork>().await
             } else {
                 self.run_with_network::<EthEvmNetwork>().await
             }

@@ -48,7 +48,10 @@ use foundry_evm::{
     backend::Backend,
     core::{
         Breakpoints, FoundryTransaction,
-        evm::{EthEvmNetwork, FoundryEvmNetwork, OpEvmNetwork, TempoEvmNetwork, TxEnvFor},
+        evm::{
+            EthEvmNetwork, FluentEvmNetwork, FoundryEvmNetwork, OpEvmNetwork, TempoEvmNetwork,
+            TxEnvFor,
+        },
         tempo::PATH_USD_ADDRESS,
     },
     executors::ExecutorBuilder,
@@ -323,6 +326,8 @@ impl ScriptArgs {
             Ok(())
         } else if evm_opts.networks.is_optimism() {
             self.run_generic_script::<OpEvmNetwork>(config, evm_opts).await
+        } else if evm_opts.networks.is_fluent() {
+            self.run_generic_script::<FluentEvmNetwork>(config, evm_opts).await
         } else {
             self.run_generic_script::<EthEvmNetwork>(config, evm_opts).await
         }
