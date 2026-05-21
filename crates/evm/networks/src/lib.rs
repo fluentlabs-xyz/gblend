@@ -48,6 +48,14 @@ impl std::fmt::Display for NetworkVariant {
     }
 }
 
+/// Returns true for known Fluent chain IDs. Bridges the gap until alloy-chains exposes
+/// a `NamedChain::FluentMainnet` variant alongside its existing `FluentDevnet`/`FluentTestnet`;
+/// once that lands, this helper can be replaced with `chain.named()` matching.
+const fn is_fluent_chain_id(chain_id: ChainId) -> bool {
+    // FluentDevnet (20993), FluentTestnet (20994), Fluent Mainnet (25363 / 0x6313).
+    matches!(chain_id, 20993 | 20994 | 25363)
+}
+
 impl From<ChainId> for NetworkVariant {
     fn from(chain_id: ChainId) -> Self {
         let chain = Chain::from_id(chain_id);
@@ -55,10 +63,7 @@ impl From<ChainId> for NetworkVariant {
             Self::Tempo
         } else if chain.is_optimism() {
             Self::Optimism
-        } else if matches!(
-            chain.named(),
-            Some(NamedChain::FluentTestnet | NamedChain::FluentDevnet)
-        ) {
+        } else if is_fluent_chain_id(chain_id) {
             Self::Fluent
         } else {
             Self::Ethereum
@@ -194,10 +199,7 @@ impl NetworkConfigs {
                 Self::with_tempo()
             } else if chain.is_optimism() {
                 Self::with_optimism()
-            } else if matches!(
-                chain.named(),
-                Some(NamedChain::FluentTestnet | NamedChain::FluentDevnet)
-            ) {
+            } else if is_fluent_chain_id(chain_id) {
                 Self::with_fluent()
             } else {
                 self
