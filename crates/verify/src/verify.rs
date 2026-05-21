@@ -24,7 +24,7 @@ use foundry_config::{
 };
 use itertools::Itertools;
 use semver::BuildMetadata;
-use std::{fs, path::PathBuf};
+use std::path::PathBuf;
 use url::Url;
 
 /// The programming language used for smart contract development.
@@ -385,82 +385,40 @@ impl VerifyArgs {
             eyre::eyre!("Rust contract '{}' not found in project", contract_info.name)
         })?;
 
-        let relative_manifest_path = project
-            .sources_path()
-            .strip_prefix(project.root())?
-            .join("Cargo.toml")
-            .to_str()
-            .unwrap_or("Cargo.toml")
-            .to_string();
-
         let artifact_dir = project.artifacts_path().join(contract_info.clone().name);
-        let abi: serde_json::Value =
-            serde_json::from_str(&fs::read_to_string(artifact_dir.join("abi.json"))?)?;
-        let metadata: serde_json::Value =
-            serde_json::from_str(&fs::read_to_string(artifact_dir.join("metadata.json"))?)?;
 
-        let stack_size = metadata["build_config"]["stack_size"].as_u64().unwrap_or(131072);
+        let bundle =
+            crate::fluent::VerificationBundle::from_artifacts(&pkg_info.path, &artifact_dir)
+                .await
+                .map_err(|err| self.wrap_host_only_url_error(err, "Archive/metadata read failed"))?;
 
-        // Extract compile settings from metadata
-        let compile_settings = crate::fluent::CompileSettings {
-            sdk_version: metadata["environment"]["fluentbase_sdk"]["git_tag"]
-                .as_str()
-                .unwrap_or("unknown")
-                .to_string(),
-            features: metadata["build_config"]["features"]
-                .as_array()
-                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
-                .unwrap_or_default(),
-            no_default_features: metadata["build_config"]["no_default_features"]
-                .as_bool()
-                .unwrap_or(true),
-            rust_flags: vec![
-                format!("-Clink-arg=-zstack-size={stack_size}"),
-                "-Cpanic=abort".to_string(),
-                "-Ctarget-feature=+bulk-memory".to_string(),
-            ],
-            rust_toolchain: metadata["environment"]["rust_toolchain"]
-                .as_str()
-                .unwrap_or("1.92.0")
-                .to_string(),
-            manifest_path: relative_manifest_path,
-        };
-
-        // Create verification request using new API
-        let request = crate::fluent::VerificationRequest::new_archive(
+        let request = crate::fluent::VerificationRequest::from_bundle(
             pkg_info.package_name.clone(),
             self.address.to_string(),
-            &pkg_info.path,
-            compile_settings,
-            abi,
-        ).await.map_err(|err| {
-            // Enhanced error handling for archive creation
-            if let Some(verifier_url) = &self.verifier.verifier_url
-                && let Ok(url) = Url::parse(verifier_url)
-                    && is_host_only(&url) {
-                        return err.wrap_err(format!(
-                            "Archive creation failed. Also check URL `{verifier_url}` - it appears to be host only.\n\
-                         For WASM verification, try: `{verifier_url}/api/v1/fluent/verify-wasm`"
-                        ));
-                    }
-            err
-        })?;
+            bundle,
+        );
 
-        // Create client and send verification
         let client = crate::fluent::FluentVerificationClient::new(base_url);
-        client.verify(request).await.map_err(|err| {
-            // Enhanced error handling for verification
-            if let Some(verifier_url) = &self.verifier.verifier_url
-                && let Ok(url) = Url::parse(verifier_url)
-                && is_host_only(&url)
-            {
-                return err.wrap_err(format!(
-                    "Verification failed. URL `{verifier_url}` is host only.\n\
-                         For WASM verification, try: `{verifier_url}/api/v1/fluent/verify-wasm`"
-                ));
-            }
-            err
-        })
+        client
+            .verify(request)
+            .await
+            .map_err(|err| self.wrap_host_only_url_error(err, "Verification failed"))
+    }
+
+    /// Decorate an error from the WASM verification flow with a hint about a likely-misconfigured
+    /// `--verifier-url`. A host-only URL (e.g. `https://testnet.fluentscan.xyz`) is the most
+    /// common misconfiguration — point the user at the API path they probably want.
+    fn wrap_host_only_url_error(&self, err: eyre::Error, stage: &str) -> eyre::Error {
+        if let Some(verifier_url) = &self.verifier.verifier_url
+            && let Ok(url) = Url::parse(verifier_url)
+            && is_host_only(&url)
+        {
+            return err.wrap_err(format!(
+                "{stage}. Also check URL `{verifier_url}` - it appears to be host only.\n\
+                 For WASM verification, try: `{verifier_url}/api/v1/fluent/verify-wasm`"
+            ));
+        }
+        err
     }
 
     /// Returns the configured verification provider

@@ -24,20 +24,73 @@ pub struct CompileSettings {
     pub manifest_path: String,
 }
 
-impl Default for CompileSettings {
-    fn default() -> Self {
-        Self {
-            sdk_version: "v1.2.1".to_string(),
-            features: vec![],
-            no_default_features: false,
+/// Everything fluent-verifier needs to reproduce a build, derived from the on-disk
+/// artifacts of a prior `forge build` invocation.
+///
+/// Owns the single bridge between fluentbase-build's `metadata.json` schema and
+/// fluent-verifier's `CompileSettings` schema. Designed to be liftable to
+/// `fluentbase-build` upstream — no gblend-specific types in the public surface.
+#[derive(Debug)]
+pub struct VerificationBundle {
+    pub compile_settings: CompileSettings,
+    pub archive: ArchiveSourceInfo,
+    pub abi: serde_json::Value,
+}
+
+impl VerificationBundle {
+    /// Build the bundle from a Rust contract's pre-built artifacts on disk.
+    ///
+    /// `artifact_dir` is the per-contract output directory (e.g.
+    /// `out/power-calculator.wasm/`) containing `abi.json` and `metadata.json`.
+    /// `contract_path` is the Rust crate root that produced those artifacts —
+    /// it's what gets packed into the source archive.
+    pub async fn from_artifacts(
+        contract_path: &Path,
+        artifact_dir: &Path,
+    ) -> Result<Self> {
+        let abi: serde_json::Value =
+            foundry_common::fs::read_json_file(&artifact_dir.join("abi.json"))?;
+        let metadata: serde_json::Value =
+            foundry_common::fs::read_json_file(&artifact_dir.join("metadata.json"))?;
+        let archive = ArchiveSourceInfo {
+            content: ArchiveSourceBuilder::create_archive_from_path(contract_path).await?,
+            project_path: ".".to_string(),
+        };
+        // Archive layout: pack `contract_path` (the crate root) as the archive root, so
+        // `Cargo.toml` lives at the archive root. When workspace packing is added, the
+        // manifest path becomes the relative path from the workspace root to the contract's
+        // Cargo.toml.
+        let manifest_path = "Cargo.toml".to_string();
+
+        let stack_size = metadata["build_config"]["stack_size"].as_u64().unwrap_or(131072);
+
+        // Source the docker tag actually used to build (NOT fluentbase-sdk's crate-internal
+        // version — the two can differ; `base_tag` is the ground truth). Already `v`-prefixed.
+        let compile_settings = CompileSettings {
+            sdk_version: metadata["build_config"]["docker_image"]["base_tag"]
+                .as_str()
+                .unwrap_or("unknown")
+                .to_string(),
+            features: metadata["build_config"]["features"]
+                .as_array()
+                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+                .unwrap_or_default(),
+            no_default_features: metadata["build_config"]["no_default_features"]
+                .as_bool()
+                .unwrap_or(true),
             rust_flags: vec![
-                "-Clink-arg=-zstack-size=131072".to_string(),
+                format!("-Clink-arg=-zstack-size={stack_size}"),
                 "-Cpanic=abort".to_string(),
                 "-Ctarget-feature=+bulk-memory".to_string(),
             ],
-            rust_toolchain: "1.93.1".to_string(),
-            manifest_path: "".to_string(),
-        }
+            rust_toolchain: metadata["environment"]["rust_toolchain"]
+                .as_str()
+                .unwrap_or("1.92.0")
+                .to_string(),
+            manifest_path,
+        };
+
+        Ok(Self { compile_settings, archive, abi })
     }
 }
 
@@ -52,18 +105,21 @@ pub struct VerificationRequest {
 }
 
 impl VerificationRequest {
-    /// Create new verification request with archive source
-    pub async fn new_archive(
+    /// Assemble a verification request from a pre-built bundle.
+    pub fn from_bundle(
         contract_name: String,
         address_hash: String,
-        contract_path: &Path,
-        compile_settings: CompileSettings,
-        abi: serde_json::Value,
-    ) -> Result<Self> {
-        let archive_source = ArchiveSourceBuilder::create(contract_path).await?;
-
-        Ok(Self { contract_name, address_hash, archive_source, compile_settings, abi })
+        bundle: VerificationBundle,
+    ) -> Self {
+        Self {
+            contract_name,
+            address_hash,
+            archive_source: bundle.archive,
+            compile_settings: bundle.compile_settings,
+            abi: bundle.abi,
+        }
     }
+
 }
 
 /// Response wrapper for error cases
@@ -139,15 +195,10 @@ impl FluentVerificationClient {
     }
 }
 
-/// Archive source helper
+/// Namespace for the private tar.gz packing helpers used by [`VerificationBundle::from_artifacts`].
 struct ArchiveSourceBuilder;
 
 impl ArchiveSourceBuilder {
-    async fn create(contract_path: &Path) -> Result<ArchiveSourceInfo> {
-        let archive_content = Self::create_archive_from_path(contract_path).await?;
-        Ok(ArchiveSourceInfo { content: archive_content, project_path: ".".to_string() })
-    }
-
     /// Create a Base64-encoded tar.gz archive from the contract path
     async fn create_archive_from_path(contract_path: &Path) -> Result<String> {
         if contract_path.is_file() {
@@ -279,17 +330,13 @@ mod tests {
     use tempfile::TempDir;
 
     #[tokio::test]
-    async fn test_archive_source_creation() {
+    async fn test_archive_creation() {
         let temp_dir = TempDir::new().unwrap();
         let file_path = temp_dir.path().join("lib.rs");
         fs::write(&file_path, "fn main() {}").unwrap();
 
-        let result = ArchiveSourceBuilder::create(&file_path).await;
-        assert!(result.is_ok());
-
-        let archive_source = result.unwrap();
-        assert!(!archive_source.content.is_empty());
-        assert_eq!(archive_source.project_path, ".");
+        let content = ArchiveSourceBuilder::create_archive_from_path(&file_path).await.unwrap();
+        assert!(!content.is_empty());
     }
 
     #[test]
@@ -300,16 +347,27 @@ mod tests {
 
     #[test]
     fn test_serialization() {
-        let request = VerificationRequest {
-            contract_name: "TestContract".to_string(),
-            address_hash: "0x1234".to_string(),
-            archive_source: ArchiveSourceInfo {
+        let bundle = VerificationBundle {
+            compile_settings: CompileSettings {
+                sdk_version: "v1.2.0".to_string(),
+                features: vec![],
+                no_default_features: true,
+                rust_flags: vec!["-Cpanic=abort".to_string()],
+                rust_toolchain: "1.92.0".to_string(),
+                manifest_path: "Cargo.toml".to_string(),
+            },
+            archive: ArchiveSourceInfo {
                 content: "dGVzdA==".to_string(),
                 project_path: ".".to_string(),
             },
-            compile_settings: CompileSettings::default(),
             abi: json!([]),
         };
+
+        let request = VerificationRequest::from_bundle(
+            "TestContract".to_string(),
+            "0x1234".to_string(),
+            bundle,
+        );
 
         let serialized = serde_json::to_string(&request).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&serialized).unwrap();
@@ -317,5 +375,6 @@ mod tests {
         assert!(parsed.get("archive_source").is_some());
         assert!(parsed.get("contract_name").is_some());
         assert!(parsed.get("address_hash").is_some());
+        assert!(parsed.get("compile_settings").is_some());
     }
 }
