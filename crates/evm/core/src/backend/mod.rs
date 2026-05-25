@@ -17,7 +17,7 @@ use alloy_genesis::{Genesis, GenesisAccount};
 use alloy_network::{
     AnyNetwork, AnyRpcBlock, AnyRpcTransaction, BlockResponse, Network, TransactionResponse,
 };
-use alloy_primitives::{Address, B256, TxKind, U256, keccak256, uint};
+use alloy_primitives::{Address, B256, Bytes, TxKind, U256, keccak256, uint};
 use alloy_rpc_types::BlockNumberOrTag;
 use eyre::Context;
 use foundry_common::{SYSTEM_TRANSACTION_TYPE, is_known_system_sender};
@@ -77,6 +77,9 @@ const DEFAULT_PERSISTENT_ACCOUNTS: [Address; 3] =
 /// a failed test.
 pub const GLOBAL_FAIL_SLOT: U256 =
     uint!(0x6661696c65640000000000000000000000000000000000000000000000000000_U256);
+
+const FLUENTBASE_EVM_RUNTIME_ADDRESS: Address =
+    alloy_primitives::address!("0x0000000000000000000000000000000000520001");
 
 pub type JournaledState = JournalInner<JournalEntry>;
 
@@ -2032,27 +2035,7 @@ impl<FEN: FoundryEvmNetwork> BackendInner<FEN> {
 
 impl<FEN: FoundryEvmNetwork> Default for BackendInner<FEN> {
     fn default() -> Self {
-        // Permissive variant of the strict `genesis-mainnet-v1.2.0.json.gz`: the Fluent EVM
-        // runtime at `PRECOMPILE_EVM_RUNTIME` has its EIP-170 (24 KB deployed-code) check
-        // removed so `forge script` / `forge test` can deploy contracts whose size is larger
-        // than what the chain accepts. Foundry's `check_contract_sizes` (crates/script/src/lib.rs)
-        // emits a pre-broadcast warning for any oversized CREATE in the collected tx set, so
-        // actual on-chain rejection is still surfaced to the user before they broadcast.
-        //
-        // The strict variant remains checked in alongside it for reference / future reverts;
-        // to regenerate the permissive build, patch `contracts/evm/lib.rs` in a fluentbase
-        // clone to drop the `output.len() > EVM_MAX_CODE_SIZE` branch in `deploy_entry` and
-        // run `cargo build --release -p fluentbase-genesis`.
-        let json_file_compressed =
-            include_bytes!("../../../genesis/genesis-mainnet-v1.2.0-permissive.json.gz");
-
-        use flate2::read::GzDecoder;
-        use std::io::Read;
-        let mut decoder = GzDecoder::new(&json_file_compressed[..]);
-        let mut json_string = String::new();
-        decoder.read_to_string(&mut json_string).expect("failed to decompress a genesis gz file");
-        let genesis = serde_json::from_str::<Genesis>(&json_string)
-            .expect("failed to parse a genesis JSON file");
+        let genesis = load_genesis_with_permissive_evm_runtime();
 
         Self {
             launched_with_fork: None,
@@ -2075,6 +2058,34 @@ impl<FEN: FoundryEvmNetwork> Default for BackendInner<FEN> {
             genesis,
         }
     }
+}
+
+fn load_genesis_with_permissive_evm_runtime() -> Genesis {
+    use flate2::read::GzDecoder;
+    use std::io::Read;
+
+    let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
+    let runtime_file_compressed = include_bytes!(env!("GBLEND_PERMISSIVE_EVM_RUNTIME_GZ"));
+
+    let mut decoder = GzDecoder::new(&json_file_compressed[..]);
+    let mut json_string = String::new();
+    decoder.read_to_string(&mut json_string).expect("failed to decompress a genesis gz file");
+    let mut genesis = serde_json::from_str::<Genesis>(&json_string)
+        .expect("failed to parse a genesis JSON file");
+
+    let mut decoder = GzDecoder::new(&runtime_file_compressed[..]);
+    let mut runtime = Vec::new();
+    decoder
+        .read_to_end(&mut runtime)
+        .expect("failed to decompress permissive EVM runtime artifact");
+
+    genesis
+        .alloc
+        .get_mut(&FLUENTBASE_EVM_RUNTIME_ADDRESS)
+        .expect("strict genesis is missing the Fluent EVM runtime precompile account")
+        .code = Some(Bytes::from(runtime));
+
+    genesis
 }
 
 /// Clones the data of the given `accounts` from the `active` database into the `fork_db`

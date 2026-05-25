@@ -11,6 +11,13 @@ ignore = [
     "RUSTSEC-2025-0141",
     # https://rustsec.org/advisories/RUSTSEC-2026-0097 rand is unsound with a custom logger
     "RUSTSEC-2026-0097",
+    # Existing Foundry dependency tree advisories on the v1.7.1-patched branch.
+    "RUSTSEC-2020-0056",
+    "RUSTSEC-2023-0052",
+    "RUSTSEC-2024-0336",
+    "RUSTSEC-2024-0370",
+    "RUSTSEC-2025-0009",
+    "RUSTSEC-2025-0010",
 ]
 
 # This section is considered when running `cargo deny check bans`.
@@ -109,6 +116,9 @@ allow-git = [
     # Tempo
     "https://github.com/tempoxyz/tempo",
     "https://github.com/tempoxyz/mpp-rs",
+    # Fluentbase
+    "https://github.com/fluentlabs-xyz/fluentbase",
+    "https://github.com/fluentlabs-xyz/revm-rwasm.git",
     # Transitive dependency of Tempo
     "https://github.com/paradigmxyz/reth",
     "https://github.com/paradigmxyz/reth-core",
