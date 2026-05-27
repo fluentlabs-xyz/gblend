@@ -18,7 +18,7 @@ env:
 
 jobs:
   mpp-check:
-    runs-on: depot-ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 60
     permissions:
       contents: read
