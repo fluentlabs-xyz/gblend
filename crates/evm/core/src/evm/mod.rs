@@ -13,6 +13,7 @@ use alloy_network::{Ethereum, Network};
 use alloy_op_evm::OpEvmFactory;
 use alloy_primitives::{Address, Signature, U256};
 use alloy_rlp::Decodable;
+use fluentbase_revm::RwasmHaltReason;
 use foundry_common::{FoundryReceiptResponse, FoundryTransactionBuilder, fmt::UIfmt};
 use foundry_config::FromEvmVersion;
 use foundry_fork_db::{DatabaseError, ForkBlockEnv};
@@ -272,6 +273,30 @@ impl IntoInstructionResult for TempoHaltReason {
         match self {
             Self::Ethereum(eth) => eth.into(),
             _ => InstructionResult::PrecompileError,
+        }
+    }
+}
+
+impl IntoInstructionResult for RwasmHaltReason {
+    fn into_instruction_result(self) -> InstructionResult {
+        match self {
+            Self::Base(eth) => eth.into(),
+            Self::RootCallOnly => InstructionResult::RootCallOnly,
+            Self::MalformedBuiltinParams => InstructionResult::MalformedBuiltinParams,
+            Self::CallDepthOverflow => InstructionResult::CallDepthOverflow,
+            Self::NonNegativeExitCode => InstructionResult::NonNegativeExitCode,
+            Self::UnknownError => InstructionResult::UnknownError,
+            Self::InputOutputOutOfBounds => InstructionResult::InputOutputOutOfBounds,
+            Self::UnreachableCodeReached => InstructionResult::UnreachableCodeReached,
+            Self::MemoryOutOfBounds => InstructionResult::MemoryOutOfBounds,
+            Self::TableOutOfBounds => InstructionResult::TableOutOfBounds,
+            Self::IndirectCallToNull => InstructionResult::IndirectCallToNull,
+            Self::IntegerDivisionByZero => InstructionResult::IntegerDivisionByZero,
+            Self::IntegerOverflow => InstructionResult::IntegerOverflow,
+            Self::BadConversionToInteger => InstructionResult::BadConversionToInteger,
+            Self::BadSignature => InstructionResult::BadSignature,
+            Self::OutOfFuel => InstructionResult::OutOfFuel,
+            Self::UnknownExternalFunction => InstructionResult::UnknownExternalFunction,
         }
     }
 }

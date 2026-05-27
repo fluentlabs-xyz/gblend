@@ -7,6 +7,8 @@ yanked = "warn"
 ignore = [
     # https://rustsec.org/advisories/RUSTSEC-2024-0436 paste! is unmaintained
     "RUSTSEC-2024-0436",
+    # https://rustsec.org/advisories/RUSTSEC-2024-0370 proc-macro-error is pulled by temporary Fluentbase dependency
+    "RUSTSEC-2024-0370",
     # https://rustsec.org/advisories/RUSTSEC-2025-0141 bincode is unmaintained
     "RUSTSEC-2025-0141",
     # https://rustsec.org/advisories/RUSTSEC-2026-0097 rand is unsound with a custom logger
@@ -108,10 +110,15 @@ allow-git = [
     "https://github.com/rust-cli/rexpect",
     # Tempo
     "https://github.com/tempoxyz/tempo",
+    "https://github.com/hedwig0x/tempo",
     "https://github.com/tempoxyz/mpp-rs",
     # Transitive dependency of Tempo
     "https://github.com/paradigmxyz/reth",
     "https://github.com/paradigmxyz/reth-core",
     # Temporary: upstream OP crates until release is published.
     "https://github.com/ethereum-optimism/optimism",
+    "https://github.com/hedwig0x/optimism",
+    # Temporary FLU-27 dependency branches.
+    "https://github.com/hedwig0x/fluentbase",
+    "https://github.com/hedwig0x/revm-rwasm.git",
 ]
