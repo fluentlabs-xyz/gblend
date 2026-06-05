@@ -2,7 +2,6 @@ use super::{
     backend::mem::{BlockRequest, DatabaseRef, State},
     sign::build_impersonated,
 };
-use crate::eth::overrides::{OverrideBlockHashes, apply_state_overrides};
 use crate::{
     ClientFork, LoggingManager, Miner, MiningMode, StorageInfo,
     eth::{
@@ -19,6 +18,7 @@ use crate::{
         fees::{FeeDetails, FeeHistoryCache, MIN_SUGGESTED_PRIORITY_FEE},
         macros::node_info,
         miner::FixedBlockTimeMiner,
+        overrides::{OverrideBlockHashes, apply_state_overrides},
         pool::{
             Pool,
             transactions::{

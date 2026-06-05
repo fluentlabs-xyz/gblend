@@ -1,13 +1,12 @@
 //! The `forge verify-bytecode` command.
 
-use crate::utils::is_host_only;
 use crate::{
+    RetryArgs,
     etherscan::EtherscanVerificationProvider,
     provider::{VerificationContext, VerificationProvider, VerificationProviderType},
-    utils::wrap_verifier_url_error,
-    RetryArgs,
+    utils::{is_host_only, wrap_verifier_url_error},
 };
-use alloy_primitives::{map::HashSet, Address, TxHash};
+use alloy_primitives::{Address, TxHash, map::HashSet};
 use alloy_provider::Provider;
 use clap::{Parser, ValueEnum, ValueHint};
 use eyre::Result;
@@ -16,11 +15,11 @@ use foundry_cli::{
     utils::{self, LoadConfig},
 };
 use foundry_common::{
-    compile::ProjectCompiler, rust_contracts::RustContractsRegistry, ContractsByArtifact,
+    ContractsByArtifact, compile::ProjectCompiler, rust_contracts::RustContractsRegistry,
 };
 use foundry_compilers::{artifacts::EvmVersion, compilers::solc::Solc, info::ContractInfo};
 use foundry_config::{
-    figment, impl_figment_convert, impl_figment_convert_cast, Chain, Config, SolcReq,
+    Chain, Config, SolcReq, figment, impl_figment_convert, impl_figment_convert_cast,
 };
 use itertools::Itertools;
 use semver::BuildMetadata;
@@ -390,7 +389,9 @@ impl VerifyArgs {
         let bundle =
             crate::fluent::VerificationBundle::from_artifacts(&pkg_info.path, &artifact_dir)
                 .await
-                .map_err(|err| self.wrap_host_only_url_error(err, "Archive/metadata read failed"))?;
+                .map_err(|err| {
+                    self.wrap_host_only_url_error(err, "Archive/metadata read failed")
+                })?;
 
         let request = crate::fluent::VerificationRequest::from_bundle(
             pkg_info.package_name.clone(),

@@ -39,7 +39,7 @@ env:
 
 jobs:
   tempo-check:
-    runs-on: self-hosted
+    runs-on: depot-ubuntu-22.04-16
     timeout-minutes: 60
     permissions:
       contents: read

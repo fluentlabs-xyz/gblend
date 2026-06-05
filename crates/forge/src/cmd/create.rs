@@ -4,7 +4,7 @@ use alloy_consensus::{SignableTransaction, Signed};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt, Specifier};
 use alloy_json_abi::{Constructor, JsonAbi};
 use alloy_network::{Ethereum, EthereumWallet, Network, ReceiptResponse, TransactionBuilder};
-use alloy_primitives::{hex, Address, Bytes, U256};
+use alloy_primitives::{Address, Bytes, U256, hex};
 use alloy_provider::{PendingTransactionError, Provider, ProviderBuilder as AlloyProviderBuilder};
 use alloy_signer::{Signature, Signer};
 use alloy_transport::TransportError;
@@ -13,37 +13,36 @@ use eyre::{Context, ContextCompat, Result};
 use forge_verify::{RetryArgs, VerifierArgs, VerifyArgs};
 use foundry_cli::{
     opts::{BuildOpts, EthereumOpts, EtherscanOpts, TransactionOpts},
-    utils::{find_contract_artifacts, read_constructor_args_file, LoadConfig},
+    utils::{LoadConfig, find_contract_artifacts, read_constructor_args_file},
 };
 
 use foundry_common::{
+    FoundryTransactionBuilder,
     compile::{self},
     fmt::parse_tokens,
     provider::ProviderBuilder,
     rust_contracts::RustContractsRegistry,
     shell,
     tempo::TEMPO_BROWSER_GAS_BUFFER,
-    FoundryTransactionBuilder,
 };
 use foundry_compilers::{
+    ArtifactId,
     artifacts::{BytecodeObject, CompactBytecode},
     info::ContractInfo,
     utils::canonicalize,
-    ArtifactId,
 };
 use foundry_config::{
+    Config,
     figment::{
-        self, value::{Dict, Map}, Metadata,
-        Profile,
+        self, Metadata, Profile,
+        value::{Dict, Map},
     },
     merge_impl_figment_convert,
-    Config,
 };
 use foundry_wallets::{
-    wallet_browser::signer::BrowserSigner, BrowserWalletOpts, TempoAccessKeyConfig, WalletSigner,
+    BrowserWalletOpts, TempoAccessKeyConfig, WalletSigner, wallet_browser::signer::BrowserSigner,
 };
-use rand::distr::Alphanumeric;
-use rand::Rng;
+use rand::{Rng, distr::Alphanumeric};
 use serde_json::json;
 use std::{
     borrow::{Borrow, Cow},
@@ -53,7 +52,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-use tempo_alloy::{contracts::precompiles::DEFAULT_FEE_TOKEN, TempoNetwork};
+use tempo_alloy::{TempoNetwork, contracts::precompiles::DEFAULT_FEE_TOKEN};
 use wasm_encoder::{CustomSection, Module, RawSection};
 use wasmparser::Parser as WasmpParser;
 

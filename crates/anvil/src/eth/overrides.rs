@@ -1,12 +1,12 @@
 pub(crate) use alloy_evm::overrides::{OverrideBlockHashes, StateOverrideError};
-use alloy_primitives::{keccak256, map::HashMap, Address};
+use alloy_primitives::{Address, keccak256, map::HashMap};
 use alloy_rpc_types_eth::state::{AccountOverride, StateOverride};
 use fluentbase_evm::{AnalyzedBytecode, EthereumMetadata};
 use fluentbase_types::PRECOMPILE_EVM_RUNTIME;
 use revm::{
-    bytecode::{ownable_account::OwnableAccountDecodeError, BytecodeDecodeError}, state::{Account, AccountInfo, AccountStatus, Bytecode, EvmStorageSlot},
-    Database,
-    DatabaseCommit,
+    Database, DatabaseCommit,
+    bytecode::{BytecodeDecodeError, ownable_account::OwnableAccountDecodeError},
+    state::{Account, AccountInfo, AccountStatus, Bytecode, EvmStorageSlot},
 };
 
 /// Applies the given state overrides (a set of [`AccountOverride`]) to the database.
@@ -132,7 +132,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_primitives::{address, b256, bytes, B256, U256};
+    use alloy_primitives::{B256, U256, address, b256, bytes};
     use revm::database::{CacheDB, EmptyDB};
 
     #[test]

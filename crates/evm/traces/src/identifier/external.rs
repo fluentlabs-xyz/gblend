@@ -79,8 +79,9 @@ impl ExternalIdentifier {
                     // Fluent chains expose a Blockscout instance behind the Etherscan-style URL in
                     // alloy-chains. Its `getsourcecode` response for unverified contracts does not
                     // match what foundry-block-explorers expects (returns `[{Address: "..."}]` with
-                    // status=1 instead of the `"Contract source code not verified"` sentinel), so the
-                    // fetcher would log a deserialization error for every traced address. Skip it.
+                    // status=1 instead of the `"Contract source code not verified"` sentinel), so
+                    // the fetcher would log a deserialization error for every
+                    // traced address. Skip it.
                     if chain.is_some_and(is_blockscout_only_chain) {
                         debug!(target: "evm::traces::external", chain=?chain, url=?client.etherscan_api_url(), "skipping etherscan identifier (Blockscout-only chain)");
                     } else {
