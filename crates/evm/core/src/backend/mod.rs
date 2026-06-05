@@ -2065,13 +2065,14 @@ fn load_genesis_with_permissive_evm_runtime() -> Genesis {
     use std::io::Read;
 
     let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
-    let runtime_file_compressed = include_bytes!(env!("GBLEND_PERMISSIVE_EVM_RUNTIME_GZ"));
+    let runtime_file_compressed =
+        include_bytes!(concat!(env!("OUT_DIR"), "/evm-runtime-permissive-v1.3.0-rc.1.rwasm.gz"));
 
     let mut decoder = GzDecoder::new(&json_file_compressed[..]);
     let mut json_string = String::new();
     decoder.read_to_string(&mut json_string).expect("failed to decompress a genesis gz file");
-    let mut genesis = serde_json::from_str::<Genesis>(&json_string)
-        .expect("failed to parse a genesis JSON file");
+    let mut genesis =
+        serde_json::from_str::<Genesis>(&json_string).expect("failed to parse a genesis JSON file");
 
     let mut decoder = GzDecoder::new(&runtime_file_compressed[..]);
     let mut runtime = Vec::new();
