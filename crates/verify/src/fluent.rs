@@ -1,6 +1,6 @@
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use eyre::{eyre, Result, WrapErr};
-use flate2::{write::GzEncoder, Compression};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
+use eyre::{Result, WrapErr, eyre};
+use flate2::{Compression, write::GzEncoder};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::{fs, io::Write, path::Path, time::Duration};
@@ -44,10 +44,7 @@ impl VerificationBundle {
     /// `out/power-calculator.wasm/`) containing `abi.json` and `metadata.json`.
     /// `contract_path` is the Rust crate root that produced those artifacts —
     /// it's what gets packed into the source archive.
-    pub async fn from_artifacts(
-        contract_path: &Path,
-        artifact_dir: &Path,
-    ) -> Result<Self> {
+    pub async fn from_artifacts(contract_path: &Path, artifact_dir: &Path) -> Result<Self> {
         let abi: serde_json::Value =
             foundry_common::fs::read_json_file(&artifact_dir.join("abi.json"))?;
         let metadata: serde_json::Value =
@@ -119,7 +116,6 @@ impl VerificationRequest {
             abi: bundle.abi,
         }
     }
-
 }
 
 /// Response wrapper for error cases

@@ -1,7 +1,6 @@
 //! In-memory blockchain backend.
 use self::state::trie_storage;
 
-use crate::eth::overrides::{OverrideBlockHashes, apply_state_overrides};
 use crate::{
     ForkChoice, NodeConfig, PrecompileFactory,
     config::PruneStateHistoryConfig,
@@ -27,6 +26,7 @@ use crate::{
         error::{BlockchainError, ErrDetail, InvalidTransactionError},
         fees::{FeeDetails, FeeManager, MIN_SUGGESTED_PRIORITY_FEE},
         macros::node_info,
+        overrides::{OverrideBlockHashes, apply_state_overrides},
         pool::transactions::PoolTransaction,
         sign::build_impersonated,
     },

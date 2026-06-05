@@ -28,10 +28,8 @@ use tower::{Layer, Service};
 
 /// Methods to rewrite. Each pair is `(standard, raw)`; the raw variant is tried first and
 /// the standard is used as a fallback when the endpoint replies with `-32601`.
-const REWRITES: &[(&str, &str)] = &[
-    ("eth_getCode", "eth_getRawCode"),
-    ("eth_getAccountInfo", "eth_getRawAccountInfo"),
-];
+const REWRITES: &[(&str, &str)] =
+    &[("eth_getCode", "eth_getRawCode"), ("eth_getAccountInfo", "eth_getRawAccountInfo")];
 
 /// JSON-RPC 2.0 "method not found" error code. Authoritative for distinguishing
 /// "endpoint does not implement this RPC" from a transport / params / business error.
@@ -114,13 +112,8 @@ where
             // Transport errors leave the classification at Unknown so the next call retries
             // the probe rather than locking in a misclassification from a transient blip.
             if raw_resp.is_ok() {
-                mode.compare_exchange(
-                    UNKNOWN,
-                    RAW_SUPPORTED,
-                    Ordering::Relaxed,
-                    Ordering::Relaxed,
-                )
-                .ok();
+                mode.compare_exchange(UNKNOWN, RAW_SUPPORTED, Ordering::Relaxed, Ordering::Relaxed)
+                    .ok();
             }
             raw_resp
         })

@@ -3,9 +3,9 @@
 use crate::{
     TestFunctionExt, preprocessor::DynamicTestLinkingPreprocessor, shell, term::SpinnerReporter,
 };
-use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN, Cell, Color, Table};
+use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::ASCII_MARKDOWN};
 use eyre::{Result, WrapErr};
-use fluentbase_build::{execute_build, Artifact as FluentArtifact, BuildArgs, DEFAULT_DOCKER_TAG};
+use fluentbase_build::{Artifact as FluentArtifact, BuildArgs, DEFAULT_DOCKER_TAG, execute_build};
 use foundry_block_explorers::contract::Metadata;
 use foundry_common::rust_contracts::RustContractsRegistry;
 use foundry_compilers::{

@@ -4,9 +4,9 @@ use crate::{
     fork::CreateFork,
     utils::{apply_chain_and_block_specific_env_changes, block_env_from_header},
 };
-use alloy_genesis::Genesis;
 use alloy_chains::NamedChain;
 use alloy_consensus::BlockHeader;
+use alloy_genesis::Genesis;
 use alloy_network::{AnyNetwork, BlockResponse, Network};
 use alloy_primitives::{Address, B256, BlockNumber, ChainId, U256};
 use alloy_provider::{Provider, RootProvider};
