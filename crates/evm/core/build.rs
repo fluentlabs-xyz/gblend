@@ -1,8 +1,8 @@
 use std::{env, path::Path, process::Command};
 
-const FLUENTBASE_GENESIS_VERSION: &str = "v1.3.0-rc.1";
-const PERMISSIVE_RUNTIME_ASSET: &str = "evm-runtime-permissive-v1.3.0-rc.1.rwasm.gz";
-const PERMISSIVE_RUNTIME_URL: &str = "https://github.com/fluentlabs-xyz/fluentbase/releases/download/v1.3.0-rc.1/evm-runtime-permissive-v1.3.0-rc.1.rwasm.gz";
+const FLUENTBASE_GENESIS_VERSION: &str = "v1.3.0";
+const PERMISSIVE_RUNTIME_ASSET: &str = "evm-runtime-permissive-v1.3.0.rwasm.gz";
+const PERMISSIVE_RUNTIME_URL: &str = "https://github.com/fluentlabs-xyz/fluentbase/releases/download/v1.3.0/evm-runtime-permissive-v1.3.0.rwasm.gz";
 
 fn main() {
     println!("cargo:rerun-if-env-changed=GBLEND_PERMISSIVE_EVM_RUNTIME_URL");

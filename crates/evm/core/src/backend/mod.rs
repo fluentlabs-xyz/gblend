@@ -2066,7 +2066,7 @@ fn load_genesis_with_permissive_evm_runtime() -> Genesis {
 
     let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
     let runtime_file_compressed =
-        include_bytes!(concat!(env!("OUT_DIR"), "/evm-runtime-permissive-v1.3.0-rc.1.rwasm.gz"));
+        include_bytes!(concat!(env!("OUT_DIR"), "/evm-runtime-permissive-v1.3.0.rwasm.gz"));
 
     let mut decoder = GzDecoder::new(&json_file_compressed[..]);
     let mut json_string = String::new();
