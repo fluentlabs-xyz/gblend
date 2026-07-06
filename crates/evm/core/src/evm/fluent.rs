@@ -17,7 +17,8 @@ use core::{
 use alloy_evm::{Database, Evm, EvmEnv, EvmFactory, precompiles::PrecompilesMap};
 use alloy_primitives::{Address, Bytes};
 use fluentbase_revm::{
-    DefaultRwasm, RwasmBuilder, RwasmEvm, RwasmFrame, RwasmHandler, RwasmPrecompiles,
+    DefaultRwasm, RwasmBuilder, RwasmEvm, RwasmFrame, RwasmHaltReason, RwasmHandler,
+    RwasmPrecompiles,
     revm::{
         Context, ExecuteEvm, InspectEvm, Inspector, SystemCallEvm,
         context::{
@@ -41,7 +42,7 @@ use foundry_fork_db::DatabaseError;
 use crate::{
     FoundryInspectorExt,
     backend::{DatabaseExt, JournaledState},
-    evm::{FoundryEvmFactory, NestedEvm},
+    evm::{FoundryEvmFactory, IntoInstructionResult, NestedEvm},
 };
 
 /// Type alias for the Fluent EVM context. Structurally identical to
@@ -121,7 +122,7 @@ where
     type DB = DB;
     type Tx = TxEnv;
     type Error = EVMError<DB::Error>;
-    type HaltReason = HaltReason;
+    type HaltReason = RwasmHaltReason;
     type Spec = SpecId;
     type BlockEnv = BlockEnv;
     type Precompiles = PRECOMPILE;
@@ -139,7 +140,10 @@ where
         self.cfg.chain_id
     }
 
-    fn transact_raw(&mut self, tx: Self::Tx) -> Result<ResultAndState, Self::Error> {
+    fn transact_raw(
+        &mut self,
+        tx: Self::Tx,
+    ) -> Result<ResultAndState<Self::HaltReason>, Self::Error> {
         if self.inspect { self.inner.inspect_tx(tx) } else { self.inner.transact(tx) }
     }
 
@@ -148,7 +152,7 @@ where
         caller: Address,
         contract: Address,
         data: Bytes,
-    ) -> Result<ResultAndState, Self::Error> {
+    ) -> Result<ResultAndState<Self::HaltReason>, Self::Error> {
         self.inner.system_call_with_caller(caller, contract, data)
     }
 
@@ -232,7 +236,7 @@ impl EvmFactory for FluentEvmFactory {
     type Context<DB: Database> = FluentEvmContext<DB>;
     type Tx = TxEnv;
     type Error<DBError: core::error::Error + Send + Sync + 'static> = EVMError<DBError>;
-    type HaltReason = HaltReason;
+    type HaltReason = RwasmHaltReason;
     type Spec = SpecId;
     type BlockEnv = BlockEnv;
     type Precompiles = PrecompilesMap;
@@ -327,7 +331,9 @@ where
     ) -> Result<ResultAndState<HaltReason>, EVMError<DatabaseError>> {
         self.inner.ctx_mut().set_tx(tx);
         let mut handler: FluentEvmHandler<'db, I> = RwasmHandler::default();
-        let result = handler.inspect_run(&mut self.inner)?;
+        let result = handler
+            .inspect_run(&mut self.inner)?
+            .map_haltreason(|h| h.into_instruction_result().into());
         Ok(ResultAndState::new(result, self.ctx().journaled_state.inner.state.clone()))
     }
 
