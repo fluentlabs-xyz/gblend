@@ -300,7 +300,8 @@ impl ProjectCompiler {
                 )),
                 wasm_opt: false,
                 locked: false,
-                rust_version: Some("1.92.0-x86_64-unknown-linux-gnu".to_string()),
+                // Leave `rust_version` unset so the toolchain preinstalled in the
+                // `fluentbase-build` image of the selected tag is used.
                 ..Default::default()
             };
 

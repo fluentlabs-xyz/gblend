@@ -2064,9 +2064,10 @@ fn load_genesis_with_permissive_evm_runtime() -> Genesis {
     use flate2::read::GzDecoder;
     use std::io::Read;
 
-    let json_file_compressed = include_bytes!("../../../genesis/genesis-mainnet-v1.2.0.json.gz");
-    let runtime_file_compressed =
-        include_bytes!(concat!(env!("OUT_DIR"), "/evm-runtime-permissive-v1.3.0.rwasm.gz"));
+    // Both paths are emitted by `build.rs`, which downloads the artifacts of the pinned
+    // fluentbase release.
+    let json_file_compressed = include_bytes!(env!("GBLEND_GENESIS_PATH"));
+    let runtime_file_compressed = include_bytes!(env!("GBLEND_PERMISSIVE_EVM_RUNTIME_PATH"));
 
     let mut decoder = GzDecoder::new(&json_file_compressed[..]);
     let mut json_string = String::new();

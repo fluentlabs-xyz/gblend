@@ -5,8 +5,8 @@
 //! `Bytecode::OwnableAccount` (Fluent's deployed-contract wrapper).
 //!
 //! The `FluentEvmExecutor` wrapper + `EvmFactory` impl below are vendored from
-//! `fluentlabs/fluentbase` `crates/node/src/evm.rs` (commit
-//! `f7e7e187`) because `RwasmEvm` itself only implements revm's `EvmTr`
+//! `fluentlabs/fluentbase` `crates/node/src/evm.rs` (tag `v1.5.1`, commit
+//! `8b0f50cc`) because `RwasmEvm` itself only implements revm's `EvmTr`
 //! trait — alloy-evm's `Evm` / `EvmFactory` traits (required by
 //! `FoundryEvmFactory`'s supertrait bound) have to be implemented on a wrapper.
 use core::{
@@ -17,11 +17,12 @@ use core::{
 use alloy_evm::{Database, Evm, EvmEnv, EvmFactory, precompiles::PrecompilesMap};
 use alloy_primitives::{Address, Bytes};
 use fluentbase_revm::{
-    DefaultRwasm, RwasmBuilder, RwasmEvm, RwasmFrame, RwasmHandler, RwasmPrecompiles,
+    ColdPrecompiles, DefaultRwasm, RwasmBuilder, RwasmEvm, RwasmFrame, RwasmHandler,
+    RwasmPrecompiles,
     revm::{
         Context, ExecuteEvm, InspectEvm, Inspector, SystemCallEvm,
         context::{
-            BlockEnv, CfgEnv, ContextSetters, LocalContextTr, TxEnv,
+            BlockEnv, CfgEnv, ContextSetters, Evm as RevmEvm, LocalContextTr, TxEnv,
             result::{EVMError, HaltReason, ResultAndState},
         },
         handler::{
@@ -49,42 +50,47 @@ use crate::{
 /// chain — so `FoundryContextExt` impls covering the Ethereum context also cover this.
 pub type FluentEvmContext<DB> = Context<BlockEnv, TxEnv, CfgEnv, DB>;
 
+/// The revm-level Fluent EVM over a `FluentEvmContext<DB>`, as `RwasmBuilder` builds it.
+pub type FluentRwasmEvm<DB, I, PRECOMPILE> = RwasmEvm<
+    FluentEvmContext<DB>,
+    I,
+    EthInstructions<EthInterpreter, FluentEvmContext<DB>>,
+    PRECOMPILE,
+    RwasmFrame,
+>;
+
 /// `Evm`-trait wrapper around `RwasmEvm`. Vendored from `fluentbase-node`.
 #[expect(missing_debug_implementations)]
 pub struct FluentEvmExecutor<DB: Database, I, PRECOMPILE = EthPrecompiles> {
-    inner: RwasmEvm<
-        FluentEvmContext<DB>,
-        I,
-        EthInstructions<EthInterpreter, FluentEvmContext<DB>>,
-        PRECOMPILE,
-        RwasmFrame,
-    >,
+    /// Precompiles are wrapped in `ColdPrecompiles` so that their addresses are not
+    /// pre-warmed, matching the Fluent node where precompile accounts start cold.
+    inner: FluentRwasmEvm<DB, I, ColdPrecompiles<PRECOMPILE>>,
     inspect: bool,
 }
 
 impl<DB: Database, I, PRECOMPILE> FluentEvmExecutor<DB, I, PRECOMPILE> {
-    pub const fn new(
-        evm: RwasmEvm<
-            FluentEvmContext<DB>,
-            I,
-            EthInstructions<EthInterpreter, FluentEvmContext<DB>>,
-            PRECOMPILE,
-        >,
-        inspect: bool,
-    ) -> Self {
-        Self { inner: evm, inspect }
+    pub fn new(evm: FluentRwasmEvm<DB, I, PRECOMPILE>, inspect: bool) -> Self {
+        let RwasmEvm(evm, options) = evm;
+        let evm = RevmEvm {
+            ctx: evm.ctx,
+            inspector: evm.inspector,
+            instruction: evm.instruction,
+            precompiles: ColdPrecompiles(evm.precompiles),
+            frame_stack: evm.frame_stack,
+        };
+        Self { inner: RwasmEvm(evm, options), inspect }
     }
 
-    pub fn into_inner(
-        self,
-    ) -> RwasmEvm<
-        FluentEvmContext<DB>,
-        I,
-        EthInstructions<EthInterpreter, FluentEvmContext<DB>>,
-        PRECOMPILE,
-        RwasmFrame,
-    > {
-        self.inner
+    pub fn into_inner(self) -> FluentRwasmEvm<DB, I, PRECOMPILE> {
+        let RwasmEvm(evm, options) = self.inner;
+        let evm = RevmEvm {
+            ctx: evm.ctx,
+            inspector: evm.inspector,
+            instruction: evm.instruction,
+            precompiles: evm.precompiles.0,
+            frame_stack: evm.frame_stack,
+        };
+        RwasmEvm(evm, options)
     }
 
     pub const fn ctx(&self) -> &FluentEvmContext<DB> {
@@ -174,11 +180,11 @@ where
     }
 
     fn precompiles(&self) -> &Self::Precompiles {
-        &self.inner.0.precompiles
+        &self.inner.0.precompiles.0
     }
 
     fn precompiles_mut(&mut self) -> &mut Self::Precompiles {
-        &mut self.inner.0.precompiles
+        &mut self.inner.0.precompiles.0
     }
 
     fn inspector(&self) -> &Self::Inspector {
@@ -193,7 +199,7 @@ where
         (
             &self.inner.0.ctx.journaled_state.database,
             &self.inner.0.inspector,
-            &self.inner.0.precompiles,
+            &self.inner.0.precompiles.0,
         )
     }
 
@@ -201,7 +207,7 @@ where
         (
             &mut self.inner.0.ctx.journaled_state.database,
             &mut self.inner.0.inspector,
-            &mut self.inner.0.precompiles,
+            &mut self.inner.0.precompiles.0,
         )
     }
 }
@@ -211,13 +217,8 @@ pub type FluentRevmEvm<'db, I> =
     FluentEvmExecutor<&'db mut dyn DatabaseExt<FluentEvmFactory>, I, PrecompilesMap>;
 
 /// The underlying revm-level Fluent Evm (what `RwasmHandler` drives directly).
-type FluentInnerEvm<'db, I> = RwasmEvm<
-    FluentEvmContext<&'db mut dyn DatabaseExt<FluentEvmFactory>>,
-    I,
-    EthInstructions<EthInterpreter, FluentEvmContext<&'db mut dyn DatabaseExt<FluentEvmFactory>>>,
-    PrecompilesMap,
-    RwasmFrame,
->;
+type FluentInnerEvm<'db, I> =
+    FluentRwasmEvm<&'db mut dyn DatabaseExt<FluentEvmFactory>, I, ColdPrecompiles<PrecompilesMap>>;
 
 /// Handler type alias bound to the Fluent inner Evm + Foundry's error shape.
 type FluentEvmHandler<'db, I> = RwasmHandler<FluentInnerEvm<'db, I>, EVMError<DatabaseError>>;
@@ -245,9 +246,9 @@ impl EvmFactory for FluentEvmFactory {
                 .with_cfg(input.cfg_env)
                 .with_db(db)
                 .build_rwasm_with_inspector(NoOpInspector {})
-                .with_precompiles(PrecompilesMap::from_static(
+                .with_precompiles(ColdPrecompiles(PrecompilesMap::from_static(
                     RwasmPrecompiles::new_with_spec(spec_id).precompiles(),
-                )),
+                ))),
             inspect: false,
         }
     }
@@ -265,9 +266,9 @@ impl EvmFactory for FluentEvmFactory {
                 .with_cfg(input.cfg_env)
                 .with_db(db)
                 .build_rwasm_with_inspector(inspector)
-                .with_precompiles(PrecompilesMap::from_static(
+                .with_precompiles(ColdPrecompiles(PrecompilesMap::from_static(
                     RwasmPrecompiles::new_with_spec(spec_id).precompiles(),
-                )),
+                ))),
             inspect: true,
         }
     }
@@ -313,7 +314,8 @@ where
     }
 
     fn run_execution(&mut self, frame: FrameInput) -> Result<FrameResult, EVMError<DatabaseError>> {
-        let mut handler: FluentEvmHandler<'db, I> = RwasmHandler::default();
+        let mut handler: FluentEvmHandler<'db, I> =
+            RwasmHandler::new(self.inner.options().burn_base_fee);
         let memory = SharedMemory::new_with_buffer(self.ctx().local.shared_memory_buffer().clone());
         let first_frame_input = FrameInit { depth: 0, memory, frame_input: frame };
         let mut frame_result = handler.inspect_run_exec_loop(&mut self.inner, first_frame_input)?;
@@ -326,7 +328,8 @@ where
         tx: Self::Tx,
     ) -> Result<ResultAndState<HaltReason>, EVMError<DatabaseError>> {
         self.inner.ctx_mut().set_tx(tx);
-        let mut handler: FluentEvmHandler<'db, I> = RwasmHandler::default();
+        let mut handler: FluentEvmHandler<'db, I> =
+            RwasmHandler::new(self.inner.options().burn_base_fee);
         let result = handler.inspect_run(&mut self.inner)?;
         Ok(ResultAndState::new(result, self.ctx().journaled_state.inner.state.clone()))
     }
