@@ -82,7 +82,7 @@ impl VerificationBundle {
             ],
             rust_toolchain: metadata["environment"]["rust_toolchain"]
                 .as_str()
-                .unwrap_or("1.92.0")
+                .unwrap_or("1.93.1")
                 .to_string(),
             manifest_path,
         };
