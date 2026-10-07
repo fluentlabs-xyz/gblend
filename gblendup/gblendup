@@ -3,7 +3,7 @@ set -eo pipefail
 
 # NOTE: if you make modifications to this script, please increment the version number.
 # WARNING: the SemVer pattern: major.minor.patch must be followed as we use it to determine if the script is up to date.
-GBLENDUP_INSTALLER_VERSION="1.0.0"
+GBLENDUP_INSTALLER_VERSION="1.0.1"
 
 BASE_DIR=${XDG_CONFIG_HOME:-$HOME}
 GBLEND_DIR=${GBLEND_DIR:-"$BASE_DIR/.gblend"}
@@ -318,6 +318,10 @@ OPTIONS:
     --arch          Install a specific architecture (supports amd64 and arm64)
     --platform      Install a specific platform (supports win32, linux, and darwin)
 
+ENVIRONMENT:
+    GITHUB_TOKEN    GitHub token used for API calls (falls back to GH_TOKEN, then 'gh auth token').
+                    Raises the GitHub API rate limit from 60 to 5000 requests/hour.
+
 EXAMPLES:
     gblendup                    # Install latest version
     gblendup --install v0.1.0   # Install specific version
@@ -424,15 +428,45 @@ EOF
   fi
 }
 
+# Resolve a GitHub token for API calls, if one is available.
+# Order: GITHUB_TOKEN, GH_TOKEN, then `gh auth token` when the GitHub CLI is logged in.
+# Unauthenticated requests are limited to 60/hour per IP; authenticated ones get 5000/hour.
+github_token() {
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    echo "$GITHUB_TOKEN"
+  elif [ -n "${GH_TOKEN:-}" ]; then
+    echo "$GH_TOKEN"
+  elif check_cmd gh; then
+    gh auth token 2>/dev/null || true
+  fi
+}
+
 resolve_latest_version() {
+  api_url="https://api.github.com/repos/fluentlabs-xyz/gblend/releases/latest"
+  token=$(github_token)
+
   if check_cmd curl; then
-    latest_tag=$(curl -fsSL "https://api.github.com/repos/fluentlabs-xyz/gblend/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    if [ -n "$token" ]; then
+      response=$(curl -fsSL -H "Authorization: Bearer $token" "$api_url")
+    else
+      response=$(curl -fsSL "$api_url")
+    fi
   else
-    latest_tag=$(wget -qO- "https://api.github.com/repos/fluentlabs-xyz/gblend/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    if [ -n "$token" ]; then
+      response=$(wget -qO- --header="Authorization: Bearer $token" "$api_url")
+    else
+      response=$(wget -qO- "$api_url")
+    fi
   fi
 
+  latest_tag=$(echo "$response" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
   if [ -z "$latest_tag" ]; then
-    err "could not determine latest version from GitHub API"
+    if [ -n "$token" ]; then
+      err "could not determine latest version from GitHub API (a GitHub token was used; check that it is valid)"
+    else
+      err "could not determine latest version from GitHub API (unauthenticated requests are rate-limited to 60/hour; set GITHUB_TOKEN or log in with 'gh auth login' to raise the limit)"
+    fi
   fi
 
   echo "$latest_tag"
